@@ -9,12 +9,13 @@ public class GetRequest {
 
 	private int total_downloaded;
 	private int total_uploaded;
+	private int left;
 	private int file_length;
 	private String url;
 	private String url_encoded;
 	
 	
-	public GetRequest(){
+	 GetRequest(){
 		setTotal_downloaded(0);
 	}
 		
@@ -25,11 +26,11 @@ public class GetRequest {
 		byte[] byteArray = new byte[10];
 		GetRequest myRequest = new GetRequest();
 		
-		System.out.println(myRequest.sendGetRequest(url));
-		randomID();
+		//System.out.println(myRequest.sendGetRequest(url));
+		//randomID();
 	}
 	
-	private String constructURL(String announce_url, byte[] info_hash_byteArray, String port_num, int file_length){   //construct url key/value pairs
+	private void constructURL(String announce_url, byte[] info_hash_byteArray, String port_num, int file_length){   //construct url key/value pairs
 		
 		setFile_length(file_length);
 		
@@ -38,21 +39,16 @@ public class GetRequest {
 		String port = "&port=" + port_num;
 		String downloaded = "&downloaded=" + getTotal_downloaded();
 		String uploaded = "&uploaded=" + getTotal_uploaded();
-		
-		
-		
-					
-		//String final_url = announce_url + "?info_hash=" + hash + "&peer_id=" + randomID()+"&";
-			
-		return "";
+		String left =  "&left=" + getLeft();
+	
+		setUrl(announce_url + info_hash + peer_id + port + downloaded + uploaded+ left);
 	}
 	
-	private String encodeURL(){
-		
-		return "";
+	private void encodeURL() throws Exception{
+		setUrl_encoded(URLEncoder.encode(getUrl(), "UTF-8"));
+		System.out.println(getUrl_encoded());
 	}
-	
-	private String sendGetRequest(String url) throws Exception{   
+	private String sendGetRequest() throws Exception{   
 		
 		URL obj = new URL(url);
 		int contentLength = obj.openConnection().getContentLength();
@@ -106,12 +102,20 @@ public class GetRequest {
 		this.url_encoded = url_encoded;
 	}
 
-	public int getTotal_uploaded() {
+	private int getTotal_uploaded() {
 		return total_uploaded;
 	}
 
-	public void setTotat_uploaded(int totat_uploaded) {
+	private void setTotal_uploaded(int totat_uploaded) {
 		this.total_uploaded = totat_uploaded;
+	}
+
+	private int getLeft() {
+		return left;
+	}
+
+	private void setLeft() {
+		this.left = getFile_length() - getTotal_downloaded();
 	}
 
 }
