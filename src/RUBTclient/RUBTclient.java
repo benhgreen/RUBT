@@ -44,19 +44,35 @@ public class RUBTclient {
 		System.out.println(torrentinfo.announce_url.toString());
 		
 		String announce_url = torrentinfo.announce_url.toString(); 
-		//String info_hash= torrentinfo.info_hash;
+		byte[] hash= new byte[20];
+		torrentinfo.info_hash.get(hash);
+		
+		StringBuffer info_hash = new StringBuffer();
+
+		//String info_hash_string = "";
+		for(int i = 0;i < 20 ;i++){
+			info_hash.append(hash[i]);
+			System.out.println(hash[i]);
+		}
+		System.out.println(info_hash);
+		
 		int port_num = 6881;
 		int file_length = torrentinfo.file_length;
 		//int length = torrentinfo.info_hash;
 		
-		ToolKit.printString(torrentinfo.info_hash, true, 0);
+		//ToolKit.printString(torrentinfo.info_hash, true, 0);
 		
 		//System.out.println("info_hash: "+);
 		
-		GetRequest myRequest = new GetRequest();
-		//myRequest.constructURL(announce_url, info_hash, port_num, file_length);
 		
-		//System.out.println("url " + myRequest.getUrl());
+		GetRequest myRequest = new GetRequest();
+		myRequest.constructURL(announce_url, info_hash.toString(), port_num, file_length);
+		
+		try{
+			myRequest.encodeURL();
+			myRequest.sendGetRequest();
+		}catch(Exception e){};
+			//System.out.println("url " + myRequest.getUrl());
 		
 	}
 

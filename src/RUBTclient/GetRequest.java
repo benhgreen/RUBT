@@ -1,8 +1,11 @@
 package RUBTclient;
 
 import java.net.URL;
+import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.util.Random;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 
 
 public class GetRequest {
@@ -55,10 +58,18 @@ public class GetRequest {
 	}
 	public String sendGetRequest() throws Exception{   
 		
-		URL obj = new URL(url);
-		int contentLength = obj.openConnection().getContentLength();
+		//URL obj = new URL("http://www.mannyjl625.info/songfinder/getrequest.txt");
+		URL obj = new URL(getUrl());
+		URLConnection connection = obj.openConnection();
+		int contentLength = connection.getContentLength();
 		System.out.println("contentLength: " + contentLength);
 		
+		BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+		String inputLine;
+		while((inputLine = in.readLine()) != null){
+			System.out.println(inputLine);
+		}
+		in.close();
 		return "yo";
 	}
 	
