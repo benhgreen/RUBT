@@ -15,7 +15,7 @@ public class Message
 	{
 				
 	}
-	public void handShake( byte[] info_hash)
+	public byte[] handShake( byte[] info_hash)
 	{
 		char[] userid;
 		int shake_loc = 0;  //location of the handshake array that we are populating.
@@ -29,18 +29,14 @@ public class Message
 			handshake[shake_loc] = info_hash[s];
 			shake_loc++;
 		}
-		System.out.println(Arrays.toString(handshake));
-		System.out.println(Arrays.toString(info_hash));
 		GetRequest poop = new GetRequest();
 		userid=poop.getUser_id().toCharArray();
-		System.out.println(userid);
 		for(int i = 0;i<userid.length;i++ )
 		{
 			handshake[shake_loc] = (byte)userid[i];
 			shake_loc++;
 		}
-		
-		System.out.println(Arrays.toString(handshake));
+		return handshake;
 	}
 	}
 
