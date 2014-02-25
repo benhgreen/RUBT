@@ -19,21 +19,22 @@ public class GetRequest {
 	private int file_length;
 	private int port_num;
 	private String url;
-		
+	private static String usrid;	
 	 GetRequest(){
 		setTotal_downloaded(0);
 		setTotal_uploaded(0);
+		randomID();
+
 	}
 		
-	
+
 	public void constructURL(String announce_url, ByteBuffer info_hash, int port_num, int file_length){   //construct url key/value pairs
 		
 		setFile_length(file_length);
 		setPort_num(port_num);
 		setLeft();
-		
 		String info_hash_encoded = "?info_hash=" + encodeHash(info_hash);
-		String peer_id = "&peer_id=" + randomID();
+		String peer_id = "&peer_id=" + usrid;
 		String port = "&port=" + port_num;
 		String downloaded = "&downloaded=" + getTotal_downloaded();
 		String uploaded = "&uploaded=" + getTotal_uploaded();
@@ -68,7 +69,7 @@ public class GetRequest {
 		return bencoded_response;
 	}
 	
-	public static String randomID(){
+	public static void randomID(){
 		String id = "GROUP4";
 		String letter;
 		Random r = new Random();
@@ -77,9 +78,12 @@ public class GetRequest {
 			letter = String.valueOf((char)(r.nextInt(26) + 65));
 			id = id+letter;
 		}
-		return id;
+		usrid=id;
 	}
-
+	public String getUser_id()
+	{
+		return usrid;
+	}
 	public int getTotal_downloaded() {
 		return total_downloaded;
 	}
