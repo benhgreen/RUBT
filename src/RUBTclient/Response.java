@@ -1,8 +1,7 @@
 package RUBTclient;
 
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.nio.ByteBuffer;
+import java.util.*;
 
 import edu.rutgers.cs.cs352.bt.exceptions.BencodingException;
 import edu.rutgers.cs.cs352.bt.util.Bencoder2;
@@ -11,7 +10,7 @@ import edu.rutgers.cs.cs352.bt.util.ToolKit;
 public class Response {
 	
 	String message;
-	Peer[] peers;
+	ArrayList<Peer> peers;
 	List peerdict;
 	Integer downloaded;
 	Integer complete;
@@ -20,13 +19,6 @@ public class Response {
 	
 	public Response(String getrequest) {
 		super();
-		this.message = message;
-		this.peers = peers;
-		this.peerdict = peerdict;
-		this.downloaded = downloaded;
-		this.complete = complete;
-		this.min_interval = min_interval;
-		this.interval = interval;
 		
 		
 		
@@ -48,14 +40,73 @@ public class Response {
 		
 		final Iterator i = peerdict.keySet().iterator();
         Object key = null;
-        for (int k = 0; k < depth; k++)
-            System.out.print("  ");
-        System.out.println("Dictionary:");
         while (i.hasNext() && (key = i.next()) != null)
         {
-        	System.out.println("key class " + key.getClass().getName());
-            System.out.println("object class " + peerdict.get(key).getClass().getName());
+        	String string_key = asString((ByteBuffer) key);
+            if (string_key.equals("peers")){
+            	System.out.println("peers detected");
+            	
+            	ArrayList peerlist = (ArrayList) peerdict.get(key);
+            	
+            	Iterator iter = peerlist.iterator();
+            	
+            	while(iter.hasNext()){
+            		HashMap peer = (HashMap) iter.next();
+            		Iterator j = peer.keySet().iterator();
+            		
+            		while(j.hasNext()){
+            			
+            			String temp_peer_id = null;
+            			String temp_ip = null;
+            			Integer temp_port = null;
+            			
+            			Object next = j.next();
+            			
+            			String argh = asString((ByteBuffer) next);
+            			
+            			if(argh.equals("peer id")){
+            				temp_peer_id = asString((ByteBuffer) peer.get(next));
+            			}else if(argh.equals("port")){
+            				temp_port = (Integer) peer.get(next);
+            			}else if(argh.equals("ip")){
+            				temp_ip = asString((ByteBuffer) peer.get(next));
+            			}
+            			
+            			System.out.println(temp_port);
+            			System.out.println(temp_peer_id);
+            			System.out.println(temp_ip);
+            			
+            			peers.add(new Peer(temp_ip,temp_peer_id,temp_port));
+            		}
+            	}
+            	
+            	
+            	
+            	
+            	
+            	
+            	
+            	
+            	
+            }else if(string_key.equals("interval")){
+            	this.interval = (Integer) peerdict.get(key);
+            }else if(string_key.equals("min interval")){
+            	this.min_interval = (Integer) peerdict.get(key);
+            }
         }
 	}
+	
+	private static String asString(ByteBuffer buff){
+		  StringBuilder sb = new StringBuilder();
+		  byte[] b = buff.array();
+		  for(int i = 0; i < b.length; ++i){
+		    if(b[i] > 31 || b[i] < 127){
+		      sb.append((char)b[i]);
+		    }else {
+		      sb.append(String.format("%02x",b[i]));
+		    }
+		  }
+		  return sb.toString();
+		}
 
 }
