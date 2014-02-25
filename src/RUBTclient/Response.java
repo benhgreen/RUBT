@@ -5,72 +5,78 @@ import java.util.*;
 
 import edu.rutgers.cs.cs352.bt.exceptions.BencodingException;
 import edu.rutgers.cs.cs352.bt.util.Bencoder2;
-import edu.rutgers.cs.cs352.bt.util.ToolKit;
 
 public class Response {
 	
 	String message;
 	ArrayList<Peer> peers = new ArrayList<Peer>();
+	@SuppressWarnings("rawtypes")
 	List peerdict;
 	Integer downloaded;
 	Integer complete;
 	Integer min_interval;
 	Integer interval;
 	
+	/**
+	 * @param String containing a properly formatted, bencoded tracker response to a GET request.
+	 */
+	@SuppressWarnings("rawtypes")
 	public Response(String getrequest) {
 		super();
 		
 		Map peerdict = null;
 		
+		//Make sure this is a valid, bencoded dictonary
 		try {
 			peerdict = (Map) Bencoder2.decode(getrequest.getBytes());
-//			System.out.println("printing");
-//			ToolKit.printMap(peerdict, 0);
 		} catch (BencodingException e) {
 			System.err.println("Error decoding response to GET request.");
 			e.printStackTrace();
 		}
 		
-		final Iterator i = peerdict.keySet().iterator();
+		//Iterate through dictionary until peer list is found (heavily based on ToolKit.printMap())
+		final Iterator dict_iter = peerdict.keySet().iterator();
         Object key = null;
-        while (i.hasNext() && (key = i.next()) != null)
+        while (dict_iter.hasNext() && (key = dict_iter.next()) != null)
         {
         	String string_key = asString((ByteBuffer) key);
             if (string_key.equals("peers")){
             	
+            	//Grab peer list and iterate through it
             	ArrayList peerlist = (ArrayList) peerdict.get(key);
+            	Iterator peer_iter = peerlist.iterator();
             	
-            	Iterator iter = peerlist.iterator();
-            	
-            	while(iter.hasNext()){
-            		HashMap peer = (HashMap) iter.next();
-            		Iterator j = peer.keySet().iterator();
+            	while(peer_iter.hasNext()){
+            		
+            		//Grab each peer and iterate through it, looking for peer id, port, and IP
+            		HashMap peer = (HashMap) peer_iter.next();
+            		Iterator peerinfo_iter = peer.keySet().iterator();
             		
             		String temp_peer_id = null;
         			String temp_ip = null;
         			Integer temp_port = null;
             		
-            		while(j.hasNext()){
+            		while(peerinfo_iter.hasNext()){
             			
-            			Object next = j.next();
+            			Object next = peerinfo_iter.next();
+            			String temp_info = asString((ByteBuffer) next);
             			
-            			String argh = asString((ByteBuffer) next);
-            			
-            			if(argh.equals("peer id")){
+            			if(temp_info.equals("peer id")){
             				temp_peer_id = asString((ByteBuffer) peer.get(next));
-            			}else if(argh.equals("port")){
+            			}else if(temp_info.equals("port")){
             				temp_port = (Integer) peer.get(next);
-            			}else if(argh.equals("ip")){
+            			}else if(temp_info.equals("ip")){
             				temp_ip = asString((ByteBuffer) peer.get(next));
             			}
             			
             		}
         			
+            		//Create new Peer object and append it to the ArrayList
         			Peer new_peer = new Peer(temp_ip, temp_peer_id, temp_port);
-        			
         			this.peers.add(new_peer);
             	}
-            	
+            
+            //Grab other information as needed
             }else if(string_key.equals("interval")){
             	this.interval = (Integer) peerdict.get(key);
             }else if(string_key.equals("min interval")){
@@ -79,6 +85,7 @@ public class Response {
         }
 	}
 	
+	//shamelessly stolen from the forums, original author Prof. Moore
 	private static String asString(ByteBuffer buff){
 		  StringBuilder sb = new StringBuilder();
 		  byte[] b = buff.array();
@@ -92,6 +99,9 @@ public class Response {
 		  return sb.toString();
 		}
 
+	/**
+	 * Iterates through a Response's ArrayList of Peer objects and prints each one's info
+	 */
 	public void printPeers() {
 		Iterator<Peer> iter = this.peers.iterator();
 		
