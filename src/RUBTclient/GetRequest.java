@@ -1,5 +1,6 @@
 package RUBTclient;
 
+
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
@@ -18,25 +19,12 @@ public class GetRequest {
 	private int file_length;
 	private int port_num;
 	private String url;
-	//private String url_encoded;
-	
-	
-	
+		
 	 GetRequest(){
 		setTotal_downloaded(0);
 		setTotal_uploaded(0);
 	}
 		
-	public static void main(String[] args) throws Exception{
-		// TODO Auto-generated method stub
-		
-		String url ="http://www.mannyjl625.info/songfinder/getrequest.txt";
-		//byte[] byteArray = new byte[10];
-		GetRequest myRequest = new GetRequest();
-		
-		//System.out.println(myRequest.sendGetRequest(url));
-		//randomID();
-	}
 	
 	public void constructURL(String announce_url, ByteBuffer info_hash, int port_num, int file_length){   //construct url key/value pairs
 		
@@ -55,20 +43,15 @@ public class GetRequest {
 	}
 	
 	public String encodeHash(ByteBuffer info_hash){
-		//setUrl_encoded(URLEncoder.encode(getUrl(), "UTF-8"));
-		//System.out.println(getUrl_encoded());
 		String hash = "";
 		for(int i =0; i < 20; i++){
 			hash = hash + "%" + String.format("%02x", info_hash.get(i));
 			
 		}
-		System.out.println("encoded hash:" + hash);
-		
 		return hash;
 	}
 	public String sendGetRequest() throws Exception{   
 		
-		//URL obj = new URL("http://www.mannyjl625.info/songfinder/getrequest.txt");
 		URL obj = new URL(getUrl());
 		System.out.println("URL :" + getUrl());
 		URLConnection connection = obj.openConnection();
@@ -79,7 +62,6 @@ public class GetRequest {
 		String inputLine ;
 		String bencoded_response = "";
 		while((inputLine = in.readLine()) != null){
-			//System.out.println(inputLine);
 			bencoded_response = bencoded_response + inputLine;
 		}
 		in.close();
@@ -95,7 +77,6 @@ public class GetRequest {
 			letter = String.valueOf((char)(r.nextInt(26) + 65));
 			id = id+letter;
 		}
-		//System.out.println(id);
 		return id;
 	}
 
@@ -146,5 +127,4 @@ public class GetRequest {
 	public void setPort_num(int port_num) {
 		this.port_num = port_num;
 	}
-
 }
