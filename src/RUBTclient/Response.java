@@ -10,7 +10,7 @@ import edu.rutgers.cs.cs352.bt.util.ToolKit;
 public class Response {
 	
 	String message;
-	ArrayList<Peer> peers;
+	ArrayList<Peer> peers = new ArrayList<Peer>();
 	List peerdict;
 	Integer downloaded;
 	Integer complete;
@@ -20,23 +20,16 @@ public class Response {
 	public Response(String getrequest) {
 		super();
 		
-		
-		
 		Map peerdict = null;
-		
-		
 		
 		try {
 			peerdict = (Map) Bencoder2.decode(getrequest.getBytes());
-			System.out.println("printing");
-			ToolKit.printMap(peerdict, 0);
+//			System.out.println("printing");
+//			ToolKit.printMap(peerdict, 0);
 		} catch (BencodingException e) {
 			System.err.println("Error decoding response to GET request.");
 			e.printStackTrace();
 		}
-		
-		int depth = 0;
-		
 		
 		final Iterator i = peerdict.keySet().iterator();
         Object key = null;
@@ -44,7 +37,6 @@ public class Response {
         {
         	String string_key = asString((ByteBuffer) key);
             if (string_key.equals("peers")){
-            	System.out.println("peers detected");
             	
             	ArrayList peerlist = (ArrayList) peerdict.get(key);
             	
@@ -54,11 +46,11 @@ public class Response {
             		HashMap peer = (HashMap) iter.next();
             		Iterator j = peer.keySet().iterator();
             		
+            		String temp_peer_id = null;
+        			String temp_ip = null;
+        			Integer temp_port = null;
+            		
             		while(j.hasNext()){
-            			
-            			String temp_peer_id = null;
-            			String temp_ip = null;
-            			Integer temp_port = null;
             			
             			Object next = j.next();
             			
@@ -72,21 +64,12 @@ public class Response {
             				temp_ip = asString((ByteBuffer) peer.get(next));
             			}
             			
-            			System.out.println(temp_port);
-            			System.out.println(temp_peer_id);
-            			System.out.println(temp_ip);
-            			
-            			peers.add(new Peer(temp_ip,temp_peer_id,temp_port));
             		}
+        			
+        			Peer new_peer = new Peer(temp_ip, temp_peer_id, temp_port);
+        			
+        			this.peers.add(new_peer);
             	}
-            	
-            	
-            	
-            	
-            	
-            	
-            	
-            	
             	
             }else if(string_key.equals("interval")){
             	this.interval = (Integer) peerdict.get(key);
@@ -108,5 +91,18 @@ public class Response {
 		  }
 		  return sb.toString();
 		}
+
+	public void printPeers() {
+		Iterator<Peer> iter = this.peers.iterator();
+		
+		while(iter.hasNext()){
+			Peer temp = iter.next();
+			
+			System.out.println("IP: " + temp.ip);
+			System.out.println("Port: " + temp.port);
+			System.out.println("Peer ID: " + temp.peer_id);
+		}
+		
+	}
 
 }
