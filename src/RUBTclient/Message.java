@@ -31,5 +31,5 @@ public class Message
 		}
 		System.out.println(handshake[27]);
 	}
-	}
+}
 

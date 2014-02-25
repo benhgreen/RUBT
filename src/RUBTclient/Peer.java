@@ -2,6 +2,7 @@ package RUBTclient;
 
 import java.net.*;
 import java.io.*;
+import java.nio.ByteBuffer;
 
 public class Peer {
 	
@@ -16,7 +17,7 @@ public class Peer {
 		this.port = port;
 	}
 		
-	public void connectToPeer(Message handshake) throws IOException{
+	public void connectToPeer(byte[] handshake) throws IOException{
 		
 		Socket peerConnection = null;
 		OutputStream peerOutputStream = null;
@@ -31,5 +32,17 @@ public class Peer {
 		}catch(IOException e){
 			System.out.println("IOException");
 		}
+		//write Message object byte array and listen for response;
+		peerOutputStream.write(handshake);
+		
+		byte[] response = new byte[100];
+		
+		peerInputStream.read(response);
+		
+		System.out.println(response);
+		
+		peerOutputStream.close();
+		peerInputStream.close();
+		peerConnection.close();
 	}
 }
