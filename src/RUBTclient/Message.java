@@ -38,5 +38,5 @@ public class Message
 		}
 		return handshake;
 	}
-	}
+}
 
