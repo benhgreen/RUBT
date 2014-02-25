@@ -4,9 +4,11 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.util.Random;
+import java.nio.ByteBuffer;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 
+import edu.rutgers.cs.cs352.bt.TorrentInfo;
 
 public class GetRequest {
 
@@ -16,7 +18,7 @@ public class GetRequest {
 	private int file_length;
 	private int port_num;
 	private String url;
-	private String url_encoded;
+	//private String url_encoded;
 	
 	
 	
@@ -36,41 +38,52 @@ public class GetRequest {
 		//randomID();
 	}
 	
-	public void constructURL(String announce_url, String info_hash_byteArray, int port_num, int file_length){   //construct url key/value pairs
+	public void constructURL(String announce_url, ByteBuffer info_hash, int port_num, int file_length){   //construct url key/value pairs
 		
 		setFile_length(file_length);
 		setPort_num(port_num);
 		setLeft();
 		
-		String info_hash = "?info_hash="+info_hash_byteArray;
+		String info_hash_encoded = "?info_hash=" + encodeHash(info_hash);
 		String peer_id = "&peer_id=" + randomID();
 		String port = "&port=" + port_num;
 		String downloaded = "&downloaded=" + getTotal_downloaded();
 		String uploaded = "&uploaded=" + getTotal_uploaded();
 		String left =  "&left=" + getLeft();
 	
-		setUrl(announce_url + info_hash + peer_id + port + downloaded + uploaded+ left);
+		setUrl(announce_url + info_hash_encoded + peer_id + port + downloaded + uploaded+ left);
 	}
 	
-	public void encodeURL() throws Exception{
-		setUrl_encoded(URLEncoder.encode(getUrl(), "UTF-8"));
-		System.out.println(getUrl_encoded());
+	public String encodeHash(ByteBuffer info_hash){
+		//setUrl_encoded(URLEncoder.encode(getUrl(), "UTF-8"));
+		//System.out.println(getUrl_encoded());
+		String hash = "";
+		for(int i =0; i < 20; i++){
+			hash = hash + "%" + String.format("%02x", info_hash.get(i));
+			
+		}
+		System.out.println("encoded hash:" + hash);
+		
+		return hash;
 	}
 	public String sendGetRequest() throws Exception{   
 		
 		//URL obj = new URL("http://www.mannyjl625.info/songfinder/getrequest.txt");
 		URL obj = new URL(getUrl());
+		System.out.println("URL :" + getUrl());
 		URLConnection connection = obj.openConnection();
 		int contentLength = connection.getContentLength();
 		System.out.println("contentLength: " + contentLength);
 		
 		BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-		String inputLine;
+		String inputLine ;
+		String bencoded_response = "";
 		while((inputLine = in.readLine()) != null){
-			System.out.println(inputLine);
+			//System.out.println(inputLine);
+			bencoded_response = bencoded_response + inputLine;
 		}
 		in.close();
-		return "yo";
+		return bencoded_response;
 	}
 	
 	public static String randomID(){
@@ -82,7 +95,7 @@ public class GetRequest {
 			letter = String.valueOf((char)(r.nextInt(26) + 65));
 			id = id+letter;
 		}
-		System.out.println(id);
+		//System.out.println(id);
 		return id;
 	}
 
@@ -108,14 +121,6 @@ public class GetRequest {
 
 	public void setUrl(String url) {
 		this.url = url;
-	}
-
-	public String getUrl_encoded() {
-		return url_encoded;
-	}
-
-	public void setUrl_encoded(String url_encoded) {
-		this.url_encoded = url_encoded;
 	}
 
 	public int getTotal_uploaded() {
