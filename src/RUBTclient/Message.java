@@ -1,10 +1,12 @@
 package RUBTclient;
 
+import java.util.Arrays;
+
 public class Message 
 
 {
 	 private byte[] handshake = new byte[68];
-     private final byte[] handshake_consts = {0x13,0,0,0,0,0,0,0,0,'B','i','t','T','o','r','r','e','n','t',' ','p','r','o','t','c','o','l'};
+     private final byte[] handshake_consts = {0x13,0,0,0,0,0,0,0,0,'B','i','t','T','o','r','r','e','n','t',' ','p','r','o','t','o','c','o','l'};
 	
 	/**
 	 *something will go here eventually. 
@@ -13,23 +15,32 @@ public class Message
 	{
 				
 	}
-
-	public void handShake(byte[] info_hash)
+	public void handShake( byte[] info_hash)
 	{
+		char[] userid;
 		int shake_loc = 0;  //location of the handshake array that we are populating.
 		for(int i = 0; i<handshake_consts.length;i++)
 		{
 			handshake[shake_loc] = handshake_consts[i];
 			shake_loc++;
 		}
-		System.out.println(handshake_consts.length);
-		System.out.println(handshake[26]);
-		for(int j = 0; j < info_hash.length;j++)
+		for(int s = 0; s < info_hash.length;s++)
 		{
-			handshake[shake_loc] = info_hash[j];
+			handshake[shake_loc] = info_hash[s];
 			shake_loc++;
 		}
-		System.out.println(handshake[27]);
+		System.out.println(Arrays.toString(handshake));
+		System.out.println(Arrays.toString(info_hash));
+		GetRequest poop = new GetRequest();
+		userid=poop.getUser_id().toCharArray();
+		System.out.println(userid);
+		for(int i = 0;i<userid.length;i++ )
+		{
+			handshake[shake_loc] = (byte)userid[i];
+			shake_loc++;
+		}
+		
+		System.out.println(Arrays.toString(handshake));
 	}
 }
 
