@@ -6,7 +6,7 @@ public class Message
 
 {
 	 private byte[] handshake = new byte[68];
-     private final byte[] handshake_consts = {0x13,0,0,0,0,0,0,0,0,'B','i','t','T','o','r','r','e','n','t',' ','p','r','o','t','o','c','o','l'};
+     private final byte[] handshake_consts = {0x13,'B','i','t','T','o','r','r','e','n','t',' ','p','r','o','t','o','c','o','l',0,0,0,0,0,0,0,0};
 	
 	/**
 	 *something will go here eventually. 

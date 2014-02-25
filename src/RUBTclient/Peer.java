@@ -3,6 +3,7 @@ package RUBTclient;
 import java.net.*;
 import java.io.*;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 public class Peer {
 	
@@ -34,13 +35,9 @@ public class Peer {
 		}
 		//write Message object byte array and listen for response;
 		peerOutputStream.write(handshake);
-		
-		byte[] response = new byte[100];
-		
+		byte[] response = new byte[68];
 		peerInputStream.read(response);
-		
-		System.out.println(response);
-		
+		System.out.println(Arrays.toString(response));
 		peerOutputStream.close();
 		peerInputStream.close();
 		peerConnection.close();

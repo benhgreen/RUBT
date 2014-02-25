@@ -2,6 +2,7 @@ package RUBTclient;
 
 //import java.net.URL;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.io.*;
 
 import edu.rutgers.cs.cs352.bt.TorrentInfo;
@@ -51,6 +52,16 @@ public class RUBTclient {
 		
 		GetRequest myRequest = new GetRequest();
 		myRequest.constructURL(announce_url, info_hash, port_num, file_length);
+		Message myMessage = new Message();
+		byte[] handshake=myMessage.handShake(info_hash.array());
+		System.out.println(Arrays.toString(handshake));
+		Peer myPeer = new Peer("128.6.171.130","RUBT11UCWQNPODEKNJZK",30164);
+		try {
+			myPeer.connectToPeer(handshake);
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 		try{
 			System.out.println("bencoded stuff: " +  myRequest.sendGetRequest());
 		}catch(Exception e){
