@@ -72,8 +72,7 @@ public class Response {
             		}
         			
             		//Create new Peer object and append it to the ArrayList
-        			Peer new_peer = new Peer(temp_ip, temp_peer_id, temp_port);
-        			this.peers.add(new_peer);
+        			this.peers.add(new Peer(temp_ip, temp_peer_id, temp_port));
             	}
             
             //Grab other information as needed
@@ -103,14 +102,17 @@ public class Response {
 	 * Iterates through a Response's ArrayList of Peer objects and prints each one's info
 	 */
 	public void printPeers() {
-		Iterator<Peer> iter = this.peers.iterator();
+		System.out.println("Printing " + this.peers.size() + " peer(s):");
 		
+		Iterator<Peer> iter = this.peers.iterator();
+		int count = 0;
 		while(iter.hasNext()){
 			Peer temp = iter.next();
-			
+			System.out.println("Peer " + ++count + " of " + this.peers.size() + ":");
 			System.out.println("IP: " + temp.ip);
 			System.out.println("Port: " + temp.port);
 			System.out.println("Peer ID: " + temp.peer_id);
+			System.out.println("----------------------");
 		}
 		
 	}
