@@ -6,36 +6,32 @@ public class Message
 
 {
 	 private byte[] handshake = new byte[68];
-     private final byte[] handshake_consts = {0x13,'B','i','t','T','o','r','r','e','n','t',' ','p','r','o','t','o','c','o','l',0,0,0,0,0,0,0,0};
+	 private final byte[] handshake_consts = {0x13,'B','i','t','T','o','r','r','e','n','t',' ','p','r','o','t','o','c','o','l',0,0,0,0,0,0,0,0};
+	 private final byte[] have_conts = {0,0,0,5,4};
+	 //all non-payload messages
+	 private final byte[] choke = { 0,0,0,1,0};
+	 private final byte[] unchoke = {0,0,0,1,1};
+	 private final byte[] interested = {0,0,0,1,2};
+	 private final byte[] not_interested = {0,0,0,1,3};
+	 private final byte[] keep_alive = {0,0,0,0};
 	
-	/**
-	 *something will go here eventually. 
-	 */
 	public Message()
 	{
 				
 	}
+	/**
+	 * This method constructs a byte array that contains the handshake message
+	 * @param info_hash takes the info hash given by the .torrent file
+	 * @return returns a handshake in the form of a byte array  
+	 */
 	public byte[] handShake( byte[] info_hash)
 	{
-		char[] userid;
-		int shake_loc = 0;  //location of the handshake array that we are populating.
-		for(int i = 0; i<handshake_consts.length;i++)
-		{
-			handshake[shake_loc] = handshake_consts[i];
-			shake_loc++;
-		}
-		for(int s = 0; s < info_hash.length;s++)
-		{
-			handshake[shake_loc] = info_hash[s];
-			shake_loc++;
-		}
-		GetRequest poop = new GetRequest();
-		userid=poop.getUser_id().toCharArray();
-		for(int i = 0;i<userid.length;i++ )
-		{
-			handshake[shake_loc] = (byte)userid[i];
-			shake_loc++;
-		}
+		byte[] userid;
+		System.arraycopy(handshake_consts,0,handshake,0,28);// copies handshake constants
+		System.arraycopy(info_hash, 0, handshake,28 , 20);
+		GetRequest our_id = new GetRequest();
+		userid=our_id.getUser_id().getBytes();    //gets our user id, and then puts it into our handshake
+		System.arraycopy(userid, 0, handshake,48 , 20);
 		return handshake;
 	}
 }
