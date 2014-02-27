@@ -1,6 +1,7 @@
 package RUBTclient;
 
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.io.*;
 
 import edu.rutgers.cs.cs352.bt.TorrentInfo;
@@ -41,8 +42,6 @@ public class RUBTclient {
 			e.printStackTrace();
 		}
 		
-		System.out.println(torrentinfo.announce_url.toString());
-		
 		String announce_url = torrentinfo.announce_url.toString(); 
 		int port_num = 6881;
 		int file_length = torrentinfo.file_length;
@@ -50,11 +49,28 @@ public class RUBTclient {
 		
 		GetRequest myRequest = new GetRequest();
 		myRequest.constructURL(announce_url, info_hash, port_num, file_length);
+		Message myMessage = new Message();
+		String response_string = null;
+		byte[] handshake=myMessage.handShake(info_hash.array());
+		byte[] interested = myMessage.getInterested();
+		byte[] request = myMessage.request(0, 0, 16834);
+		System.out.println(Arrays.toString(handshake));
+		Peer myPeer = new Peer("128.6.171.130","RUBT11UCWQNPODEKNJZK",30164);
+		try {
+			myPeer.connectToPeer(handshake, interested, request);
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 		try{
-			System.out.println("bencoded data: " +  myRequest.sendGetRequest());
+			response_string = myRequest.sendGetRequest();
 		}catch(Exception e){
 			System.out.println("exception thrown sending get request");
 		};
+		
+		Response response = new Response(response_string);
+		response.printPeers();
+		
 	}
 
 }
