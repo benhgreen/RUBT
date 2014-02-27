@@ -1,6 +1,5 @@
 package RUBTclient;
 
-//import java.net.URL;
 import java.nio.ByteBuffer;
 import java.io.*;
 
@@ -52,13 +51,10 @@ public class RUBTclient {
 		GetRequest myRequest = new GetRequest();
 		myRequest.constructURL(announce_url, info_hash, port_num, file_length);
 		try{
-			System.out.println("bencoded stuff: " +  myRequest.sendGetRequest());
+			System.out.println("bencoded data: " +  myRequest.sendGetRequest());
 		}catch(Exception e){
-			//System.out.println(e.printStackTrace());
-			System.out.println("no dice");
+			System.out.println("exception thrown sending get request");
 		};
-			//System.out.println("url " + myRequest.getUrl());
-		
 	}
 
 }
