@@ -37,7 +37,7 @@ public class Peer {
 		peerOutputStream.write(handshake);
 		byte[] response = new byte[68];
 		peerInputStream.read(response);
-		System.out.println("handshake response: " + Arrays.toString(response));
+		//System.out.println("handshake response: " + Arrays.toString(response));
 		
 		
 		//verify data
@@ -47,21 +47,27 @@ public class Peer {
 		
 		response = new byte[68];
 		peerInputStream.read(response);
-		System.out.println("interested response1: " + Arrays.toString(response));
+		//System.out.println("interested response1: " + Arrays.toString(response));
 		
 		
 		response = new byte[68];
 		peerInputStream.read(response);
-		System.out.println("interested response2:  " + Arrays.toString(response));
+		//System.out.println("interested response2:  " + Arrays.toString(response));
 		
-		//peerOutputStream.flush();
-		//byte[] request2 = {0,0,1,3,6,0,0,5};
-		//peerOutputStream.write(request2);
+		peerOutputStream.flush();
+		if(response[4]==1)
+		{
+			peerOutputStream.write(request);
+		}
+			
+		
 		
 		response = new byte[68];
 		peerInputStream.read(response);
-		System.out.println("response3:  " + Arrays.toString(response));
-		
+		//System.out.println("response3:  " + Arrays.toString(response));
+		byte [] data_chunk   = new byte[16396]; //this is the byte array, the first 12 are not part of the torrent data.
+		peerInputStream.read(data_chunk);
+		//System.out.println("Data Chunk: " + Arrays.toString(data_chunk));
 		peerOutputStream.close();
 		peerInputStream.close();
 		peerConnection.close();
