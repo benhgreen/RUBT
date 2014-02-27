@@ -53,8 +53,7 @@ public class RUBTclient {
 		String response_string = null;
 		byte[] handshake=myMessage.handShake(info_hash.array());
 		byte[] interested = myMessage.getInterested();
-		byte[] request = myMessage.request(0, 0, 16834);
-		System.out.println(Arrays.toString(handshake));
+		byte[] request = myMessage.request(2, 0, 16384);
 		Peer myPeer = new Peer("128.6.171.130","RUBT11UCWQNPODEKNJZK",30164);
 		try {
 			myPeer.connectToPeer(handshake, interested, request);
