@@ -54,11 +54,9 @@ public class GetRequest {
 	public String sendGetRequest() throws Exception{   
 		
 		URL obj = new URL(getUrl());
-		System.out.println("URL :" + getUrl());
+		//System.out.println("URL :" + getUrl());
 		URLConnection connection = obj.openConnection();
 		int contentLength = connection.getContentLength();
-		System.out.println("contentLength: " + contentLength);
-		
 		BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
 		String inputLine ;
 		String bencoded_response = "";
