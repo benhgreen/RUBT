@@ -5,19 +5,21 @@ import java.io.*;
 //import java.nio.ByteBuffer;
 import java.util.Arrays;
 
+import edu.rutgers.cs.cs352.bt.TorrentInfo;
+
 public class Peer {
 	
 	String ip;
 	String peer_id;
 	Integer port;
+	DestFile destfile;
 	
-	
-	
-	public Peer(String ip, String peer_id, Integer port) {
+	public Peer(String ip, String peer_id, Integer port,DestFile destfile) {
 		super();
 		this.ip = ip;
 		this.peer_id = peer_id;
 		this.port = port;
+		this.destfile = destfile;
 	}
 		
 	public void connectToPeer(byte[] handshake, byte[] interested, byte[] request) throws IOException{
@@ -310,7 +312,57 @@ public class Peer {
 		byte [] data_chunk14 = new byte[690]; //this is the byte array, the first 12 are not part of the torrent data.
 		peerInputStream.read(data_chunk14);
 		System.out.println("Data Chunk14: " + Arrays.toString(data_chunk14));
+		byte [] piece_filler = new byte[16384];
 		
+		//adding piece 0
+		System.arraycopy(data_chunk1, 13, piece_filler, 0, 16384);
+		Piece zero_one = new Piece(piece_filler,0,0);
+		destfile.addPiece(zero_one);
+		System.arraycopy(data_chunk2, 13, piece_filler, 0, 16384);
+		Piece zero_two = new Piece(piece_filler,0,16384);
+		destfile.addPiece(zero_two);
+		//adding piece one
+		System.arraycopy(data_chunk3, 13, piece_filler, 0, 16384);
+		Piece one_one = new Piece(piece_filler,1,0);
+		destfile.addPiece(one_one);
+		System.arraycopy(data_chunk4, 13, piece_filler, 0, 16384);
+		Piece one_two = new Piece(piece_filler,1,16384);
+		destfile.addPiece(one_two);
+		//adding piece two 
+		System.arraycopy(data_chunk5, 13, piece_filler, 0, 16384);
+		Piece two_one = new Piece(piece_filler,2,0);
+		destfile.addPiece(two_one);
+		System.arraycopy(data_chunk6, 13, piece_filler, 0, 16384);
+		Piece two_two = new Piece(piece_filler,2,16384);
+		destfile.addPiece(two_two);
+		//adding piece 3
+		System.arraycopy(data_chunk7, 13, piece_filler, 0, 16384);
+		Piece three_one = new Piece(piece_filler,3,0);
+		destfile.addPiece(three_one);
+		System.arraycopy(data_chunk8, 13, piece_filler, 0, 16384);
+		Piece three_two = new Piece(piece_filler,3,16384);
+		destfile.addPiece(three_two);
+		//adding piece 4
+		System.arraycopy(data_chunk9, 13, piece_filler, 0, 16384);
+		Piece four_one = new Piece(piece_filler,4,0);
+		destfile.addPiece(four_one);
+		System.arraycopy(data_chunk10, 13, piece_filler, 0, 16384);
+		Piece four_two = new Piece(piece_filler,4,16384);
+		destfile.addPiece(four_two);
+		//adding piece 5
+		System.arraycopy(data_chunk11, 13, piece_filler, 0, 16384);
+		Piece five_one = new Piece(piece_filler,5,0);
+		destfile.addPiece(five_one);
+		System.arraycopy(data_chunk12, 13, piece_filler, 0, 16384);
+		Piece five_two = new Piece(piece_filler,5,16384);
+		destfile.addPiece(five_two);
+		//adding piece 6
+		System.arraycopy(data_chunk13, 13, piece_filler, 0, 16384);
+		Piece six_one = new Piece(piece_filler,6,0);
+		destfile.addPiece(six_one);
+		System.arraycopy(data_chunk14, 13, piece_filler, 0, 16384);
+		Piece six_two = new Piece(piece_filler,6,16384);
+		destfile.addPiece(six_two);
 		//************************
 		//end
 		
