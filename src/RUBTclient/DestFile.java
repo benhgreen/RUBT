@@ -36,5 +36,9 @@ public class DestFile {
 		}
 		
 	}
+	
+	public void addPiece(Piece piece){
+		//do things here
+	}
 
 }

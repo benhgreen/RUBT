@@ -27,6 +27,5 @@ public class Piece {
 		return offset;
 	}
 	
-	
 
 }
