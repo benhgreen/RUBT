@@ -34,6 +34,19 @@ public class Response {
 			e.printStackTrace();
 		}
 		
+		//check for 'failure reason'
+		final Iterator dict_iter_error = peerdict.keySet().iterator();
+        Object key_error = null;
+        while (dict_iter_error.hasNext() && (key_error = dict_iter_error.next()) != null)
+        {
+        	String string_key_error = asString((ByteBuffer) key_error);
+        	if(string_key_error.equals("failure reason")){
+        		System.err.println("Tracker-reported failure: Reason " + (Integer)peerdict.get(key_error));
+        	}
+        }
+		
+		
+		
 		//Iterate through dictionary until peer list is found (heavily based on ToolKit.printMap())
 		final Iterator dict_iter = peerdict.keySet().iterator();
         Object key = null;
