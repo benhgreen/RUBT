@@ -79,6 +79,6 @@ public class RUBTclient {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
-		
+		System.out.println("file length: " + file_length);
 	}
 }

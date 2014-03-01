@@ -55,6 +55,9 @@ public class Peer {
 		response = new byte[68];
 		peerInputStream.read(response);
 		System.out.println("interested response2:  " + Arrays.toString(response));
+	
+		//piece 0 part 1
+		//*******************************
 		
 		peerOutputStream.flush();
 		if(response[4]==1)
@@ -64,33 +67,252 @@ public class Peer {
 		}
 		
 		try{
-			Thread.sleep(2000);
+			Thread.sleep(1000);
 		}catch(InterruptedException ex){
 			Thread.currentThread().interrupt();
 		}
-		//response = new byte[68];
-		//peerInputStream.read(response);
-		//System.out.println("response3:  " + Arrays.toString(response));
-		
-		byte [] data_chunk1   = new byte[16396]; //this is the byte array, the first 12 are not part of the torrent data.
+		byte [] data_chunk1   = new byte[16397]; //this is the byte array, the first 12 are not part of the torrent data.
 		peerInputStream.read(data_chunk1);
-		System.out.println("Data Chunk1: " + Arrays.toString(data_chunk1));
+		//System.out.println("Data Chunk1: " + Arrays.toString(data_chunk1));
 
+		//******************************************
+		//piece 0 part 2
+		//******************************************
+		
 		Message message2 = new Message();
 		byte request2[] = message2.request(0, 16384, 16384);
-		
-		try{
-			Thread.sleep(2000);
-		}catch(InterruptedException ex){
-			Thread.currentThread().interrupt();
-		}
+
 		peerOutputStream.write(request2);
 		peerOutputStream.flush();
 		
-		//byte [] data_chunk2   = new byte[16396]; //this is the byte array, the first 12 are not part of the torrent data.
-		//peerInputStream.read(data_chunk2);
+		try{
+			Thread.sleep(1000);
+		}catch(InterruptedException ex){
+			Thread.currentThread().interrupt();
+		}
+		byte [] data_chunk2   = new byte[16397]; //this is the byte array, the first 12 are not part of the torrent data.
+		peerInputStream.read(data_chunk2);
 		//System.out.println("Data Chunk2: " + Arrays.toString(data_chunk2));
 
+		//*******************************
+		//piece 1 part 1
+		//*******************************
+		Message message3 = new Message();
+		byte request3[] = message3.request(1, 0, 16384);
+
+		peerOutputStream.write(request3);
+		peerOutputStream.flush();
+		
+		try{
+			Thread.sleep(1000);
+		}catch(InterruptedException ex){
+			Thread.currentThread().interrupt();
+		}
+		byte [] data_chunk3   = new byte[16397]; //this is the byte array, the first 12 are not part of the torrent data.
+		peerInputStream.read(data_chunk3);
+		//System.out.println("Data Chunk3: " + Arrays.toString(data_chunk3));
+		
+		//*******************************
+		//piece 1 part 2
+		//*******************************
+		Message message4 = new Message();
+		byte request4[] = message4.request(1, 16384, 16384);
+
+		peerOutputStream.write(request4);
+		peerOutputStream.flush();
+		
+		try{
+			Thread.sleep(1000);
+		}catch(InterruptedException ex){
+			Thread.currentThread().interrupt();
+		}
+		byte [] data_chunk4 = new byte[16397]; //this is the byte array, the first 12 are not part of the torrent data.
+		peerInputStream.read(data_chunk4);
+		//System.out.println("Data Chunk4: " + Arrays.toString(data_chunk4));
+		
+		//*******************************
+		//piece 2 part 1
+		//*******************************
+		Message message5 = new Message();
+		byte request5[] = message5.request(2, 0, 16384);
+
+		peerOutputStream.write(request5);
+		peerOutputStream.flush();
+		
+		try{
+			Thread.sleep(1000);
+		}catch(InterruptedException ex){
+			Thread.currentThread().interrupt();
+		}
+		byte [] data_chunk5   = new byte[16397]; //this is the byte array, the first 12 are not part of the torrent data.
+		peerInputStream.read(data_chunk5);
+		//System.out.println("Data Chunk5: " + Arrays.toString(data_chunk5));
+
+		
+		//*******************************
+		//piece 2 part 2
+		//*******************************
+		Message message6 = new Message();
+		byte request6[] = message6.request(2, 16384, 16384);
+
+		peerOutputStream.write(request6);
+		peerOutputStream.flush();
+		
+		try{
+			Thread.sleep(1000);
+		}catch(InterruptedException ex){
+			Thread.currentThread().interrupt();
+		}
+		byte [] data_chunk6   = new byte[16397]; //this is the byte array, the first 12 are not part of the torrent data.
+		peerInputStream.read(data_chunk6);
+		//System.out.println("Data Chunk6: " + Arrays.toString(data_chunk6));
+		
+		//*******************************
+		//piece 3 part 1
+		//*******************************
+		Message message7 = new Message();
+		byte request7[] = message7.request(3, 0, 16384);
+
+		peerOutputStream.write(request7);
+		peerOutputStream.flush();
+		
+		try{
+			Thread.sleep(1000);
+		}catch(InterruptedException ex){
+			Thread.currentThread().interrupt();
+		}
+		byte [] data_chunk7 = new byte[16397]; //this is the byte array, the first 12 are not part of the torrent data.
+		peerInputStream.read(data_chunk7);
+		//System.out.println("Data Chunk7: " + Arrays.toString(data_chunk7));
+		
+		//*******************************
+		//piece 3 part 2
+		//*******************************
+		Message message8 = new Message();
+		byte request8[] = message8.request(3, 16384, 16384);
+
+		peerOutputStream.write(request8);
+		peerOutputStream.flush();
+		
+		try{
+			Thread.sleep(1000);
+		}catch(InterruptedException ex){
+			Thread.currentThread().interrupt();
+		}
+		byte [] data_chunk8 = new byte[16397]; //this is the byte array, the first 12 are not part of the torrent data.
+		peerInputStream.read(data_chunk8);
+		//System.out.println("Data Chunk8: " + Arrays.toString(data_chunk8));
+		
+		//*******************************
+		//piece 4 part 1
+		//*******************************
+		Message message9 = new Message();
+		byte request9[] = message9.request(4, 0, 16384);
+
+		peerOutputStream.write(request9);
+		peerOutputStream.flush();
+		
+		try{
+			Thread.sleep(1000);
+		}catch(InterruptedException ex){
+			Thread.currentThread().interrupt();
+		}
+		byte [] data_chunk9 = new byte[16397]; //this is the byte array, the first 12 are not part of the torrent data.
+		peerInputStream.read(data_chunk9);
+		//System.out.println("Data Chunk9: " + Arrays.toString(data_chunk9));
+		
+		//*******************************
+		//piece 4 part 2
+		//*******************************
+		Message message10 = new Message();
+		byte request10[] = message10.request(4, 16384, 16384);
+
+		peerOutputStream.write(request10);
+		peerOutputStream.flush();
+		
+		try{
+			Thread.sleep(1000);
+		}catch(InterruptedException ex){
+			Thread.currentThread().interrupt();
+		}
+		byte [] data_chunk10 = new byte[16397]; //this is the byte array, the first 12 are not part of the torrent data.
+		peerInputStream.read(data_chunk10);
+		//System.out.println("Data Chunk10: " + Arrays.toString(data_chunk10));
+		
+		//*******************************
+		//piece 5 part 1
+		//*******************************
+		Message message11 = new Message();
+		byte request11[] = message11.request(5, 0, 16384);
+
+		peerOutputStream.write(request11);
+		peerOutputStream.flush();
+		
+		try{
+			Thread.sleep(1000);
+		}catch(InterruptedException ex){
+			Thread.currentThread().interrupt();
+		}
+		byte [] data_chunk11 = new byte[16397]; //this is the byte array, the first 12 are not part of the torrent data.
+		peerInputStream.read(data_chunk11);
+		//System.out.println("Data Chunk11: " + Arrays.toString(data_chunk11));
+		
+		//*******************************
+		//piece 5 part 2
+		//*******************************
+		Message message12 = new Message();
+		byte request12[] = message12.request(5,16384, 16384);
+
+		peerOutputStream.write(request12);
+		peerOutputStream.flush();
+		
+		try{
+			Thread.sleep(1000);
+		}catch(InterruptedException ex){
+			Thread.currentThread().interrupt();
+		}
+		byte [] data_chunk12 = new byte[16397]; //this is the byte array, the first 12 are not part of the torrent data.
+		peerInputStream.read(data_chunk12);
+		//System.out.println("Data Chunk12: " + Arrays.toString(data_chunk12));
+		
+		//*******************************
+		//piece 6 part 1
+		//*******************************
+		Message message13 = new Message();
+		byte request13[] = message13.request(6,0, 16384);
+
+		peerOutputStream.write(request13);
+		peerOutputStream.flush();
+		
+		try{
+			Thread.sleep(1000);
+		}catch(InterruptedException ex){
+			Thread.currentThread().interrupt();
+		}
+		byte [] data_chunk13 = new byte[16397]; //this is the byte array, the first 12 are not part of the torrent data.
+		peerInputStream.read(data_chunk13);
+		//System.out.println("Data Chunk13: " + Arrays.toString(data_chunk13));
+		
+		//*******************************
+		//piece 6 part 2 (tiny
+		//*******************************
+		Message message14 = new Message();
+		byte request14[] = message14.request(6,16384, 677);
+
+		peerOutputStream.write(request14);
+		peerOutputStream.flush();
+		
+		try{
+			Thread.sleep(1000);
+		}catch(InterruptedException ex){
+			Thread.currentThread().interrupt();
+		}
+		byte [] data_chunk14 = new byte[690]; //this is the byte array, the first 12 are not part of the torrent data.
+		peerInputStream.read(data_chunk14);
+		System.out.println("Data Chunk14: " + Arrays.toString(data_chunk14));
+		
+		//************************
+		//end
 		
 		peerOutputStream.close();
 		peerInputStream.close();
