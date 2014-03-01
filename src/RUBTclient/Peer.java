@@ -313,6 +313,7 @@ public class Peer {
 		peerInputStream.read(data_chunk14);
 		System.out.println("Data Chunk14: " + Arrays.toString(data_chunk14));
 		byte [] piece_filler = new byte[16384];
+		byte [] last_one = new byte[677];
 		
 		//adding piece 0
 		System.arraycopy(data_chunk1, 13, piece_filler, 0, 16384);
@@ -360,8 +361,8 @@ public class Peer {
 		System.arraycopy(data_chunk13, 13, piece_filler, 0, 16384);
 		Piece six_one = new Piece(piece_filler,6,0);
 		destfile.addPiece(six_one);
-		System.arraycopy(data_chunk14, 13, piece_filler, 0, 16384);
-		Piece six_two = new Piece(piece_filler,6,16384);
+		System.arraycopy(data_chunk14, 13, last_one, 0, 677);
+		Piece six_two = new Piece(last_one,6,16384);
 		destfile.addPiece(six_two);
 		//************************
 		//end
