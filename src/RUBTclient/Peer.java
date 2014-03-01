@@ -64,7 +64,7 @@ public class Peer {
 		}
 		
 		try{
-			Thread.sleep(1000);
+			Thread.sleep(2000);
 		}catch(InterruptedException ex){
 			Thread.currentThread().interrupt();
 		}
@@ -76,26 +76,21 @@ public class Peer {
 		peerInputStream.read(data_chunk1);
 		System.out.println("Data Chunk1: " + Arrays.toString(data_chunk1));
 
-
 		Message message2 = new Message();
 		byte request2[] = message2.request(0, 16384, 16384);
 		
-		
-		
 		try{
-			Thread.sleep(1000);
+			Thread.sleep(2000);
 		}catch(InterruptedException ex){
 			Thread.currentThread().interrupt();
 		}
 		peerOutputStream.write(request2);
 		peerOutputStream.flush();
 		
-		byte [] data_chunk2   = new byte[16396]; //this is the byte array, the first 12 are not part of the torrent data.
-		peerInputStream.read(data_chunk2);
-		System.out.println("Data Chunk2: " + Arrays.toString(data_chunk2));
+		//byte [] data_chunk2   = new byte[16396]; //this is the byte array, the first 12 are not part of the torrent data.
+		//peerInputStream.read(data_chunk2);
+		//System.out.println("Data Chunk2: " + Arrays.toString(data_chunk2));
 
-		
-		
 		
 		peerOutputStream.close();
 		peerInputStream.close();

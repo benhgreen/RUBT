@@ -49,12 +49,14 @@ public class RUBTclient {
 		}
 		
 		String announce_url = torrentinfo.announce_url.toString(); 
-		int port_num = 6887;
+		int port_num = 6881;
 		int file_length = torrentinfo.file_length;
 		ByteBuffer info_hash = torrentinfo.info_hash;
 		
 		GetRequest myRequest = new GetRequest();
 		myRequest.constructURL(announce_url, info_hash, port_num, file_length);
+		
+		
 		Message myMessage = new Message();
 		String response_string = null;
 		byte[] handshake=myMessage.handShake(info_hash.array());
@@ -67,11 +69,9 @@ public class RUBTclient {
 		}catch(Exception e){
 			System.out.println("exception thrown sending get request");
 		};
-		//System.out.println("peer_id " + myRequest.getUser_id());
-		
 		
 		Response response = new Response(response_string);
-		//response.printPeers();
+		response.printPeers();
 		
 		try {
 			myPeer.connectToPeer(handshake, interested, request);
@@ -79,13 +79,6 @@ public class RUBTclient {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
-		
-		/*
-		try{
-			Thread.sleep(6000);
-		}catch(InterruptedException ex){
-			Thread.currentThread().interrupt();
-		}*/
 		
 	}
 }
