@@ -19,7 +19,8 @@ public class GetRequest {
 	private int file_length;
 	private int port_num;
 	private String url;
-	private static String usrid;	
+	private static String usrid;
+	private String encodedInfoHash;
 	 GetRequest(){
 		setTotal_downloaded(0);
 		setTotal_uploaded(0);
@@ -69,12 +70,17 @@ public class GetRequest {
 	
 	public static void randomID(){
 		String id = "GROUP4";
-		String letter;
+		String randomChar;
+		int randomKey;
 		Random r = new Random();
 		
 		while(id.length()<20){
-			letter = String.valueOf((char)(r.nextInt(26) + 65));
-			id = id+letter;
+			randomKey = r.nextInt(36);
+			if(randomKey < 26)
+				randomChar = String.valueOf((char)(randomKey + 65));
+			else
+				randomChar = String.valueOf((char)(randomKey + 22));
+			id = id+randomChar;
 		}
 		usrid=id;
 	}
@@ -128,5 +134,15 @@ public class GetRequest {
 
 	public void setPort_num(int port_num) {
 		this.port_num = port_num;
+	}
+
+
+	public String getEncodedInfoHash() {
+		return encodedInfoHash;
+	}
+
+
+	public void setEncodedInfoHash(String encodedInfoHash) {
+		this.encodedInfoHash = encodedInfoHash;
 	}
 }

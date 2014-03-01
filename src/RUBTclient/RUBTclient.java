@@ -1,13 +1,19 @@
 package RUBTclient;
 
+
+
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.io.*;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import edu.rutgers.cs.cs352.bt.TorrentInfo;
 import edu.rutgers.cs.cs352.bt.exceptions.BencodingException;
 import edu.rutgers.cs.cs352.bt.util.Bencoder2;
 import edu.rutgers.cs.cs352.bt.util.ToolKit;
+
+
 
 public class RUBTclient {
 	
@@ -55,6 +61,16 @@ public class RUBTclient {
 		byte[] interested = myMessage.getInterested();
 		byte[] request = myMessage.request(2, 0, 16384);
 		Peer myPeer = new Peer("128.6.171.130","RUBT11UCWQNPODEKNJZK",30164);
+		
+		try{
+			response_string = myRequest.sendGetRequest();
+		}catch(Exception e){
+			System.out.println("exception thrown sending get request");
+		};
+		System.out.println("peer_id " + myRequest.getUser_id());
+		//Response response = new Response(response_string);
+		//response.printPeers();
+		
 		try {
 			myPeer.connectToPeer(handshake, interested, request);
 		} catch (IOException e1) {
@@ -62,14 +78,10 @@ public class RUBTclient {
 			e1.printStackTrace();
 		}
 		try{
-			response_string = myRequest.sendGetRequest();
-		}catch(Exception e){
-			System.out.println("exception thrown sending get request");
-		};
-		
-		Response response = new Response(response_string);
-		response.printPeers();
+			Thread.sleep(6000);
+		}catch(InterruptedException ex){
+			Thread.currentThread().interrupt();
+		}
 		
 	}
-
 }
