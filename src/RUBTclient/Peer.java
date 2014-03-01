@@ -11,6 +11,8 @@ public class Peer {
 	String peer_id;
 	Integer port;
 	
+	
+	
 	public Peer(String ip, String peer_id, Integer port) {
 		super();
 		this.ip = ip;
@@ -56,16 +58,45 @@ public class Peer {
 		
 		peerOutputStream.flush();
 		if(response[4]==1)
-		{
+		{	
+			System.out.println("got unchoked");
 			peerOutputStream.write(request);
 		}
 		
-		response = new byte[68];
-		peerInputStream.read(response);
-		System.out.println("response3:  " + Arrays.toString(response));
-		byte [] data_chunk   = new byte[16396]; //this is the byte array, the first 12 are not part of the torrent data.
-		peerInputStream.read(data_chunk);
-		System.out.println("Data Chunk: " + Arrays.toString(data_chunk));
+		try{
+			Thread.sleep(1000);
+		}catch(InterruptedException ex){
+			Thread.currentThread().interrupt();
+		}
+		//response = new byte[68];
+		//peerInputStream.read(response);
+		//System.out.println("response3:  " + Arrays.toString(response));
+		
+		byte [] data_chunk1   = new byte[16396]; //this is the byte array, the first 12 are not part of the torrent data.
+		peerInputStream.read(data_chunk1);
+		System.out.println("Data Chunk1: " + Arrays.toString(data_chunk1));
+
+
+		Message message2 = new Message();
+		byte request2[] = message2.request(0, 16384, 16384);
+		
+		
+		
+		try{
+			Thread.sleep(1000);
+		}catch(InterruptedException ex){
+			Thread.currentThread().interrupt();
+		}
+		peerOutputStream.write(request2);
+		peerOutputStream.flush();
+		
+		byte [] data_chunk2   = new byte[16396]; //this is the byte array, the first 12 are not part of the torrent data.
+		peerInputStream.read(data_chunk2);
+		System.out.println("Data Chunk2: " + Arrays.toString(data_chunk2));
+
+		
+		
+		
 		peerOutputStream.close();
 		peerInputStream.close();
 		peerConnection.close();

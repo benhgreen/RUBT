@@ -57,8 +57,14 @@ public class GetRequest {
 		URL obj = new URL(getUrl());
 		//System.out.println("URL :" + getUrl());
 		URLConnection connection = obj.openConnection();
+		System.out.println("connected1");
+
 		int contentLength = connection.getContentLength();
+		System.out.println("connected2");
+
 		BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+		System.out.println("connected3");
+
 		String inputLine ;
 		String bencoded_response = "";
 		while((inputLine = in.readLine()) != null){
