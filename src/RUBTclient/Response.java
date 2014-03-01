@@ -85,7 +85,7 @@ public class Response {
             		}
         			
             		//Create new Peer object and append it to the ArrayList
-        			this.peers.add(new Peer(temp_ip, temp_peer_id, temp_port));
+        			this.peers.add(new Peer(temp_ip, temp_peer_id, temp_port,null));
             	}
             
             //Grab other information as needed

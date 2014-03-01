@@ -62,8 +62,8 @@ public class RUBTclient {
 		byte[] handshake=myMessage.handShake(info_hash.array());
 		byte[] interested = myMessage.getInterested();
 		byte[] request = myMessage.request(0, 0, 16384);
-		Peer myPeer = new Peer("128.6.171.130","RUBT11UCWQNPODEKNJZK",30164);
-		
+		DestFile myDest = new DestFile("hello.txt",torrentinfo); 
+		Peer myPeer = new Peer("128.6.171.130","RUBT11UCWQNPODEKNJZK",30164,myDest);
 		try{
 			response_string = myRequest.sendGetRequest();
 		}catch(Exception e){
