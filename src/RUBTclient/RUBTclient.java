@@ -94,11 +94,26 @@ public class RUBTclient {
 		}
 		System.out.println("sent interested");
 		
-		//send started event to traker
+		//send started event to tracker
+		try{myRequest.sendEvent("started", myPeer.downloaded);
+		}catch(Exception e){System.out.println("send start event exception");}
 		
 		DestFile resultFile = myPeer.downloadPieces(torrentinfo.file_length);
 		
-		//send completed event to traker
+		if(resultFile == null){
+			System.out.println("corrupted download");
+			try{myRequest.sendEvent("stopped", myPeer.downloaded);}
+			catch(Exception e){System.out.println("send stopped event exception");}
+			System.exit(0);
+		}
+		//send completed event to tracker
+		try{
+			myRequest.sendEvent("completed", myPeer.downloaded);
+		}catch(Exception e){
+			System.out.println("send completed event exception");
+		}
+		
+		
 		
 		myPeer.closeConnections();
 		
