@@ -13,10 +13,10 @@ public class DestFile {
 	RandomAccessFile dest;
 	
 	public DestFile(String name, TorrentInfo torrentinfo){
-		this.name = "hello.txt";
+		this.name = name;
 		this.torrentinfo = torrentinfo;
 		try {
-			this.dest = new RandomAccessFile("hello.txt","rw");
+			this.dest = new RandomAccessFile(name,"rw");
 			//dest.setLength(torrentinfo.file_length);
 			dest.setLength(100);
 		} catch (IOException e) {
