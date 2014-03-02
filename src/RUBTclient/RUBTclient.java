@@ -25,6 +25,21 @@ public class RUBTclient {
 		//prepare file stream
 		FileInputStream fileInputStream = null;
 		File torrent = new File(torrentname);
+		if(torrent.exists()){
+			System.out.println("Output target file already exists. Type 'ow' to overwrite.");
+			BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in));
+			String answer = null;
+			try {
+				answer = bufferedReader.readLine();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			if(!answer.equals("overwrite")){
+				System.exit(0);
+			}
+			
+		}
 		TorrentInfo torrentinfo = null;
 		
 		byte[] torrentbytes = new byte[(int)torrent.length()];
