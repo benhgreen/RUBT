@@ -26,6 +26,4 @@ public class Piece {
 	public int getOffset() {
 		return offset;
 	}
-	
-
 }

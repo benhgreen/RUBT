@@ -1,21 +1,24 @@
 package RUBTclient;
 
 import java.nio.ByteBuffer;
-import java.util.Arrays;
+//import java.util.Arrays;
 
 public class Message 
 
 {
+	 //message headers
 	 private final byte[] handshake_consts = {0x13,'B','i','t','T','o','r','r','e','n','t',' ','p','r','o','t','o','c','o','l',0,0,0,0,0,0,0,0};
 	 private final byte[] have_consts = {0,0,0,5,4};
 	 private final byte[] request_consts = {0,0,0,0xD,6};
-	//all non-payload messages
+	
+	 //all non-payload messages
 	 private final byte[] choke = { 0,0,0,1,0};
 	 private final byte[] unchoke = {0,0,0,1,1};
 	 private final byte[] interested = {0,0,0,1,2};
 	 private final byte[] not_interested = {0,0,0,1,3};
 	 private final byte[] keep_alive = {0,0,0,0};
 	
+	 //Message object contructor
 	public Message()
 	{
 				
