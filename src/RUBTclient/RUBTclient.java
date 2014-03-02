@@ -66,7 +66,7 @@ public class RUBTclient {
 		
 		String[] peer_info = new Response(response_string).getValidPeer();
 		Peer myPeer = null;
-		DestFile myDest = new DestFile("hello.txt", torrentinfo);
+		DestFile myDest = new DestFile(args[1], torrentinfo);
 		if(peer_info != null){
 			myPeer = new Peer(peer_info[1], peer_info[0], Integer.parseInt(peer_info[2]), myDest);
 		}else{
@@ -99,6 +99,8 @@ public class RUBTclient {
 		
 		
 		System.out.println("file length: " + file_length);
+		
+		resultFile.close();
 		
 	}
 }

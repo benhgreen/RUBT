@@ -36,6 +36,23 @@ public class DestFile {
 	}
 	
 	public void addPiece(Piece piece){
-		//do things here
+		try {
+			long target = piece.piece*torrentinfo.piece_length + piece.offset;
+			dest.seek(target);
+			dest.write(piece.data);
+			System.out.println("added part of piece " + piece.piece + "to pos " + target);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	public void close(){
+		try {
+			this.dest.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 }
