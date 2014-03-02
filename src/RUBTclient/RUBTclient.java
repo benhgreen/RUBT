@@ -71,7 +71,6 @@ public class RUBTclient {
 		String[] peer_info = new Response(response_string).getValidPeer();
 		Peer myPeer = null;
 		DestFile myDest = new DestFile("hello.txt", torrentinfo);
-		/*
 		if(peer_info != null){
 			myPeer = new Peer(peer_info[1], peer_info[0], Integer.parseInt(peer_info[2]), myDest);
 		}else{
@@ -98,20 +97,12 @@ public class RUBTclient {
 			System.exit(0);
 		}
 		System.out.println("sent interested");
-
-		/*
 		
-		byte[] request = myMessage.request(0, 0, 16384);
-		DestFile myDest = new DestFile("hello.txt",torrentinfo); 
-		Peer myPeer = new Peer("128.6.171.130","RUBT11UCWQNPODEKNJZK",30164,myDest);
+		DestFile resultFile = myPeer.downloadPieces(torrentinfo.file_length);
+		myPeer.closeConnections();
 		
-		try {
-			myPeer.connectToPeer(handshake, interested, request);
-		} catch (IOException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}*/
-		System.out.println("file length: " + file_length);
+		
+		//System.out.println("file length: " + file_length);
 		
 	}
 }
