@@ -51,55 +51,65 @@ public class Peer {
 		return 1;
 	}
 	
-	/**handshakePeer() sends the handshake message
+	/**handshakePeer() sends the handshake message and reads the peers handshake and bitfield
 	 * @param handshake
 	 * @return 1 if successful/0 if failed
 	 */
 	public int handshakePeer(byte[] handshake){
 		
-		byte[] response = new byte[68];		
+		byte[] response = new byte[68];
+		byte[] bitfield = new byte[6];
 		//sends handshake message and reads response
 		try{
 			peerOutputStream.write(handshake);
 			peerOutputStream.flush();
 			wait(1000);
 			peerInputStream.read(response);
+			
+			wait(1000);
+			peerInputStream.read(bitfield);
+			peerOutputStream.flush();
 		}catch(IOException e){
 			return 0;
 		}
 		System.out.println("handshake response: " + Arrays.toString(response));
 		//verify info hash
 		//if correct
+		
+		System.out.println("bitfield response: " + Arrays.toString(bitfield));
 		return 1;
 		//else return 0
 	}
 	
-	/**sendInterested() sends the interested message and reads the unchoke and bitfield response
+	/**sendInterested() sends the interested message and reads the unchoke response
 	 * @param interested byte array from message object
 	 * @return int 1 if success/0 if failure
 	 */
 	public int sendInterested(byte[] interested){
 		
-		byte[] bitfield = new byte[6];
 		byte[] unchoke = new byte[6];
 		
-		//sends interested message and reads the bitfield and unchoke message
+		//sends interested message and reads the unchoke message
 		try{
 			peerOutputStream.write(interested);	
-			wait(1000);
-			peerInputStream.read(bitfield);
-			peerOutputStream.flush();
-			System.out.println("bitfield response: " + Arrays.toString(bitfield));
-			
 			wait(1000);
 			peerInputStream.read(unchoke);
 			peerOutputStream.flush();
 			System.out.println("unchoke response:  " + Arrays.toString(unchoke));
+			int timer;
+			//while()
 			//check unchoked
+			
 		}catch(IOException e){
 			return 0;
 		}
 		return 1;
+	}
+	public int checkUnchoked(byte[] response){
+		if(response[4]==1){
+			return 1;
+		}
+		return 0;
 	}
 	
 	

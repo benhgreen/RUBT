@@ -112,8 +112,12 @@ public class RUBTclient {
 		//send handshake
 		byte[] handshake=myMessage.handShake(info_hash.array());
 		System.out.println("sent handshake");
-		if(myPeer.handshakePeer(handshake)==0){
+		int handshake_status = myPeer.handshakePeer(handshake);
+		if(handshake_status==0){
 			System.out.println("failed sending handshake");
+			System.exit(0);
+		}else if (handshake_status==-1){
+			System.out.println("info_hash from peer didn't match");
 			System.exit(0);
 		}
 
