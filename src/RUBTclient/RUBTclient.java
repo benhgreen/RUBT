@@ -43,7 +43,6 @@ public class RUBTclient {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
 		//System.out.println(Integer.toBinaryString(-2));
 		
 		String announce_url = torrentinfo.announce_url.toString(); 
@@ -95,7 +94,12 @@ public class RUBTclient {
 		}
 		System.out.println("sent interested");
 		
+		//send started event to traker
+		
 		DestFile resultFile = myPeer.downloadPieces(torrentinfo.file_length);
+		
+		//send completed event to traker
+		
 		myPeer.closeConnections();
 		
 		

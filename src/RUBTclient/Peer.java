@@ -59,7 +59,7 @@ public class Peer {
 			return 0;
 		}
 		System.out.println("handshake response: " + Arrays.toString(response));
-		//verify data
+		//verify info hash
 		//if correct
 		return 1;
 		//else return 0
