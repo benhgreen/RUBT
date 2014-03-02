@@ -137,6 +137,7 @@ public class Peer {
 			System.arraycopy(piece_filler1, 0, piece_filler_final,0,piece_filler1.length);
 			System.arraycopy(piece_filler2, 0, piece_filler_final, piece_filler1.length, piece_filler2.length);
 			piece = new Piece(piece_filler_final,index,0);
+			destfile.verify(piece);
 			destfile.addPiece(piece);
 			index++;
 		}
