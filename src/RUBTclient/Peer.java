@@ -98,7 +98,7 @@ public class Peer {
 			return null;
 		}
 		downloaded = downloaded + (size-13);
-		System.out.println("downloaded: "+downloaded+" bytes");
+		//System.out.println("downloaded: "+downloaded+" bytes");
 		//verify?
 		return data_chunk;
 	}
@@ -119,9 +119,9 @@ public class Peer {
 			data_chunk = getChunk(request,16397);
 			System.arraycopy(data_chunk, 13, piece_filler, 0, chunk_size);
 
-			if(index == 0)
+			//if(index < 2)
 				//System.out.println(Arrays.toString(request));
-				System.out.println(Arrays.toString(piece_filler));
+				//System.out.println(Arrays.toString(piece_filler));
 
 			piece = new Piece(piece_filler,index,0);
 			destfile.addPiece(piece);
