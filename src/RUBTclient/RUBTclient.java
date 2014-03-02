@@ -9,7 +9,7 @@ import edu.rutgers.cs.cs352.bt.exceptions.BencodingException;
 public class RUBTclient {
 	
 	public static void main(String[] args){
-		
+		int max_request = 16384;
 		//verifies command line args
 		if(args.length != 2){
 			System.err.println("Usage: java RUBT <torrent> <destination>");
@@ -112,7 +112,7 @@ public class RUBTclient {
 		//send handshake
 		byte[] handshake=myMessage.handShake(info_hash.array());
 		System.out.println("sent handshake");
-		if(myPeer.handshakePeer(handshake)==0){
+		if(myPeer.handshakePeer(handshake,info_hash.array())==0){
 			System.out.println("failed sending handshake");
 			System.exit(0);
 		}
@@ -127,8 +127,7 @@ public class RUBTclient {
 		try{myRequest.sendEvent("started", myPeer.downloaded);
 		}catch(Exception e){System.out.println("send start event exception");}
 		
-		DestFile resultFile = myPeer.downloadPieces(torrentinfo.file_length, torrentinfo.piece_length, 13);
-		
+		DestFile resultFile = myPeer.downloadPieces(torrentinfo.file_length, torrentinfo.piece_length,myMessage.getRequest_Prefix());
 		//data from peer failed to verify after hashing/corrupt download
 		if(resultFile == null){
 			System.out.println("corrupted download. quitting...");
