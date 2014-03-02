@@ -9,15 +9,15 @@ import java.util.Arrays;
  */
 public class Peer {
 	
-	String 		ip;          	//ip address of peer
-	String 		peer_id;		//identifying name of peer
-	int 		port;			//port number to access the peer
-	DestFile 	destfile;		//destfile object returned after download completes
+	private String  	ip;          	//ip address of peer
+	private String 		peer_id;		//identifying name of peer
+	private int 		port;			//port number to access the peer
+	private DestFile 	destfile;		//destfile object returned after download completes
 	
-	int 			downloaded;			//data downloaded from tracker not including header
-	Socket 			peerConnection;		//socket connection to peer
-	OutputStream	peerOutputStream;	//OuputStream to peer for sending messages
-	InputStream 	peerInputStream;	//InputStream to peer for reading responses
+	private int 			downloaded;			//data downloaded from tracker not including header
+	private Socket 			peerConnection;		//socket connection to peer
+	private OutputStream	peerOutputStream;	//OuputStream to peer for sending messages
+	private InputStream 	peerInputStream;	//InputStream to peer for reading responses
 	
 	public Peer(String ip, String peer_id, Integer port,DestFile destfile) {
 		super();
@@ -197,5 +197,45 @@ public class Peer {
 	public void wait(int milliseconds){
 		try{Thread.sleep(milliseconds);}
 		catch(InterruptedException ex){Thread.currentThread().interrupt();}
+	}
+
+	public String getIp() {
+		return ip;
+	}
+
+	public void setIp(String ip) {
+		this.ip = ip;
+	}
+
+	public String getPeer_id() {
+		return peer_id;
+	}
+
+	public void setPeer_id(String peer_id) {
+		this.peer_id = peer_id;
+	}
+
+	public int getPort() {
+		return port;
+	}
+
+	public void setPort(int port) {
+		this.port = port;
+	}
+
+	public int getDownloaded() {
+		return downloaded;
+	}
+
+	public void setDownloaded(int downloaded) {
+		this.downloaded = downloaded;
+	}
+
+	public InputStream getPeerInputStream() {
+		return peerInputStream;
+	}
+
+	public void setPeerInputStream(InputStream peerInputStream) {
+		this.peerInputStream = peerInputStream;
 	}
 }

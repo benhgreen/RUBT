@@ -124,7 +124,7 @@ public class RUBTclient {
 			System.exit(0);
 		}
 		//send started event to tracker
-		try{myRequest.sendEvent("started", myPeer.downloaded);
+		try{myRequest.sendEvent("started", myPeer.getDownloaded());
 		}catch(Exception e){System.out.println("send start event exception");}
 		
 		DestFile resultFile = myPeer.downloadPieces(torrentinfo.file_length, torrentinfo.piece_length, 13);
@@ -132,13 +132,13 @@ public class RUBTclient {
 		//data from peer failed to verify after hashing/corrupt download
 		if(resultFile == null){
 			System.out.println("corrupted download. quitting...");
-			try{myRequest.sendEvent("stopped", myPeer.downloaded);}
+			try{myRequest.sendEvent("stopped", myPeer.getDownloaded());}
 			catch(Exception e){System.out.println("send stopped event exception");}
 			System.exit(0);
 		}
 		
 		//send completed event to tracker
-		try{myRequest.sendEvent("completed", myPeer.downloaded);}
+		try{myRequest.sendEvent("completed", myPeer.getDownloaded());}
 		catch(Exception e){System.out.println("send completed event exception");}
 		
 		//close all sockets and streams to peer

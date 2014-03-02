@@ -115,9 +115,9 @@ public class Response {
 		while(iter.hasNext()){
 			Peer temp = iter.next();
 			System.out.println("Peer " + ++count + " of " + this.peers.size() + ":");
-			System.out.println("IP: " + temp.ip);
-			System.out.println("Port: " + temp.port);
-			System.out.println("Peer ID: " + temp.peer_id);
+			System.out.println("IP: " + temp.getIp());
+			System.out.println("Port: " + temp.getPort());
+			System.out.println("Peer ID: " + temp.getPeer_id());
 			System.out.println("----------------------");
 		}
 		
@@ -132,10 +132,10 @@ public class Response {
 		//0 IP address, 1 port, 2 peer_id
 		while(iter.hasNext()){
 			Peer temp = iter.next();
-			if(temp.peer_id.startsWith("RUBT11") && temp.ip.equals("128.6.171.130")){
-				results[0] = temp.peer_id;
-				results[1] = temp.ip;
-				results[2] = Integer.toString(temp.port);
+			if(temp.getPeer_id().startsWith("RUBT11") && temp.getIp().equals("128.6.171.130")){
+				results[0] = temp.getPeer_id();
+				results[1] = temp.getIp();
+				results[2] = Integer.toString(temp.getPort());
 				return results;
 			}
 		}
