@@ -6,19 +6,19 @@ import java.nio.ByteBuffer;
 public class Message 
 
 {
+	private final int request_prefix = 0xD;	
 	 //message headers
-	 private final byte[] handshake_consts = {0x13,'B','i','t','T','o','r','r','e','n','t',' ','p','r','o','t','o','c','o','l',0,0,0,0,0,0,0,0};
-	 private final byte[] have_consts = {0,0,0,5,4};
-	 private final byte[] request_consts = {0,0,0,0xD,6};
+	private final byte[] handshake_consts = {0x13,'B','i','t','T','o','r','r','e','n','t',' ','p','r','o','t','o','c','o','l',0,0,0,0,0,0,0,0};
+	private final byte[] have_consts = {0,0,0,5,4};
+	private final byte[] request_consts = {0,0,0,0xD,6};
+	//all non-payload messages
+	private final byte[] choke = { 0,0,0,1,0};
+	private final byte[] unchoke = {0,0,0,1,1};
+	private final byte[] interested = {0,0,0,1,2};
+	private final byte[] not_interested = {0,0,0,1,3};
+	private final byte[] keep_alive = {0,0,0,0};
 	
-	 //all non-payload messages
-	 private final byte[] choke = { 0,0,0,1,0};
-	 private final byte[] unchoke = {0,0,0,1,1};
-	 private final byte[] interested = {0,0,0,1,2};
-	 private final byte[] not_interested = {0,0,0,1,3};
-	 private final byte[] keep_alive = {0,0,0,0};
-	
-	 //Message object contructor
+	 //Message object constructor
 	public Message()
 	{
 				
@@ -26,7 +26,7 @@ public class Message
 	/**
 	 * This method constructs a byte array that contains the handshake message
 	 * @param info_hash takes the info hash given by the .torrent file
-	 * @return returns a handshake in the form of a byte array  
+	 * @return returns a handshake message in the form of a byte array  
 	 */
 	public byte[] handShake( byte[] info_hash)
 	{
@@ -58,25 +58,50 @@ public class Message
 		return request.array();
 	}
 	
+	/**
+	 * @return choke message
+	 */
 	public byte[] getChoke() 
 	{
 		return choke;
 	}
+	/**
+	 * @return unchoke message
+	 */
 	public byte[] getUnchoke() 
 	{
 		return unchoke;
 	}
+	
+	/**
+	 * @return Interested message
+	 */
 	public byte[] getInterested() 
 	{
 		return interested;
 	}
+	
+	/**
+	 * @return not interested array
+	 */
 	public byte[] getNot_interested() 
 	{
 		return not_interested;
 	}
+	
+	/**
+	 * @return keep alive message
+	 */
 	public byte[] getKeep_alive() 
 	{
 		return keep_alive;
+	}
+	/**
+	 * @return request message prefix
+	 */
+	public int getRequest_Prefix()
+	{
+		return request_prefix;
 	}
 }
 
