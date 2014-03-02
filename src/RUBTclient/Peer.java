@@ -133,6 +133,7 @@ public class Peer {
 			System.arraycopy(data_chunk, 13, piece_filler2, 0, chunk_size);
 			
 			//copy to final piece
+			piece_filler_final = new byte[piece_filler1.length + piece_filler2.length];
 			System.arraycopy(piece_filler1, 0, piece_filler_final,0,piece_filler1.length);
 			System.arraycopy(piece_filler2, 0, piece_filler_final, piece_filler1.length, piece_filler2.length);
 			piece = new Piece(piece_filler_final,index,0);

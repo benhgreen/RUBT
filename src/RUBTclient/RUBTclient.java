@@ -44,10 +44,7 @@ public class RUBTclient {
 			e.printStackTrace();
 		}
 		
-		System.out.println(Integer.toBinaryString(-2));
-
-		
-		
+		//System.out.println(Integer.toBinaryString(-2));
 		
 		String announce_url = torrentinfo.announce_url.toString(); 
 		int port_num = 6881;
