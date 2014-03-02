@@ -122,6 +122,10 @@ public class Response {
 		}
 		
 	}
+	/**
+	 * @return String array containing a peer that matches specific parameters 
+	 *         and is found in the Response peer list from the tracker.
+	 */
 	public String[] getValidPeer(){
 		Iterator<Peer> iter = this.peers.iterator();
 		String[] results = new String[3];
