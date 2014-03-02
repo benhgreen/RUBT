@@ -102,7 +102,7 @@ public class RUBTclient {
 		myPeer.closeConnections();
 		
 		
-		//System.out.println("file length: " + file_length);
+		System.out.println("file length: " + file_length);
 		
 	}
 }
