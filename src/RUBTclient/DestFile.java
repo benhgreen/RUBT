@@ -23,7 +23,6 @@ public class DestFile {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
 	}
 	
 	public void testWrite(String input, Integer offset){
@@ -34,11 +33,9 @@ public class DestFile {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
 	}
 	
 	public void addPiece(Piece piece){
 		//do things here
 	}
-
 }

@@ -14,50 +14,132 @@ public class Peer {
 	Integer port;
 	DestFile destfile;
 	
+	int downloaded;
+	Socket peerConnection;
+	OutputStream peerOutputStream;
+	InputStream peerInputStream;
+	
 	public Peer(String ip, String peer_id, Integer port,DestFile destfile) {
 		super();
 		this.ip = ip;
 		this.peer_id = peer_id;
 		this.port = port;
 		this.destfile = destfile;
+		
+		this.peerConnection = null;
+		this.peerOutputStream = null;
+		this.peerInputStream = null;
 	}
 		
-	public void connectToPeer(byte[] handshake, byte[] interested, byte[] request) throws IOException{
-		
-		Socket peerConnection = null;
-		OutputStream peerOutputStream = null;
-		InputStream peerInputStream = null;
-		
+	public int connectToPeer(){
 		try{
 			peerConnection = new Socket(ip, port);
 			peerOutputStream = peerConnection.getOutputStream();
 			peerInputStream = peerConnection.getInputStream();
 		}catch(UnknownHostException e){
 			System.out.println("UnknownHostException");
+			return 0;
 		}catch(IOException e){
 			System.out.println("IOException");
+			return 0;
 		}
-		//write Message object byte array and listen for response;
-		peerOutputStream.write(handshake);
-		byte[] response = new byte[68];
-		peerInputStream.read(response);
-		System.out.println("handshake response: " + Arrays.toString(response));
-		
-		
-		//verify data
-		
-		peerOutputStream.flush();
-		peerOutputStream.write(interested);		
-		
-		response = new byte[68];
-		peerInputStream.read(response);
-		System.out.println("interested response1: " + Arrays.toString(response));
-		
-		
-		response = new byte[68];
-		peerInputStream.read(response);
-		System.out.println("interested response2:  " + Arrays.toString(response));
+		return 1;
+	}
 	
+	public int handshakePeer(byte[] handshake){
+		
+		byte[] response = new byte[68];		
+		try{
+			peerOutputStream.write(handshake);
+			peerOutputStream.flush();
+			wait(1000);
+			peerInputStream.read(response);
+		}catch(IOException e){
+			return 0;
+		}
+		System.out.println("handshake response: " + Arrays.toString(response));
+		//verify data
+		//if correct
+		return 1;
+		//else return 0
+	}
+	public int sendInterested(byte[] interested){
+		
+		byte[] response1 = new byte[68];
+		byte[] response2 = new byte[68];
+		byte[] response3 = new byte[68];
+
+		try{
+			peerOutputStream.write(interested);	
+			//peerOutputStream.flush();
+			//wait(1000);
+			try{Thread.sleep(1000);}
+			catch(InterruptedException ex){Thread.currentThread().interrupt();}
+			peerInputStream.read(response1);
+			System.out.println("interested response1: " + Arrays.toString(response1));
+			wait(60);
+			peerInputStream.read(response2);
+			System.out.println("interested response2:  " + Arrays.toString(response2));
+			
+			wait(60);
+			peerInputStream.read(response3);
+			System.out.println("interested response3:  " + Arrays.toString(response3));
+			//check unchoked
+		}catch(IOException e){
+			return 0;
+		}
+		return 1;
+	}
+	
+	public byte[] getChunk(byte[] request, int size){
+		byte[] data_chunk = new byte[size];
+		try{
+			peerOutputStream.write(request);
+			wait(1000);
+			peerOutputStream.flush();
+			peerInputStream.read(data_chunk);
+		}catch(IOException e){
+			return null;
+		}
+		downloaded = downloaded + size;
+		//verify?
+		return data_chunk;
+	}
+	
+	public DestFile downloadPieces(int file_size){
+		byte[] request, data_chunk;
+		int index = 0;
+		while(this.downloaded < file_size){
+			request = new Message().request(index,0,0);
+			getChunk(request,16397);
+			//add chunk
+			if((file_size - downloaded) > 16384){
+				request = new Message().request(index,16384,16384);
+				data_chunk = getChunk(request,16397);
+			}else{
+				request = new Message().request(index,16384,677);
+				data_chunk = getChunk(request,690);
+			}
+			//add chunk
+			index++;
+		}
+		return null;
+	}
+	
+	public void closeConnections(){
+		try{
+			peerInputStream.close();
+			peerOutputStream.close();
+			peerConnection.close();
+		}catch(IOException e){
+			return;
+		}
+	}
+	public void wait(int milliseconds){
+		try{Thread.sleep(milliseconds);}
+		catch(InterruptedException ex){Thread.currentThread().interrupt();}
+	}
+	/*
 		//piece 0 part 1
 		//*******************************
 		
@@ -311,7 +393,7 @@ public class Peer {
 		}
 		byte [] data_chunk14 = new byte[690]; //this is the byte array, the first 12 are not part of the torrent data.
 		peerInputStream.read(data_chunk14);
-		System.out.println("Data Chunk14: " + Arrays.toString(data_chunk14));
+		//System.out.println("Data Chunk14: " + Arrays.toString(data_chunk14));
 		byte [] piece_filler = new byte[16384];
 		byte [] last_one = new byte[677];
 		
@@ -367,8 +449,10 @@ public class Peer {
 		//************************
 		//end
 		
+		
 		peerOutputStream.close();
 		peerInputStream.close();
 		peerConnection.close();
 	}
+	*/
 }

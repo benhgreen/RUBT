@@ -48,37 +48,70 @@ public class RUBTclient {
 			e.printStackTrace();
 		}
 		
+		
 		String announce_url = torrentinfo.announce_url.toString(); 
 		int port_num = 6881;
 		int file_length = torrentinfo.file_length;
 		ByteBuffer info_hash = torrentinfo.info_hash;
 		
 		GetRequest myRequest = new GetRequest();
+		
 		myRequest.constructURL(announce_url, info_hash, port_num, file_length);
-		
-		
-		Message myMessage = new Message();
 		String response_string = null;
+		try{
+			response_string = myRequest.sendGetRequest();
+			//System.out.println("sent get request");
+		}catch(Exception e){
+			System.out.println("exception thrown sending get request");
+			System.exit(0);
+		};
+		//Response response = new Response(response_string);
+		//0 is peer_id, 1 is ip, 2 is port
+		
+		String[] peer_info = new Response(response_string).getValidPeer();
+		Peer myPeer = null;
+		DestFile myDest = new DestFile("hello.txt", torrentinfo);
+		/*
+		if(peer_info != null){
+			myPeer = new Peer(peer_info[1], peer_info[0], Integer.parseInt(peer_info[2]), myDest);
+		}else{
+			System.out.println("no valid peers");
+			System.exit(0);
+		}
+		
+		if(myPeer.connectToPeer()==0){
+			System.out.println("failed connecting to peer");
+			System.exit(0);
+		}
+		Message myMessage = new Message();
+		
 		byte[] handshake=myMessage.handShake(info_hash.array());
+		if(myPeer.handshakePeer(handshake)==0){
+			System.out.println("failed sending handshake");
+			System.exit(0);
+		}
+		System.out.println("sent handshake");
+
 		byte[] interested = myMessage.getInterested();
+		if(myPeer.sendInterested(interested)==0){
+			System.out.println("failed sending interested");
+			System.exit(0);
+		}
+		System.out.println("sent interested");
+
+		/*
+		
 		byte[] request = myMessage.request(0, 0, 16384);
 		DestFile myDest = new DestFile("hello.txt",torrentinfo); 
 		Peer myPeer = new Peer("128.6.171.130","RUBT11UCWQNPODEKNJZK",30164,myDest);
-		try{
-			response_string = myRequest.sendGetRequest();
-		}catch(Exception e){
-			System.out.println("exception thrown sending get request");
-		};
-		
-		Response response = new Response(response_string);
-		response.printPeers();
 		
 		try {
 			myPeer.connectToPeer(handshake, interested, request);
 		} catch (IOException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
-		}
+		}*/
 		System.out.println("file length: " + file_length);
+		
 	}
 }

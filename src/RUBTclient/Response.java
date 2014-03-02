@@ -45,8 +45,6 @@ public class Response {
         	}
         }
 		
-		
-		
 		//Iterate through dictionary until peer list is found (heavily based on ToolKit.printMap())
 		final Iterator dict_iter = peerdict.keySet().iterator();
         Object key = null;
@@ -81,13 +79,10 @@ public class Response {
             			}else if(temp_info.equals("ip")){
             				temp_ip = asString((ByteBuffer) peer.get(next));
             			}
-            			
             		}
-        			
             		//Create new Peer object and append it to the ArrayList
         			this.peers.add(new Peer(temp_ip, temp_peer_id, temp_port,null));
             	}
-            
             //Grab other information as needed
             }else if(string_key.equals("interval")){
             	this.interval = (Integer) peerdict.get(key);
@@ -96,7 +91,6 @@ public class Response {
             }
         }
 	}
-	
 	//shamelessly stolen from the forums, original author Prof. Moore
 	private static String asString(ByteBuffer buff){
 		  StringBuilder sb = new StringBuilder();
@@ -110,7 +104,6 @@ public class Response {
 		  }
 		  return sb.toString();
 		}
-
 	/**
 	 * Iterates through a Response's ArrayList of Peer objects and prints each one's info
 	 */
@@ -129,5 +122,19 @@ public class Response {
 		}
 		
 	}
-
+	public String[] getValidPeer(){
+		Iterator<Peer> iter = this.peers.iterator();
+		String[] results = new String[3];
+		//0 IP address, 1 port, 2 peer_id
+		while(iter.hasNext()){
+			Peer temp = iter.next();
+			if(temp.peer_id.startsWith("RUBT11") && temp.ip.equals("128.6.171.130")){
+				results[0] = temp.peer_id;
+				results[1] = temp.ip;
+				results[2] = Integer.toString(temp.port);
+				return results;
+			}
+		}
+		return null;
+	}
 }
