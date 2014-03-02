@@ -105,18 +105,27 @@ public class Peer {
 	public DestFile downloadPieces(int file_size){
 		byte[] request, data_chunk;
 		int index = 0;
+		int chunk_size = 16384;
+		byte[] piece_filler = new byte[16384];
+		Piece piece = null;
 		while(this.downloaded < file_size){
 			request = new Message().request(index,0,0);
-			getChunk(request,16397);
+			data_chunk = getChunk(request,16397);
+			System.arraycopy(data_chunk, 13, piece_filler, 0, chunk_size);
+			piece = new Piece(piece_filler,index,0);
+			destfile.addPiece(piece);
+
 			//add chunk
 			if((file_size - downloaded) > 16384){
-				request = new Message().request(index,16384,16384);
-				data_chunk = getChunk(request,16397);
-			}else{
-				request = new Message().request(index,16384,677);
-				data_chunk = getChunk(request,690);
+				chunk_size = 677;
+				piece_filler = new byte[677];
 			}
+				request = new Message().request(index,16384,chunk_size);
+				data_chunk = getChunk(request,chunk_size+13);
 			//add chunk
+			System.arraycopy(data_chunk, 13, piece_filler, 0, 16384);
+			piece = new Piece(piece_filler,index,16384);
+			destfile.addPiece(piece);
 			index++;
 		}
 		return null;
