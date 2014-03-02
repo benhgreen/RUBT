@@ -113,7 +113,9 @@ public class RUBTclient {
 		try{myRequest.sendEvent("started", myPeer.downloaded);
 		}catch(Exception e){System.out.println("send start event exception");}
 		
-		DestFile resultFile = myPeer.downloadPieces(torrentinfo.file_length);
+		
+		System.out.println("piece length" + torrentinfo.piece_length);
+		DestFile resultFile = myPeer.downloadPieces(torrentinfo.file_length, torrentinfo.piece_length, 13);
 		
 		if(resultFile == null){
 			System.out.println("corrupted download");
@@ -128,12 +130,7 @@ public class RUBTclient {
 			System.out.println("send completed event exception");
 		}
 		
-		
-		
 		myPeer.closeConnections();
-		
-		
-		System.out.println("file length: " + file_length);
 		
 		resultFile.close();
 		

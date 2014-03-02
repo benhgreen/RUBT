@@ -103,13 +103,13 @@ public class Peer {
 		return data_chunk;
 	}
 	
-	public DestFile downloadPieces(int file_size){
+	public DestFile downloadPieces(int file_size, int piece_size, int header_size){
 		wait(1000);
 		byte[] request, data_chunk;
 		int index = 0;
-		int chunk_size = 16384;
-		byte[] piece_filler1 = new byte[16384];
-		byte[] piece_filler2 = new byte[16384];
+		int chunk_size = piece_size/2;
+		byte[] piece_filler1 = new byte[chunk_size];
+		byte[] piece_filler2 = new byte[chunk_size];
 		byte[] piece_filler_final = null;
 		Piece piece = null;
 		Message myMessage = null;
@@ -117,20 +117,18 @@ public class Peer {
 		while(this.downloaded < file_size){
 			myMessage = new Message();
 			request = myMessage.request(index,0, chunk_size);
-			data_chunk = getChunk(request,16397);
-			System.arraycopy(data_chunk, 13, piece_filler1, 0, chunk_size);
-			//piece = new Piece(piece_filler1,index,0);
-			//destfile.addPiece(piece);
-			//add chunk
-			if((file_size - downloaded) < 16384){
-				chunk_size = 677;
-				piece_filler2 = new byte[677];
+			data_chunk = getChunk(request,chunk_size + header_size);
+			System.arraycopy(data_chunk, header_size, piece_filler1, 0, chunk_size);
+			
+			if((file_size - downloaded) < piece_size){
+				chunk_size = file_size-downloaded;
+				piece_filler2 = new byte[chunk_size];
 			}	
 			myMessage = new Message();
-			request = myMessage.request(index,16384,chunk_size);
-			data_chunk = getChunk(request,chunk_size+13);
+			request = myMessage.request(index,piece_size/2,chunk_size);
+			data_chunk = getChunk(request,chunk_size+header_size);
 			//add chunk
-			System.arraycopy(data_chunk, 13, piece_filler2, 0, chunk_size);
+			System.arraycopy(data_chunk, header_size, piece_filler2, 0, chunk_size);
 			
 			//copy to final piece
 			piece_filler_final = new byte[piece_filler1.length + piece_filler2.length];

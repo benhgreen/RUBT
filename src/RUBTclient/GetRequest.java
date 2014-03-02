@@ -16,12 +16,20 @@ public class GetRequest {
 	private int port_num, file_length, downloaded, uploaded;
 	private String url, encodedInfoHash;
 	private static String usrid;
+	
+	
 	GetRequest(){
 		downloaded = 0;
 		uploaded = 0;
 		randomID();
 	}
 
+	/**
+	 * @param announce_url based url extracted from torrent info
+	 * @param info_hash byte[] extracted from torrent info
+	 * @param port_num 
+	 * @param file_length
+	 */
 	public void constructURL(String announce_url, ByteBuffer info_hash, int port_num, int file_length){   //construct url key/value pairs
 		
 		setPort_num(port_num);
@@ -52,13 +60,12 @@ public class GetRequest {
 			obj = new URL(getUrl() + "&event=" + event);
 		}else if(event.equals("completed") || event.equals("stopped")){
 			obj = new URL(getUrl().substring(0,getUrl().indexOf("downloaded")) + "downloaded=" + downloaded + "&uploaded=" + getUploaded() + "&left=" + (getFile_length()-getDownloaded()) + "&event="+event);
-			System.out.println(event + ": " +getUrl().substring(0,getUrl().indexOf("downloaded")) + "downloaded=" + downloaded + "&uploaded=" + getUploaded() + "&left=" + (getFile_length()-getDownloaded()) + "&event="+event);
 		}else{
 			return 0;
 		}
 		
 		URLConnection connection = obj.openConnection();
-		System.out.println("sent " + event + " event");
+		System.out.println(event + " event sent to tracker");
 		return 1;
 	}
 	public String sendGetRequest() throws Exception{   
