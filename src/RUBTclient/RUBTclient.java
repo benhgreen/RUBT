@@ -1,7 +1,5 @@
 package RUBTclient;
 
-
-
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.io.*;
@@ -12,8 +10,6 @@ import edu.rutgers.cs.cs352.bt.TorrentInfo;
 import edu.rutgers.cs.cs352.bt.exceptions.BencodingException;
 import edu.rutgers.cs.cs352.bt.util.Bencoder2;
 import edu.rutgers.cs.cs352.bt.util.ToolKit;
-
-
 
 public class RUBTclient {
 	

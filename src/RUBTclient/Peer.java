@@ -91,8 +91,9 @@ public class Peer {
 		try{
 			peerOutputStream.write(request);
 			wait(1000);
-			peerOutputStream.flush();
 			peerInputStream.read(data_chunk);
+			peerOutputStream.flush();
+
 		}catch(IOException e){
 			return null;
 		}
@@ -103,25 +104,34 @@ public class Peer {
 	}
 	
 	public DestFile downloadPieces(int file_size){
+		wait(1000);
 		byte[] request, data_chunk;
 		int index = 0;
 		int chunk_size = 16384;
 		byte[] piece_filler = new byte[16384];
 		byte[] last_piece_filler = new byte[677];
 		Piece piece = null;
+		Message myMessage = null;
+		
 		while(this.downloaded < file_size){
-			request = new Message().request(index,0,0);
+			myMessage = new Message();
+			request = myMessage.request(index,0, chunk_size);
 			data_chunk = getChunk(request,16397);
 			System.arraycopy(data_chunk, 13, piece_filler, 0, chunk_size);
+
+			if(index == 0)
+				//System.out.println(Arrays.toString(request));
+				System.out.println(Arrays.toString(piece_filler));
+
 			piece = new Piece(piece_filler,index,0);
 			destfile.addPiece(piece);
-
 			//add chunk
 			if((file_size - downloaded) < 16384){
 				chunk_size = 677;
 				piece_filler = new byte[677];
-			}
-				request = new Message().request(index,16384,chunk_size);
+			}	
+				myMessage = new Message();
+				request = myMessage.request(index,16384,chunk_size);
 				data_chunk = getChunk(request,chunk_size+13);
 			//add chunk
 			System.arraycopy(data_chunk, 13, piece_filler, 0, chunk_size);
@@ -129,7 +139,7 @@ public class Peer {
 			destfile.addPiece(piece);
 			index++;
 		}
-		return null;
+		return destfile;
 	}
 	
 	public void closeConnections(){
