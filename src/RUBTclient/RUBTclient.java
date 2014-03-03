@@ -114,7 +114,6 @@ public class RUBTclient {
 		System.out.println("sent handshake");
 		int handshake_status = myPeer.handshakePeer(handshake,info_hash.array());
 		if(handshake_status==0){
-
 			System.out.println("failed sending handshake");
 			System.exit(0);
 		}else if (handshake_status==-1){
@@ -124,9 +123,12 @@ public class RUBTclient {
 
 		byte[] interested = myMessage.getInterested();
 		System.out.println("sent interested");
-		if(myPeer.sendInterested(interested)==0){
+		int interested_status = myPeer.sendInterested(interested); 
+		if(interested_status==0){
 			System.out.println("failed sending interested");
 			System.exit(0);
+		}else if(interested_status==-1){
+			
 		}
 		//send started event to tracker
 		try{myRequest.sendEvent("started", myPeer.getDownloaded());

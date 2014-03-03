@@ -77,16 +77,14 @@ public class Peer {
 		System.out.println("handshake response: " + Arrays.toString(response));
 		System.arraycopy(response,28,peer_infohash,0,20);
 		//verify info hash
-		if (info_hash.equals(peer_infohash))
+		if (Arrays.equals(info_hash , peer_infohash))
 		{
-		//if correct
-		
-		System.out.println("bitfield response: " + Arrays.toString(bitfield));
-		return 1;
+			System.out.println("bitfield response: " + Arrays.toString(bitfield));
+			return 1;
 		}
 		else
 		{
-		return -1;
+			return -1;
 		}
 	}
 	
@@ -104,10 +102,11 @@ public class Peer {
 			wait(1000);
 			peerInputStream.read(unchoke);
 			peerOutputStream.flush();
-			System.out.println("unchoke response:  " + Arrays.toString(unchoke));
-			int timer;
-			//while()
-			//check unchoked
+			
+			if(checkUnchoked(unchoke)==0){
+				return -1;
+			}
+			System.out.println("unchoke respone: "  + Arrays.toString(unchoke));
 			
 		}catch(IOException e){
 			return 0;
@@ -120,6 +119,8 @@ public class Peer {
 				return 1;
 			}
 			wait(1000);
+			try{peerInputStream.read(response);}
+			catch(IOException e){return 0;};
 		}
 		return 0;
 	}
@@ -141,6 +142,13 @@ public class Peer {
 
 		}catch(IOException e){
 			return null;
+		}
+		if(data_chunk[4] == 0){
+			if(checkUnchoked(data_chunk) == 0){
+				System.out.println("got choked out");
+				return null;
+			}
+			getChunk(request, size);
 		}
 		downloaded = downloaded + (size-13);
 		System.out.println("total downloaded: "+downloaded+" bytes");
@@ -169,7 +177,9 @@ public class Peer {
 			//sends request for first chunk to peer
 			request = myMessage.request(index,0, chunk_size);
 			data_chunk = getChunk(request,chunk_size + header_size);
-			
+			if(data_chunk == null){
+				return null;
+			}
 			//copies datachunk into placeholder w/o header for combining later
 			System.arraycopy(data_chunk, header_size, piece_filler1, 0, chunk_size);
 			
@@ -182,6 +192,9 @@ public class Peer {
 			//sends request for second chunk to peer
 			request = myMessage.request(index,piece_size/2,chunk_size);
 			data_chunk = getChunk(request,chunk_size+header_size);
+			if(data_chunk==null){
+				return null;
+			}
 			System.arraycopy(data_chunk, header_size, piece_filler2, 0, chunk_size);
 			
 			//combines 2 chunks into one byte[],verifies and adds to destFile
