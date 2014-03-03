@@ -79,12 +79,10 @@ public class Peer {
 			return 0;
 		}
 		//captures peer's infohash to check against the torrent file's
-		System.out.println("handshake response: " + Arrays.toString(response));
 		System.arraycopy(response,28,peer_infohash,0,20);
 		//verify info hash
 		if (Arrays.equals(info_hash , peer_infohash))
 		{
-			System.out.println("bitfield response: " + Arrays.toString(bitfield));
 			return 1;
 		}
 		else
@@ -111,7 +109,6 @@ public class Peer {
 			if(checkUnchoked(unchoke)==0){
 				return -1;
 			}
-			System.out.println("unchoke respone: "  + Arrays.toString(unchoke));
 			
 		}catch(IOException e){
 			return 0;

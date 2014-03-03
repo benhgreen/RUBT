@@ -77,7 +77,7 @@ public class RUBTclient {
 		
 		//build the get request url to send to the tracker
 		myRequest.constructURL(announce_url, info_hash, port_num, file_length);
-		String response_string = null;
+		byte[] response_string=null;
 		
 		//sends get request to tracker
 		try{

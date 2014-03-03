@@ -6,6 +6,8 @@ import java.net.URLConnection;
 import java.util.Random;
 import java.nio.ByteBuffer;
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
 import java.io.InputStreamReader;
 /**
  * @author Manuel Lopez
@@ -95,22 +97,24 @@ public class GetRequest {
 	 * @return bencoded response of peer list
 	 * @throws Exception IOException when opening connection to tracker
 	 */
-	public String sendGetRequest() throws Exception{   
+	public byte[] sendGetRequest() throws Exception{   
 		
 		URL obj = new URL(getUrl());
 		URLConnection connection = obj.openConnection();
 
 		int contentLength = connection.getContentLength();
-
-		BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-
-		String inputLine ;
+		
+		DataInputStream datastream = new DataInputStream(connection.getInputStream());
+		ByteArrayOutputStream tracker = new ByteArrayOutputStream();
+		int tracker_response = datastream.read();
 		String bencoded_response = "";
-		while((inputLine = in.readLine()) != null){
-			bencoded_response = bencoded_response + inputLine;
+		while(tracker_response!=-1)
+		{
+			tracker.write(tracker_response);
+			tracker_response=datastream.read();
 		}
-		in.close();
-		return bencoded_response;
+		tracker.close();
+		return tracker.toByteArray();
 	}
 	
 	/**RandomID generates random alphanumeric peer_id for client and assigns to peer_id field

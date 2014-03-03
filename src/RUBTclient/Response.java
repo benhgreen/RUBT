@@ -26,14 +26,14 @@ public class Response {
 	 * @param String containing a properly formatted, bencoded tracker response to a GET request.
 	 */
 	@SuppressWarnings("rawtypes")
-	public Response(String getrequest) {
+	public Response(byte[] getrequest) {
 		super();
 		
 		Map peerdict = null;
 		
 		//Make sure this is a valid, bencoded dictonary
 		try {
-			peerdict = (Map) Bencoder2.decode(getrequest.getBytes());
+			peerdict = (Map) Bencoder2.decode(getrequest);
 		} catch (BencodingException e) {
 			System.err.println("Error decoding response to GET request.");
 			e.printStackTrace();
