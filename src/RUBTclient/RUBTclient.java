@@ -6,6 +6,12 @@ import java.io.*;
 import edu.rutgers.cs.cs352.bt.TorrentInfo;
 import edu.rutgers.cs.cs352.bt.exceptions.BencodingException;
 
+/**
+ * @author Manuel Lopez
+ * @author Ben Green
+ * @author Christopher Rios
+ *
+ */
 public class RUBTclient {
 	
 	public static void main(String[] args){

@@ -3,7 +3,12 @@ package RUBTclient;
 import java.net.*;
 import java.io.*;
 import java.util.Arrays;
-
+/**
+ * @author Manuel Lopez
+ * @author Ben Green
+ * @author Christopher Rios
+ *
+ */
 
 /** Peer object handles all communication between client and peer
  */

@@ -7,7 +7,12 @@ import java.util.Random;
 import java.nio.ByteBuffer;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-
+/**
+ * @author Manuel Lopez
+ * @author Ben Green
+ * @author Christopher Rios
+ *
+ */
 
 /**GetRequest object that manages the connection to tracker and the url
  */

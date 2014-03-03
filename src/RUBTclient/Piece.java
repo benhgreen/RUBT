@@ -1,5 +1,12 @@
 package RUBTclient;
 
+/**
+ * @author Manuel Lopez
+ * @author Ben Green
+ * @author Christopher Rios
+ *
+ */
+
 public class Piece {
 	
 	private byte[] data;

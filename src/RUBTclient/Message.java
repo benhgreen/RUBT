@@ -2,7 +2,12 @@ package RUBTclient;
 
 import java.nio.ByteBuffer;
 //import java.util.Arrays;
-
+/**
+ * @author Manuel Lopez
+ * @author Ben Green
+ * @author Christopher Rios
+ *
+ */
 public class Message 
 
 {
