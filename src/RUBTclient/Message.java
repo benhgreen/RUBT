@@ -50,12 +50,12 @@ public class Message
 	 */
 	public byte[] request(int index, int begin, int length)
 	{
-		ByteBuffer request = ByteBuffer.allocate(17);//need a better way, maybe bytearray output stream?
+		ByteBuffer request = ByteBuffer.allocate(17);//allocates a byte buffer to compose our request in
 		request.put(request_consts);
 		request.putInt(index);
 		request.putInt(begin);
 		request.putInt(length);
-		return request.array();
+		return request.array();//returns the buffer as a byte array
 	}
 	
 	/**
