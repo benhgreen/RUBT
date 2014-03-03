@@ -31,7 +31,9 @@ public class RUBTclient {
 			try {
 				answer = bufferedReader.readLine();
 			} catch (IOException e) {
+				System.err.println("Invalid input");
 				e.printStackTrace();
+				System.exit(0);
 			}
 			if(!answer.equals("overwrite")){
 				System.out.println("overwrite denied. quitting program...");
@@ -55,7 +57,7 @@ public class RUBTclient {
 		try {
 			torrentinfo = new TorrentInfo(torrentbytes);
 		} catch (BencodingException e) {
-			// TODO Auto-generated catch block
+			System.err.println("Beencoding Exception!");
 			e.printStackTrace();
 		}
 		
@@ -76,6 +78,7 @@ public class RUBTclient {
 			response_string = myRequest.sendGetRequest();
 		}catch(Exception e){
 			System.out.println("exception thrown sending get request");
+			e.printStackTrace();
 			System.exit(0);
 		};
 		
@@ -115,10 +118,10 @@ public class RUBTclient {
 		int handshake_status = myPeer.handshakePeer(handshake,info_hash.array());
 		if(handshake_status==0){
 
-			System.out.println("failed sending handshake");
+			System.err.println("failed sending handshake");
 			System.exit(0);
 		}else if (handshake_status==-1){
-			System.out.println("info_hash from peer didn't match");
+			System.err.println("info_hash from peer didn't match");
 			System.exit(0);
 		}
 
@@ -130,20 +133,33 @@ public class RUBTclient {
 		}
 		//send started event to tracker
 		try{myRequest.sendEvent("started", myPeer.getDownloaded());
-		}catch(Exception e){System.out.println("send start event exception");}
+		}catch(Exception e)
+		{
+			System.err.println("send start event exception");
+			e.printStackTrace();
+			System.exit(0);
+			}
 		
 		DestFile resultFile = myPeer.downloadPieces(torrentinfo.file_length, torrentinfo.piece_length,13);
 		//data from peer failed to verify after hashing/corrupt download
 		if(resultFile == null){
 			System.out.println("corrupted download. quitting...");
 			try{myRequest.sendEvent("stopped", myPeer.getDownloaded());}
-			catch(Exception e){System.out.println("send stopped event exception");}
-			System.exit(0);
+			catch(Exception e){
+				System.err.println("send stopped event exception");
+				e.printStackTrace();
+				System.exit(0);
+			}
 		}
 		
 		//send completed event to tracker
 		try{myRequest.sendEvent("completed", myPeer.getDownloaded());}
-		catch(Exception e){System.out.println("send completed event exception");}
+		catch(Exception e)
+				{
+				System.err.println("send completed event exception");
+				e.printStackTrace();
+				System.exit(0);
+				}
 		
 		//close all sockets and streams to peer
 		myPeer.closeConnections();
