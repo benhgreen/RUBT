@@ -106,8 +106,11 @@ public class Peer {
 		return 1;
 	}
 	public int checkUnchoked(byte[] response){
-		if(response[4]==1){
-			return 1;
+		for(int timer = 0; timer < 120; timer ++){
+			if(response[4]==1){
+				return 1;
+			}
+			wait(1000);
 		}
 		return 0;
 	}
