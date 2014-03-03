@@ -72,4 +72,17 @@ public class DestFile {
 		}
 		return false;
 	}
+	
+	/**
+	 * @param input Integer representation of bitfield
+	 * @return String representation of bitfield in binary form, two's complement
+	 */
+	public String generateBitField(Integer input){
+		String bitfield = Integer.toBinaryString(input);
+		if(bitfield.length()>8){
+			return bitfield.substring(bitfield.length()-8);
+		}else{
+			return bitfield;
+		}
+	}
 }
