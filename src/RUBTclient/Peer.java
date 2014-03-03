@@ -9,15 +9,15 @@ import java.util.Arrays;
  */
 public class Peer {
 	
-	String 		ip;          	//ip address of peer
-	String 		peer_id;		//identifying name of peer
-	int 		port;			//port number to access the peer
-	DestFile 	destfile;		//destfile object returned after download completes
+	private String  	ip;          	//ip address of peer
+	private String 		peer_id;		//identifying name of peer
+	private int 		port;			//port number to access the peer
+	private DestFile 	destfile;		//destfile object returned after download completes
 	
-	int 			downloaded;			//data downloaded from tracker not including header
-	Socket 			peerConnection;		//socket connection to peer
-	OutputStream	peerOutputStream;	//OuputStream to peer for sending messages
-	InputStream 	peerInputStream;	//InputStream to peer for reading responses
+	private int 			downloaded;			//data downloaded from tracker not including header
+	private Socket 			peerConnection;		//socket connection to peer
+	private OutputStream	peerOutputStream;	//OuputStream to peer for sending messages
+	private InputStream 	peerInputStream;	//InputStream to peer for reading responses
 	
 	public Peer(String ip, String peer_id, Integer port,DestFile destfile) {
 		super();
@@ -51,19 +51,25 @@ public class Peer {
 		return 1;
 	}
 	
-	/**handshakePeer() sends the handshake message, verifies if the info hash is correct
+	/**handshakePeer() sends the handshake message and reads the peers handshake and bitfield
 	 * @param handshake
 	 * @return 1 if successful/0 if failed
 	 */
 	public int handshakePeer(byte[] handshake,byte[] info_hash){
-		byte[] peer_infohash = new byte [20];
-		byte[] response = new byte[68];		
+		
+		byte[] response = new byte[68];
+		byte[] bitfield = new byte[6];
+		byte[] peer_infohash = new byte[20];
 		//sends handshake message and reads response
 		try{
 			peerOutputStream.write(handshake);
 			peerOutputStream.flush();
 			wait(1000);
 			peerInputStream.read(response);
+			
+			wait(1000);
+			peerInputStream.read(bitfield);
+			peerOutputStream.flush();
 		}catch(IOException e){
 			return 0;
 		}
@@ -73,6 +79,9 @@ public class Peer {
 		//verify info hash
 		if (info_hash.equals(peer_infohash))
 		{
+		//if correct
+		
+		System.out.println("bitfield response: " + Arrays.toString(bitfield));
 		return 1;
 		}
 		else
@@ -81,32 +90,35 @@ public class Peer {
 		}
 	}
 	
-	/**sendInterested() sends the interested message and reads the unchoke and bitfield response
+	/**sendInterested() sends the interested message and reads the unchoke response
 	 * @param interested byte array from message object
 	 * @return int 1 if success/0 if failure
 	 */
 	public int sendInterested(byte[] interested){
 		
-		byte[] bitfield = new byte[6];
 		byte[] unchoke = new byte[6];
 		
-		//sends interested message and reads the bitfield and unchoke message
+		//sends interested message and reads the unchoke message
 		try{
 			peerOutputStream.write(interested);	
-			wait(1000);
-			peerInputStream.read(bitfield);
-			peerOutputStream.flush();
-			System.out.println("bitfield response: " + Arrays.toString(bitfield));
-			
 			wait(1000);
 			peerInputStream.read(unchoke);
 			peerOutputStream.flush();
 			System.out.println("unchoke response:  " + Arrays.toString(unchoke));
+			int timer;
+			//while()
 			//check unchoked
+			
 		}catch(IOException e){
 			return 0;
 		}
 		return 1;
+	}
+	public int checkUnchoked(byte[] response){
+		if(response[4]==1){
+			return 1;
+		}
+		return 0;
 	}
 	
 	
@@ -204,5 +216,45 @@ public class Peer {
 	public void wait(int milliseconds){
 		try{Thread.sleep(milliseconds);}
 		catch(InterruptedException ex){Thread.currentThread().interrupt();}
+	}
+
+	public String getIp() {
+		return ip;
+	}
+
+	public void setIp(String ip) {
+		this.ip = ip;
+	}
+
+	public String getPeer_id() {
+		return peer_id;
+	}
+
+	public void setPeer_id(String peer_id) {
+		this.peer_id = peer_id;
+	}
+
+	public int getPort() {
+		return port;
+	}
+
+	public void setPort(int port) {
+		this.port = port;
+	}
+
+	public int getDownloaded() {
+		return downloaded;
+	}
+
+	public void setDownloaded(int downloaded) {
+		this.downloaded = downloaded;
+	}
+
+	public InputStream getPeerInputStream() {
+		return peerInputStream;
+	}
+
+	public void setPeerInputStream(InputStream peerInputStream) {
+		this.peerInputStream = peerInputStream;
 	}
 }

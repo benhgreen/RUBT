@@ -112,8 +112,13 @@ public class RUBTclient {
 		//send handshake
 		byte[] handshake=myMessage.handShake(info_hash.array());
 		System.out.println("sent handshake");
-		if(myPeer.handshakePeer(handshake,info_hash.array())==0){
+		int handshake_status = myPeer.handshakePeer(handshake,info_hash.array());
+		if(handshake_status==0){
+
 			System.out.println("failed sending handshake");
+			System.exit(0);
+		}else if (handshake_status==-1){
+			System.out.println("info_hash from peer didn't match");
 			System.exit(0);
 		}
 
@@ -124,20 +129,20 @@ public class RUBTclient {
 			System.exit(0);
 		}
 		//send started event to tracker
-		try{myRequest.sendEvent("started", myPeer.downloaded);
+		try{myRequest.sendEvent("started", myPeer.getDownloaded());
 		}catch(Exception e){System.out.println("send start event exception");}
 		
-		DestFile resultFile = myPeer.downloadPieces(torrentinfo.file_length, torrentinfo.piece_length,myMessage.getRequest_Prefix());
+		DestFile resultFile = myPeer.downloadPieces(torrentinfo.file_length, torrentinfo.piece_length,13);
 		//data from peer failed to verify after hashing/corrupt download
 		if(resultFile == null){
 			System.out.println("corrupted download. quitting...");
-			try{myRequest.sendEvent("stopped", myPeer.downloaded);}
+			try{myRequest.sendEvent("stopped", myPeer.getDownloaded());}
 			catch(Exception e){System.out.println("send stopped event exception");}
 			System.exit(0);
 		}
 		
 		//send completed event to tracker
-		try{myRequest.sendEvent("completed", myPeer.downloaded);}
+		try{myRequest.sendEvent("completed", myPeer.getDownloaded());}
 		catch(Exception e){System.out.println("send completed event exception");}
 		
 		//close all sockets and streams to peer
