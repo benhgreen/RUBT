@@ -118,6 +118,7 @@ public class Peer {
 			if(response[4]==1){
 				return 1;
 			}
+			
 			wait(1000);
 			try{peerInputStream.read(response);}
 			catch(IOException e){return 0;};
