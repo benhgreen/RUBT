@@ -83,6 +83,10 @@ public class RUBTclient {
 		};
 		
 		
+		if(response_string==null){
+			System.out.println("null response");
+			System.exit(0);
+		}
 		//0 is peer_id, 1 is ip, 2 is port
 		//checks the list of peers from tracker
 		Response peer_list = new Response(response_string);
