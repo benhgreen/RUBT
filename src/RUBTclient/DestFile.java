@@ -10,20 +10,17 @@ import edu.rutgers.cs.cs352.bt.TorrentInfo;
 
 public class DestFile {
 	
-	byte[] data;
-	String name;
-	TorrentInfo torrentinfo;
-	RandomAccessFile dest;
+	private TorrentInfo torrentinfo;
+	private RandomAccessFile dest;
 	
 	public DestFile(String name, TorrentInfo torrentinfo){
-		this.name = name;
 		this.torrentinfo = torrentinfo;
 		try {
 			//initialize RandomAccessFile and set length
 			this.dest = new RandomAccessFile(name,"rw");
 			dest.setLength(torrentinfo.file_length);
 		} catch (IOException e) {
-			e.printStackTrace();
+			System.err.println("Error while initializing RandomAccessFile");
 		}
 	}
 	
@@ -37,7 +34,7 @@ public class DestFile {
 			dest.seek(target);
 			dest.write(piece.getData());
 		} catch (IOException e) {
-			e.printStackTrace();
+			System.err.println("Error while writing to RandomAccessFile");
 		}
 	}
 	
@@ -48,7 +45,7 @@ public class DestFile {
 		try {
 			this.dest.close();
 		} catch (IOException e) {
-			e.printStackTrace();
+			System.err.println("Error closing RandomAccessFile");
 		}
 	}
 	
@@ -63,7 +60,7 @@ public class DestFile {
 		try {
 			md = MessageDigest.getInstance("SHA-1");
 		} catch (NoSuchAlgorithmException e) {
-			e.printStackTrace();
+			System.err.println("Error intitializing MessageDigest");
 		}
 		byte[] hash = md.digest(piece.getData());
 		
