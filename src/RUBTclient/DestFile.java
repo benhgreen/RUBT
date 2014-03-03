@@ -33,9 +33,9 @@ public class DestFile {
 	public void addPiece(Piece piece){
 		try {
 			//calculate location to write data in the file using piece length and offset if applicable
-			long target = piece.piece*torrentinfo.piece_length + piece.offset;
+			long target = piece.getPiece()*torrentinfo.piece_length + piece.getOffset();
 			dest.seek(target);
-			dest.write(piece.data);
+			dest.write(piece.getData());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -65,7 +65,7 @@ public class DestFile {
 		} catch (NoSuchAlgorithmException e) {
 			e.printStackTrace();
 		}
-		byte[] hash = md.digest(piece.data);
+		byte[] hash = md.digest(piece.getData());
 		
 		//iterate through torrentinfo piece hashes and look for a match
 		for(int i = 0; i<this.torrentinfo.piece_hashes.length; i++){

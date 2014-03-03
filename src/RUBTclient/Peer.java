@@ -55,10 +55,11 @@ public class Peer {
 	 * @param handshake
 	 * @return 1 if successful/0 if failed
 	 */
-	public int handshakePeer(byte[] handshake){
+	public int handshakePeer(byte[] handshake,byte[] info_hash){
 		
 		byte[] response = new byte[68];
 		byte[] bitfield = new byte[6];
+		byte[] peer_infohash = new byte[20];
 		//sends handshake message and reads response
 		try{
 			peerOutputStream.write(handshake);
@@ -72,13 +73,21 @@ public class Peer {
 		}catch(IOException e){
 			return 0;
 		}
+		//captures peer's infohash to check against the torrent file's
 		System.out.println("handshake response: " + Arrays.toString(response));
+		System.arraycopy(response,28,peer_infohash,0,20);
 		//verify info hash
+		if (info_hash.equals(peer_infohash))
+		{
 		//if correct
 		
 		System.out.println("bitfield response: " + Arrays.toString(bitfield));
 		return 1;
-		//else return 0
+		}
+		else
+		{
+		return -1;
+		}
 	}
 	
 	/**sendInterested() sends the interested message and reads the unchoke response
