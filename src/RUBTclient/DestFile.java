@@ -7,7 +7,12 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
 import edu.rutgers.cs.cs352.bt.TorrentInfo;
-
+/**
+ * @author Manuel Lopez
+ * @author Ben Green
+ * @author Christopher Rios
+ *
+ */
 public class DestFile {
 	
 	private TorrentInfo torrentinfo;
