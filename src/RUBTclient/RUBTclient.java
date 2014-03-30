@@ -75,7 +75,7 @@ public class RUBTclient {
 		ByteBuffer info_hash = torrentinfo.info_hash;
 		
 		Tracker trackerConnection = new Tracker();
-		
+	
 		//build the get request url to send to the tracker
 		trackerConnection.constructURL(announce_url, info_hash, port_num, file_length);
 		byte[] response_string=null;
@@ -88,8 +88,7 @@ public class RUBTclient {
 			e.printStackTrace();
 			System.exit(0);
 		};
-		
-		
+
 		if(response_string==null){
 			System.out.println("null response");
 			System.exit(0);
