@@ -123,7 +123,7 @@ public class RUBTclient {
 		Message myMessage = new Message();
 		
 		//send handshake
-		byte[] handshake=myMessage.handShake(info_hash.array());
+		byte[] handshake=myMessage.handShake(info_hash.array(), trackerConnection.getUser_id());
 		System.out.println("sent handshake");
 		int handshake_status = myPeer.handshakePeer(handshake,info_hash.array());
 		if(handshake_status==0){

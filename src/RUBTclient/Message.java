@@ -50,15 +50,14 @@ public class Message
 	 * @param info_hash takes the info hash given by the .torrent file
 	 * @return returns a handshake message in the form of a byte array  
 	 */
-	public byte[] handShake( byte[] info_hash)
+	public byte[] handShake( byte[] info_hash, String userid)
 	{
 		byte[] handshake = new byte[68];
-		byte[] userid;
+		
 		System.arraycopy(handshake_consts,0,handshake,0,28);// copies handshake constants
 		System.arraycopy(info_hash, 0, handshake,28 , 20);
-		Tracker our_id = new Tracker();
-		userid=our_id.getUser_id().getBytes();    //gets our user id, and then puts it into our handshake
-		System.arraycopy(userid, 0, handshake,48 , 20);
+		System.arraycopy(userid.getBytes(), 0, handshake,48 , 20);
+		
 		return handshake;
 	}
 	
