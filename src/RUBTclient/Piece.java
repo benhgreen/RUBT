@@ -21,7 +21,7 @@ public class Piece {
 	}
 	
 	/**
-	 * @return the piece
+	 * @return number identifying the piece as part of the file
 	 */
 	public int getPiece() {
 		return piece;

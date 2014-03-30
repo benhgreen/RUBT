@@ -17,6 +17,8 @@ public class DestFile {
 	
 	private TorrentInfo torrentinfo;
 	private RandomAccessFile dest;
+	int totalsize;
+	int incomplete;
 	
 	public DestFile(String name, TorrentInfo torrentinfo){
 		this.torrentinfo = torrentinfo;
@@ -24,6 +26,8 @@ public class DestFile {
 			//initialize RandomAccessFile and set length
 			this.dest = new RandomAccessFile(name,"rw");
 			dest.setLength(torrentinfo.file_length);
+			this.totalsize = torrentinfo.file_length;
+			this.incomplete = torrentinfo.file_length;
 		} catch (IOException e) {
 			System.err.println("Error while initializing RandomAccessFile");
 		}
@@ -38,6 +42,7 @@ public class DestFile {
 			long target = piece.getPiece()*torrentinfo.piece_length + piece.getOffset();
 			dest.seek(target);
 			dest.write(piece.getData());
+			this.incomplete -= (piece.getData().length);
 		} catch (IOException e) {
 			System.err.println("Error while writing to RandomAccessFile");
 		}
