@@ -97,7 +97,7 @@ public class Peer {
 	 */
 	public int sendInterested(byte[] interested){
 		
-		byte[] unchoke = new byte[6];
+		byte[] unchoke = new byte[5];
 		
 		//sends interested message and reads the unchoke message
 		try{
