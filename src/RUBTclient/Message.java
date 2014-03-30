@@ -11,7 +11,25 @@ import java.nio.ByteBuffer;
 public class Message 
 
 {
-	private final int request_prefix = 0xD;	
+	
+	private final int request_prefix = 0xD;
+	//message identifiers
+	/**
+	 * @field CHOKE Value of the choke identifier
+	 * @field UNCHOKE Value of the unchoke identifier
+	 * @field INTERESTED Value of the interested identifier 
+	 * @field HAVE Value of the have identifier
+	 * @field BITFIELD Value of the bitfield identifier
+	 * @field REQUEST Value of the request identifier
+	 * @field PIECE Value of the piece identifier
+	 */
+	public static final  int CHOKE = 0;
+	public static final int UNCHOKE = 1;
+	public static final int INTERESTED = 2;
+	public static final int HAVE = 4;
+	public static final int BITFIELD = 5;
+	public static final int REQUEST = 6;
+	public static final int PIECE = 7;
 	 //message headers
 	private final byte[] handshake_consts = {0x13,'B','i','t','T','o','r','r','e','n','t',' ','p','r','o','t','o','c','o','l',0,0,0,0,0,0,0,0};
 	private final byte[] have_consts = {0,0,0,5,4};
@@ -22,11 +40,10 @@ public class Message
 	private final byte[] interested = {0,0,0,1,2};
 	private final byte[] not_interested = {0,0,0,1,3};
 	private final byte[] keep_alive = {0,0,0,0};
-	
 	 //Message object constructor
 	public Message()
 	{
-				
+			
 	}
 	/**
 	 * This method constructs a byte array that contains the handshake message
