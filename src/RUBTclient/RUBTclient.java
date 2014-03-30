@@ -1,6 +1,7 @@
 package RUBTclient;
 
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.io.*;
 
 import edu.rutgers.cs.cs352.bt.TorrentInfo;
@@ -103,7 +104,6 @@ public class RUBTclient {
 		}
 		//extracts array of peer info from valid peer
 		peer_info = peer_list.getValidPeer();
-		
 		Peer myPeer = null;
 		DestFile myDest = new DestFile(args[1], torrentinfo);
 		if(peer_info != null){

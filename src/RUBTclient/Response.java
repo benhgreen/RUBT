@@ -137,7 +137,7 @@ public class Response {
 		//0 IP address, 1 port, 2 peer_id
 		while(iter.hasNext()){
 			Peer temp = iter.next();
-			if(temp.getPeer_id().startsWith("RUBT11") && temp.getIp().equals("128.6.171.130")){
+			if(((temp.getIp().equals("128.6.171.130"))||(temp.getIp().equals("128.6.171.131")))){
 				results[0] = temp.getPeer_id();
 				results[1] = temp.getIp();
 				results[2] = Integer.toString(temp.getPort());
