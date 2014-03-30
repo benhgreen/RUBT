@@ -30,8 +30,8 @@ public class RUBTclient {
 		FileInputStream fileInputStream = null;
 		File torrent = new File(torrentname);
 		//checks if destination file exists. If so, user auth is required
-		File picture = new File(destination);
-		if(picture.exists()){
+		File mp3 = new File(destination);
+		if(mp3.exists()){
 			System.out.println("Output target file already exists. Type 'overwrite' to overwrite.");
 			BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in));
 			String answer = null;
@@ -177,4 +177,7 @@ public class RUBTclient {
 		//close file stream
 		resultFile.close();
 	}
+	
+	
+	
 }
