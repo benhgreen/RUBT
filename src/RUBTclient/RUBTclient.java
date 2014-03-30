@@ -73,15 +73,15 @@ public class RUBTclient {
 		int file_length = torrentinfo.file_length;
 		ByteBuffer info_hash = torrentinfo.info_hash;
 		
-		GetRequest myRequest = new GetRequest();
+		Tracker trackerConnection = new Tracker();
 		
 		//build the get request url to send to the tracker
-		myRequest.constructURL(announce_url, info_hash, port_num, file_length);
+		trackerConnection.constructURL(announce_url, info_hash, port_num, file_length);
 		byte[] response_string=null;
 		
 		//sends get request to tracker
 		try{
-			response_string = myRequest.sendGetRequest();
+			response_string = trackerConnection.sendGetRequest();
 		}catch(Exception e){
 			System.out.println("exception thrown sending get request");
 			e.printStackTrace();
@@ -144,7 +144,7 @@ public class RUBTclient {
 			
 		}
 		//send started event to tracker
-		try{myRequest.sendEvent("started", myPeer.getDownloaded());
+		try{trackerConnection.sendEvent("started", myPeer.getDownloaded());
 		}catch(Exception e)
 		{
 			System.err.println("send start event exception");
@@ -156,7 +156,7 @@ public class RUBTclient {
 		//data from peer failed to verify after hashing/corrupt download
 		if(resultFile == null){
 			System.out.println("corrupted download. quitting...");
-			try{myRequest.sendEvent("stopped", myPeer.getDownloaded());}
+			try{trackerConnection.sendEvent("stopped", myPeer.getDownloaded());}
 			catch(Exception e){
 				System.err.println("send stopped event exception");
 				e.printStackTrace();
@@ -165,7 +165,7 @@ public class RUBTclient {
 		}
 		
 		//send completed event to tracker
-		try{myRequest.sendEvent("completed", myPeer.getDownloaded());}
+		try{trackerConnection.sendEvent("completed", myPeer.getDownloaded());}
 		catch(Exception e)
 				{
 				System.err.println("send completed event exception");
