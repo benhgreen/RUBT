@@ -18,7 +18,7 @@ import java.io.InputStreamReader;
 
 /**GetRequest object that manages the connection to tracker and the url
  */
-public class GetRequest {
+public class Tracker {
 
 	private int 			port_num; 			//port number of tracker
 	private int 			file_length;		//file length of target file held by peer
@@ -31,7 +31,7 @@ public class GetRequest {
 	
 	/**GetRequest contructor
 	 */
-	public GetRequest(){
+	public Tracker(){
 		downloaded = 0;
 		uploaded = 0;
 		randomID();

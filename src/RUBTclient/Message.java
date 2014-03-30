@@ -56,7 +56,7 @@ public class Message
 		byte[] userid;
 		System.arraycopy(handshake_consts,0,handshake,0,28);// copies handshake constants
 		System.arraycopy(info_hash, 0, handshake,28 , 20);
-		GetRequest our_id = new GetRequest();
+		Tracker our_id = new Tracker();
 		userid=our_id.getUser_id().getBytes();    //gets our user id, and then puts it into our handshake
 		System.arraycopy(userid, 0, handshake,48 , 20);
 		return handshake;
