@@ -67,6 +67,7 @@ public class Peer extends Thread {
 	public void run()
 	{
 		System.out.println("about to connect to peer");
+		System.out.println("peer thread: " + Thread.currentThread());
 		connectToPeer();
 		while(connected)
 		{
@@ -193,6 +194,7 @@ public class Peer extends Thread {
 		send_timer.cancel();  //cancels the current timer for sent messages
         send_timer = new Timer();
         send_timer.schedule(new SendTimerTask(), 120*1000);  //resets it for 2 minutes from last sent
+        System.out.println("peer thread: " + Thread.currentThread());
 		
 	}
 	

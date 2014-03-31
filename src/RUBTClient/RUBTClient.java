@@ -50,7 +50,7 @@ public class RUBTClient extends Thread{
 			e.printStackTrace();
 		}
 		
-		DestFile destfile = new DestFile(args[1], torrentinfo));
+		DestFile destfile = new DestFile(args[1], torrentinfo);
 		
 		//checks if destination file exists. If so, user auth is required
 		File mp3 = new File(destination);
@@ -241,6 +241,7 @@ public class RUBTClient extends Thread{
 			System.exit(0);
 		}
 		Message current_message = new Message();
+		System.out.println("client thread: " + Thread.currentThread());
 		myPeer.start();
 		myPeer.sendMessage(current_message.handShake(this.torrentinfo.info_hash.array(), tracker.getUser_id()));
 		
