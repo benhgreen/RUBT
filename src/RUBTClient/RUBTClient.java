@@ -68,7 +68,8 @@ public class RUBTClient extends Thread{
 			e.printStackTrace();
 		}
 		//run thread
-		RUBTClient client = new RUBTClient(torrentinfo, );
+		RUBTClient client = new RUBTClient(torrentinfo, destination);
+		client.start();
 		
 		
 //		
