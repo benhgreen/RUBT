@@ -30,6 +30,7 @@ public class Peer extends Thread {
 	private byte[] response;
 	private Timer send_timer; //timers for sends
 	private Timer receive_timer; //timers for receives
+	private byte[] bitfield;
 	
 	public Peer(String ip, String peer_id, Integer port,DestFile destfile) {
 		super();
@@ -78,8 +79,14 @@ public class Peer extends Thread {
 				try {
 					int length_prefix = peerInputStream.readInt();
 					System.out.println(length_prefix);
-					response = new byte[length_prefix];
+					byte id = peerInputStream.readByte();
+					response = new byte[length_prefix-1];
 					peerInputStream.readFully(response);
+					if(id==Message.BITFIELD)      //if the id is a bitfield, set this peers bitfield to this byte array.
+					{
+						System.out.println("setting the bitfield");
+						this.bitfield = response;
+					}
 					System.out.println(Arrays.toString(response));
 					receive_timer.cancel();  //cancels the current timer for messages
 			        receive_timer = new Timer();
@@ -209,6 +216,10 @@ public class Peer extends Thread {
 		
 	}
 	
+	public byte[] getbitfield()
+	{
+		return this.bitfield;
+	}
 	/**handshakePeer() sends the handshake message and reads the peers handshake and bitfield
 	 * @param handshake
 	 * @return 1 if successful/0 if failed
