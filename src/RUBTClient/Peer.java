@@ -20,8 +20,8 @@ public class Peer extends Thread {
 	private String 		peer_id;		//identifying name of peer
 	private int 		port;			//port number to access the peer
 	private Socket 			peerConnection;		//socket connection to peer
-	private DataOutputStream	peerOutputStream;	//OuputStream to peer for sending messages
-	private DataInputStream 	peerInputStream;	//InputStream to peer for reading responses
+	private DataOutputStream	peerOutputStream=null;	//OuputStream to peer for sending messages
+	private DataInputStream 	peerInputStream=null;	//InputStream to peer for reading responses
 	private boolean choked = true; //checks if we are being choked
 	private boolean unchoked=false; //checks if we are being unchoked
 	private boolean choking = true; //checks if we are choking the connected peer
@@ -37,8 +37,6 @@ public class Peer extends Thread {
 		this.peer_id = peer_id;
 		this.port = port;
 		this.peerConnection = null;
-		this.peerOutputStream = null;
-		this.peerInputStream = null;
 		send_timer = new Timer();
 		receive_timer = new Timer();
 	}
@@ -49,7 +47,6 @@ public class Peer extends Thread {
 		public void run() {
 			// TODO Do something when the timer is up
 			System.out.println("send timer is up");
-			
 		}
 		
 	}
@@ -66,16 +63,28 @@ public class Peer extends Thread {
 	}
 	public void run()
 	{
-		System.out.println("about to connect to peer");
-		connectToPeer();
+		byte[] handshake = new byte[68]; //Receives initial handshake
+		try {
+			peerInputStream.readFully(handshake);
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			System.err.println("Handshake Error");
+			e1.printStackTrace();
+			closeConnections();
+		}
 		while(connected)
 		{
 			    
 				try {
+					int length_prefix = peerInputStream.readInt();
+					System.out.println(length_prefix);
+					response = new byte[length_prefix];
 					peerInputStream.readFully(response);
+					System.out.println(Arrays.toString(response));
 					receive_timer.cancel();  //cancels the current timer for messages
 			        receive_timer = new Timer();
 			        receive_timer.schedule(new ReceiveTimerTask(), 120*1000);  //resets it for 2 minutes from last sent
+			        connected=false;
 					//TODO send message to RUBT client
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
@@ -83,6 +92,7 @@ public class Peer extends Thread {
 				}
 			
 		}
+		closeConnections();
 	}
 		
 	/**connectToPeer() sets socket connections and input/output streams to the peer
@@ -91,10 +101,11 @@ public class Peer extends Thread {
 	public int connectToPeer(){
 		//open sockets and input/output streams
 		try{
-			peerConnection = new Socket(ip, port);
-			peerConnection.setSoTimeout(60*1000);
-			peerOutputStream = new DataOutputStream(peerConnection.getOutputStream());
-			peerInputStream = new DataInputStream(peerConnection.getInputStream());
+			this.peerConnection = new Socket(ip, port);
+			this.peerConnection.setSoTimeout(60*1000);
+			this.peerOutputStream = new DataOutputStream(peerConnection.getOutputStream());
+			this.peerInputStream = new DataInputStream(peerConnection.getInputStream());
+			connected =true;
 		}catch(UnknownHostException e){
 			System.err.println("UnknownHostException");
 			return 0;
@@ -180,15 +191,17 @@ public class Peer extends Thread {
 	 * Sends a message to the peer
 	 * Source: Taken From Rob Moore's skeleton code in our Sakai Resources folder
 	 * @param Message message to be sent
+	 * @throws IOException 
 	 */
-	public synchronized void sendMessage(byte[] Message)
+	public synchronized void sendMessage(byte[] Message) throws IOException
 	{
-		try {
+		if(this.peerOutputStream==null)
+		{
+			System.out.println("stream is null");
+		}
+		else{
 			System.out.println(Arrays.toString(Message));
 			peerOutputStream.write(Message);
-		} catch (IOException e) {
-			System.err.println("Stream is closed");
-			return;
 		}
 		send_timer.cancel();  //cancels the current timer for sent messages
         send_timer = new Timer();

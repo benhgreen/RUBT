@@ -50,7 +50,7 @@ public class RUBTClient extends Thread{
 			e.printStackTrace();
 		}
 		
-		DestFile destfile = new DestFile(args[1], torrentinfo));
+		DestFile destfile = new DestFile(args[1], torrentinfo);
 		
 		//checks if destination file exists. If so, user auth is required
 		File mp3 = new File(destination);
@@ -231,6 +231,8 @@ public class RUBTClient extends Thread{
 		//extracts array of peer info from valid peer
 		peer_info = peer_list.getValidPeer();
 		System.out.println(peer_info[0]);
+		System.out.println(torrentinfo.file_length);
+		System.out.println(torrentinfo.piece_length);
 		Peer myPeer = null;
 		
 		if(peer_info != null){
@@ -241,8 +243,15 @@ public class RUBTClient extends Thread{
 			System.exit(0);
 		}
 		Message current_message = new Message();
-		myPeer.start();
-		myPeer.sendMessage(current_message.handShake(this.torrentinfo.info_hash.array(), tracker.getUser_id()));
+		myPeer.connectToPeer();
+		try {
+			myPeer.sendMessage(current_message.handShake(this.torrentinfo.info_hash.array(), tracker.getUser_id()));
+		} catch (IOException e) {
+			System.err.println("prob bad");
+			e.printStackTrace();
+		}
+		myPeer.start(); 
+		
 		
 	}
 }
