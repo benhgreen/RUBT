@@ -1,4 +1,4 @@
-package RUBTclient;
+package RUBTClient;
 
 import java.nio.ByteBuffer;
 import java.util.Arrays;
@@ -13,7 +13,7 @@ import edu.rutgers.cs.cs352.bt.exceptions.BencodingException;
  * @author Christopher Rios
  *
  */
-public class RUBTclient {
+public class RUBTClient extends Thread{
 	
 	public static void main(String[] args){
 		int max_request = 16384;
@@ -68,6 +68,8 @@ public class RUBTclient {
 			e.printStackTrace();
 		}
 		//run thread
+		
+		
 		
 		
 		//extracts tracker information from torrent info to build GetRequest
@@ -181,10 +183,19 @@ public class RUBTclient {
 	}
 	
 	private final TorrentInfo torrentinfo;
+	
 	private final String destinationFile;
 	
+	private boolean keepRunning = true;
 	
+	final Tracker tracker;
 	
+	public RUBTClient(final TorrentInfo torrentinfo, final String destinationFile){
+		this.torrentinfo = torrentinfo;
+		this.destinationFile = destinationFile;
+		
+		
+	}
 	
 	
 	

@@ -1,4 +1,4 @@
-package RUBTclient;
+package RUBTClient;
 
 /**
  * @author Manuel Lopez

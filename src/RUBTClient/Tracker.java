@@ -1,4 +1,4 @@
-package RUBTclient;
+package RUBTClient;
 
 
 import java.net.URL;

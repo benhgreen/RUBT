@@ -1,4 +1,4 @@
-package RUBTclient;
+package RUBTClient;
 
 import java.nio.ByteBuffer;
 import java.util.*;
