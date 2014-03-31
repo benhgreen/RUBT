@@ -17,9 +17,10 @@ public class DestFile {
 	
 	private TorrentInfo torrentinfo;
 	private RandomAccessFile dest;
-	int totalsize;
-	int incomplete;
+	private int totalsize;
+	private int incomplete;
 	private String filename;
+	private byte[] bitfields;
 	
 	public DestFile(String name, TorrentInfo torrentinfo){
 		this.setTorrentinfo(torrentinfo);
@@ -29,6 +30,16 @@ public class DestFile {
 			dest.setLength(torrentinfo.file_length);
 			this.totalsize = torrentinfo.file_length;
 			this.incomplete = torrentinfo.file_length;
+			
+			int mod1;
+			if((mod1 = torrentinfo.piece_hashes.length % 8) != 0){
+				int mod2 = (torrentinfo.piece_hashes.length - mod1) / 8;
+				bitfields = new byte[mod2 + 1];
+			}else{
+				bitfields = new byte[torrentinfo.piece_hashes.length / 8];
+			}
+			
+			
 		} catch (IOException e) {
 			System.err.println("Error while initializing RandomAccessFile");
 		}
@@ -88,13 +99,28 @@ public class DestFile {
 	 * @param input Integer representation of bitfield
 	 * @return String representation of bitfield in binary form, two's complement
 	 */
-	public String generateBitField(Integer input){
+	public String generateBitField(byte input){
 		String bitfield = Integer.toBinaryString(input);
 		if(bitfield.length()>8){
 			return bitfield.substring(bitfield.length()-8);
 		}else{
 			return bitfield;
 		}
+	}
+	
+	/**
+	 * check existing file for valid pieces and update bitfields accordingly
+	 */
+	public void checkExistingFile() {	
+		
+	}
+	
+	/**
+	 * @param action to perform on bitfield
+	 * @param piece to update in bitfield registry
+	 */
+	public void registerPiece(int action, int piece){
+		//TODO this method
 	}
 
 	public String getFilename() {
@@ -112,4 +138,6 @@ public class DestFile {
 	public void setTorrentinfo(TorrentInfo torrentinfo) {
 		this.torrentinfo = torrentinfo;
 	}
+
+	
 }
