@@ -224,7 +224,9 @@ public class RUBTClient extends Thread{
 		String[] peer_info;
 		//extracts array of peer info from valid peer
 		peer_info = peer_list.getValidPeer();
+		System.out.println(peer_info[0]);
 		Peer myPeer = null;
+		
 		DestFile myDest = new DestFile(this.destinationFile, torrentinfo);
 		if(peer_info != null){
 			//peer_inf[0] = peer_id, peer_info[1] is ip, peer_info[2] is port
@@ -233,6 +235,9 @@ public class RUBTClient extends Thread{
 			System.out.println("no valid peers");
 			System.exit(0);
 		}
+		Message current_message = new Message();
+		myPeer.start();
+		myPeer.sendMessage(current_message.handShake(this.torrentinfo.info_hash.array(), tracker.getUser_id()));
 		
 	}
 }

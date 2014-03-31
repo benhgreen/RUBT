@@ -66,6 +66,7 @@ public class Peer extends Thread {
 	}
 	public void run()
 	{
+		System.out.println("about to connect to peer");
 		connectToPeer();
 		while(connected)
 		{
@@ -183,7 +184,8 @@ public class Peer extends Thread {
 	public synchronized void sendMessage(byte[] Message)
 	{
 		try {
-			this.peerOutputStream.write(Message);
+			System.out.println(Arrays.toString(Message));
+			peerOutputStream.write(Message);
 		} catch (IOException e) {
 			System.err.println("Stream is closed");
 			return;
