@@ -3,12 +3,14 @@ package RUBTclient;
 import java.net.*;
 import java.io.*;
 import java.util.Arrays;
+import java.util.TimerTask;
 /**
  * @author Manuel Lopez
  * @author Ben Green
  * @author Christopher Rios
  *
  */
+import java.util.Timer;
 
 /** Peer object handles all communication between client and peer
  */
@@ -26,6 +28,8 @@ public class Peer extends Thread {
 	private boolean unchoking = false; //checks if we are unchoking the connected peer
 	private boolean connected = false;//checks if peer is diconnected
 	private byte[] response;
+	private Timer send_timer; //timers for sends
+	private Timer receive_timer; //timers for receives
 	
 	public Peer(String ip, String peer_id, Integer port,DestFile destfile) {
 		super();
@@ -35,14 +39,42 @@ public class Peer extends Thread {
 		this.peerConnection = null;
 		this.peerOutputStream = null;
 		this.peerInputStream = null;
+		send_timer = new Timer();
+		receive_timer = new Timer();
+	}
+	private static class SendTimerTask extends TimerTask
+	{
+
+		@Override
+		public void run() {
+			// TODO Do something when the timer is up
+			System.out.println("send timer is up");
+			
+		}
+		
+	}
+	private static class ReceiveTimerTask extends TimerTask
+	{
+
+		@Override
+		public void run() {
+			// TODO Do something when timer is up
+			System.out.println("recieve timer is up");
+			
+		}
+		
 	}
 	public void run()
 	{
+		connectToPeer();
 		while(connected)
 		{
-			
+			    
 				try {
 					peerInputStream.readFully(response);
+					receive_timer.cancel();  //cancels the current timer for messages
+			        receive_timer = new Timer();
+			        receive_timer.schedule(new ReceiveTimerTask(), 120*1000);  //resets it for 2 minutes from last sent
 					//TODO send message to RUBT client
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
@@ -69,6 +101,8 @@ public class Peer extends Thread {
 			System.err.println("IOException");
 			return 0;
 		}
+		send_timer.schedule(new SendTimerTask(),120*1000 );
+		receive_timer.schedule(new ReceiveTimerTask(),120*1000);
 		return 1;
 	}
 	
@@ -152,7 +186,12 @@ public class Peer extends Thread {
 			this.peerOutputStream.write(Message);
 		} catch (IOException e) {
 			System.err.println("Stream is closed");
+			return;
 		}
+		send_timer.cancel();  //cancels the current timer for sent messages
+        send_timer = new Timer();
+        send_timer.schedule(new SendTimerTask(), 120*1000);  //resets it for 2 minutes from last sent
+		
 	}
 	
 	/**handshakePeer() sends the handshake message and reads the peers handshake and bitfield
