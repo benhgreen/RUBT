@@ -194,10 +194,13 @@ public class RUBTClient extends Thread{
 	private boolean keepRunning = true;
 	
 	private Tracker tracker;
+
+	private DestFile destfile;
 	
-	public RUBTClient(TorrentInfo torrentinfo, String destinationFile){
-		this.torrentinfo = torrentinfo;
-		this.destinationFile = destinationFile;
+	public RUBTClient(DestFile destfile){
+		this.destfile = destfile;
+		this.torrentinfo = destfile.getTorrentinfo();
+		this.destinationFile = destfile.getFilename();
 		this.tracker = new Tracker();
 	}
 	
@@ -227,10 +230,9 @@ public class RUBTClient extends Thread{
 		System.out.println(peer_info[0]);
 		Peer myPeer = null;
 		
-		DestFile myDest = new DestFile(this.destinationFile, torrentinfo);
 		if(peer_info != null){
 			//peer_inf[0] = peer_id, peer_info[1] is ip, peer_info[2] is port
-			myPeer = new Peer(peer_info[1], peer_info[0], Integer.parseInt(peer_info[2]), myDest);
+			myPeer = new Peer(peer_info[1], peer_info[0], Integer.parseInt(peer_info[2]), this.destfile);
 		}else{
 			System.out.println("no valid peers");
 			System.exit(0);
