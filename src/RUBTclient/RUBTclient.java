@@ -67,6 +67,8 @@ public class RUBTclient {
 			System.err.println("Beencoding Exception!");
 			e.printStackTrace();
 		}
+		//run thread
+		
 		
 		//extracts tracker information from torrent info to build GetRequest
 		String announce_url = torrentinfo.announce_url.toString(); 
@@ -82,7 +84,7 @@ public class RUBTclient {
 		
 		//sends get request to tracker
 		try{
-			response_string = trackerConnection.sendGetRequest();
+			response_string = trackerConnection.requestPeerList();
 		}catch(Exception e){
 			System.out.println("exception thrown sending get request");
 			e.printStackTrace();
@@ -177,6 +179,14 @@ public class RUBTclient {
 		//close file stream
 		resultFile.close();
 	}
+	
+	private final TorrentInfo torrentinfo;
+	private final String destinationFile;
+	
+	
+	
+	
+	
 	
 	
 	

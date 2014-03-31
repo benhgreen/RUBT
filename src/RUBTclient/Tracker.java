@@ -97,24 +97,24 @@ public class Tracker {
 	 * @return bencoded response of peer list
 	 * @throws Exception IOException when opening connection to tracker
 	 */
-	public byte[] sendGetRequest() throws Exception{   
+	public byte[] requestPeerList() throws Exception{   
 		
 		URL obj = new URL(getUrl());
-		URLConnection connection = obj.openConnection();
+		URLConnection connection = obj.openConnection(); //sends request
 
-		int contentLength = connection.getContentLength();
+		//int contentLength = connection.getContentLength();
 		
 		DataInputStream datastream = new DataInputStream(connection.getInputStream());
-		ByteArrayOutputStream tracker = new ByteArrayOutputStream();
+		ByteArrayOutputStream encoded_response = new ByteArrayOutputStream();
 		int tracker_response = datastream.read();
-		String bencoded_response = "";
+		//String bencoded_response = "";
 		while(tracker_response!=-1)
 		{
-			tracker.write(tracker_response);
+			encoded_response.write(tracker_response);
 			tracker_response=datastream.read();
 		}
-		tracker.close();
-		return tracker.toByteArray();
+		encoded_response.close();
+		return encoded_response.toByteArray();
 	}
 	
 	/**RandomID generates random alphanumeric peer_id for client and assigns to peer_id field
