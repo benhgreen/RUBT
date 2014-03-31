@@ -19,9 +19,10 @@ public class DestFile {
 	private RandomAccessFile dest;
 	int totalsize;
 	int incomplete;
+	private String filename;
 	
 	public DestFile(String name, TorrentInfo torrentinfo){
-		this.torrentinfo = torrentinfo;
+		this.setTorrentinfo(torrentinfo);
 		try {
 			//initialize RandomAccessFile and set length
 			this.dest = new RandomAccessFile(name,"rw");
@@ -39,7 +40,7 @@ public class DestFile {
 	public void addPiece(Piece piece){
 		try {
 			//calculate location to write data in the file using piece length and offset if applicable
-			long target = piece.getPiece()*torrentinfo.piece_length + piece.getOffset();
+			long target = piece.getPiece()*getTorrentinfo().piece_length + piece.getOffset();
 			dest.seek(target);
 			dest.write(piece.getData());
 			this.incomplete -= (piece.getData().length);
@@ -75,8 +76,8 @@ public class DestFile {
 		byte[] hash = md.digest(piece.getData());
 		
 		//iterate through torrentinfo piece hashes and look for a match
-		for(int i = 0; i<this.torrentinfo.piece_hashes.length; i++){
-			if(Arrays.equals(hash, this.torrentinfo.piece_hashes[i].array())){
+		for(int i = 0; i<this.getTorrentinfo().piece_hashes.length; i++){
+			if(Arrays.equals(hash, this.getTorrentinfo().piece_hashes[i].array())){
 				return true;
 			}
 		}
@@ -94,5 +95,21 @@ public class DestFile {
 		}else{
 			return bitfield;
 		}
+	}
+
+	public String getFilename() {
+		return filename;
+	}
+
+	public void setFilename(String filename) {
+		this.filename = filename;
+	}
+
+	public TorrentInfo getTorrentinfo() {
+		return torrentinfo;
+	}
+
+	public void setTorrentinfo(TorrentInfo torrentinfo) {
+		this.torrentinfo = torrentinfo;
 	}
 }
