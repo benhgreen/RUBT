@@ -68,31 +68,151 @@ public class RUBTClient extends Thread{
 			e.printStackTrace();
 		}
 		//run thread
+		RUBTClient client = new RUBTClient(torrentinfo, );
 		
 		
-		
-		
-		//extracts tracker information from torrent info to build GetRequest
-		String announce_url = torrentinfo.announce_url.toString(); 
-		int port_num = 6881;
-		int file_length = torrentinfo.file_length;
-		ByteBuffer info_hash = torrentinfo.info_hash;
-		
-		Tracker trackerConnection = new Tracker();
+//		
+//		
+//		
+//		//extracts tracker information from torrent info to build GetRequest
+//		String announce_url = torrentinfo.announce_url.toString(); 
+//		int port_num = 6881;
+//		int file_length = torrentinfo.file_length;
+//		ByteBuffer info_hash = torrentinfo.info_hash;
+//		
+//		Tracker trackerConnection = new Tracker();
+//	
+//		//build the get request url to send to the tracker
+//		trackerConnection.constructURL(announce_url, info_hash, port_num, file_length);
+//		byte[] response_string=null;
+//		
+//		//sends get request to tracker
+//		try{
+//			response_string = trackerConnection.requestPeerList();
+//		}catch(Exception e){
+//			System.out.println("exception thrown sending get request");
+//			e.printStackTrace();
+//			System.exit(0);
+//		};
+//
+//		if(response_string==null){
+//			System.out.println("null response");
+//			System.exit(0);
+//		}
+//		//0 is peer_id, 1 is ip, 2 is port
+//		//checks the list of peers from tracker
+//		Response peer_list = new Response(response_string);
+//		String[] peer_info;
+//		if(peer_list==null){
+//			System.out.println("no peers");
+//			System.exit(0);
+//		}
+//		//extracts array of peer info from valid peer
+//		peer_info = peer_list.getValidPeer();
+//		Peer myPeer = null;
+//		DestFile myDest = new DestFile(args[1], torrentinfo);
+//		if(peer_info != null){
+//			//peer_inf[0] = peer_id, peer_info[1] is ip, peer_info[2] is port
+//			myPeer = new Peer(peer_info[1], peer_info[0], Integer.parseInt(peer_info[2]), myDest);
+//		}else{
+//			System.out.println("no valid peers");
+//			System.exit(0);
+//		}
+//		
+//		//establish connection to valid peer
+//		if(myPeer.connectToPeer()==0){
+//			System.out.println("failed connecting to peer");
+//			System.exit(0);
+//		}
+//		//contruct new message for building peers output messages
+//		Message myMessage = new Message();
+//		
+//		//send handshake
+//		byte[] handshake=myMessage.handShake(info_hash.array(), trackerConnection.getUser_id());
+//		System.out.println("sent handshake");
+//		int handshake_status = myPeer.handshakePeer(handshake,info_hash.array());
+//		if(handshake_status==0){
+//			System.err.println("failed sending handshake");
+//			System.exit(0);
+//		}else if (handshake_status==-1){
+//			System.err.println("info_hash from peer didn't match");
+//			System.exit(0);
+//		}
+//
+//		byte[] interested = myMessage.getInterested();
+//		System.out.println("sent interested");
+//		int interested_status = myPeer.sendInterested(interested); 
+//		if(interested_status==0){
+//			System.out.println("failed sending interested");
+//			System.exit(0);
+//		}else if(interested_status==-1){
+//			
+//		}
+//		//send started event to tracker
+//		try{trackerConnection.sendEvent("started", myPeer.getDownloaded());
+//		}catch(Exception e)
+//		{
+//			System.err.println("send start event exception");
+//			e.printStackTrace();
+//			System.exit(0);
+//			}
+//		
+//		DestFile resultFile = myPeer.downloadPieces(torrentinfo.file_length, torrentinfo.piece_length,13);
+//		//data from peer failed to verify after hashing/corrupt download
+//		if(resultFile == null){
+//			System.out.println("corrupted download. quitting...");
+//			try{trackerConnection.sendEvent("stopped", myPeer.getDownloaded());}
+//			catch(Exception e){
+//				System.err.println("send stopped event exception");
+//				e.printStackTrace();
+//				System.exit(0);
+//			}
+//		}
+//		
+//		//send completed event to tracker
+//		try{trackerConnection.sendEvent("completed", myPeer.getDownloaded());}
+//		catch(Exception e)
+//				{
+//				System.err.println("send completed event exception");
+//				e.printStackTrace();
+//				System.exit(0);
+//				}
+//		
+//		//close all sockets and streams to peer
+//		myPeer.closeConnections();
+//		//close file stream
+//		resultFile.close();
+	}
 	
-		//build the get request url to send to the tracker
-		trackerConnection.constructURL(announce_url, info_hash, port_num, file_length);
+	private final int portnum = 6881;
+	
+	private final TorrentInfo torrentinfo;
+	
+	private final String destinationFile;
+	
+	private boolean keepRunning = true;
+	
+	private Tracker tracker;
+	
+	public RUBTClient(TorrentInfo torrentinfo, String destinationFile){
+		this.torrentinfo = torrentinfo;
+		this.destinationFile = destinationFile;
+		this.tracker = new Tracker();
+	}
+	
+	public void run(){
+		
+		this.tracker.constructURL(this.torrentinfo.announce_url.toString(), this.torrentinfo.info_hash, this.portnum, this.torrentinfo.file_length);
+		
 		byte[] response_string=null;
 		
-		//sends get request to tracker
 		try{
-			response_string = trackerConnection.requestPeerList();
+			response_string = this.tracker.requestPeerList();
 		}catch(Exception e){
-			System.out.println("exception thrown sending get request");
+			System.out.println("exception thrown requesting peer list from tracker");
 			e.printStackTrace();
 			System.exit(0);
 		};
-
 		if(response_string==null){
 			System.out.println("null response");
 			System.exit(0);
@@ -101,14 +221,10 @@ public class RUBTClient extends Thread{
 		//checks the list of peers from tracker
 		Response peer_list = new Response(response_string);
 		String[] peer_info;
-		if(peer_list==null){
-			System.out.println("no peers");
-			System.exit(0);
-		}
 		//extracts array of peer info from valid peer
 		peer_info = peer_list.getValidPeer();
 		Peer myPeer = null;
-		DestFile myDest = new DestFile(args[1], torrentinfo);
+		DestFile myDest = new DestFile(this.destinationFile, torrentinfo);
 		if(peer_info != null){
 			//peer_inf[0] = peer_id, peer_info[1] is ip, peer_info[2] is port
 			myPeer = new Peer(peer_info[1], peer_info[0], Integer.parseInt(peer_info[2]), myDest);
@@ -117,88 +233,5 @@ public class RUBTClient extends Thread{
 			System.exit(0);
 		}
 		
-		//establish connection to valid peer
-		if(myPeer.connectToPeer()==0){
-			System.out.println("failed connecting to peer");
-			System.exit(0);
-		}
-		//contruct new message for building peers output messages
-		Message myMessage = new Message();
-		
-		//send handshake
-		byte[] handshake=myMessage.handShake(info_hash.array(), trackerConnection.getUser_id());
-		System.out.println("sent handshake");
-		int handshake_status = myPeer.handshakePeer(handshake,info_hash.array());
-		if(handshake_status==0){
-			System.err.println("failed sending handshake");
-			System.exit(0);
-		}else if (handshake_status==-1){
-			System.err.println("info_hash from peer didn't match");
-			System.exit(0);
-		}
-
-		byte[] interested = myMessage.getInterested();
-		System.out.println("sent interested");
-		int interested_status = myPeer.sendInterested(interested); 
-		if(interested_status==0){
-			System.out.println("failed sending interested");
-			System.exit(0);
-		}else if(interested_status==-1){
-			
-		}
-		//send started event to tracker
-		try{trackerConnection.sendEvent("started", myPeer.getDownloaded());
-		}catch(Exception e)
-		{
-			System.err.println("send start event exception");
-			e.printStackTrace();
-			System.exit(0);
-			}
-		
-		DestFile resultFile = myPeer.downloadPieces(torrentinfo.file_length, torrentinfo.piece_length,13);
-		//data from peer failed to verify after hashing/corrupt download
-		if(resultFile == null){
-			System.out.println("corrupted download. quitting...");
-			try{trackerConnection.sendEvent("stopped", myPeer.getDownloaded());}
-			catch(Exception e){
-				System.err.println("send stopped event exception");
-				e.printStackTrace();
-				System.exit(0);
-			}
-		}
-		
-		//send completed event to tracker
-		try{trackerConnection.sendEvent("completed", myPeer.getDownloaded());}
-		catch(Exception e)
-				{
-				System.err.println("send completed event exception");
-				e.printStackTrace();
-				System.exit(0);
-				}
-		
-		//close all sockets and streams to peer
-		myPeer.closeConnections();
-		//close file stream
-		resultFile.close();
 	}
-	
-	private final TorrentInfo torrentinfo;
-	
-	private final String destinationFile;
-	
-	private boolean keepRunning = true;
-	
-	final Tracker tracker;
-	
-	public RUBTClient(final TorrentInfo torrentinfo, final String destinationFile){
-		this.torrentinfo = torrentinfo;
-		this.destinationFile = destinationFile;
-		
-		
-	}
-	
-	
-	
-	
-	
 }
