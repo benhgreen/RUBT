@@ -29,24 +29,6 @@ public class RUBTClient extends Thread{
 		//prepare file stream
 		FileInputStream fileInputStream = null;
 		File torrent = new File(torrentname);
-		//checks if destination file exists. If so, user auth is required
-		File mp3 = new File(destination);
-		if(mp3.exists()){
-			System.out.println("Output target file already exists. Type 'overwrite' to overwrite.");
-			BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in));
-			String answer = null;
-			try {
-				answer = bufferedReader.readLine();
-			} catch (IOException e) {
-				System.err.println("Invalid input");
-				e.printStackTrace();
-				System.exit(0);
-			}
-			if(!answer.equals("overwrite")){
-				System.out.println("overwrite denied. quitting program...");
-				System.exit(0);
-			}
-		}
 		
 		//extract torrent info from file specified in args
 		TorrentInfo torrentinfo = null;
@@ -67,8 +49,29 @@ public class RUBTClient extends Thread{
 			System.err.println("Beencoding Exception!");
 			e.printStackTrace();
 		}
+		
+		DestFile destfile = new DestFile(args[1], torrentinfo));
+		
+		//checks if destination file exists. If so, user auth is required
+		File mp3 = new File(destination);
+		if(mp3.exists()){
+			System.out.println("Output target file already exists. Type 'overwrite' to overwrite.");
+			BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in));
+			String answer = null;
+			try {
+				answer = bufferedReader.readLine();
+			} catch (IOException e) {
+				System.err.println("Invalid input");
+				e.printStackTrace();
+				System.exit(0);
+			}
+			if(!answer.equals("overwrite")){
+				System.out.println("overwrite denied. quitting program...");
+				System.exit(0);
+			}
+		}
 		//run thread
-		RUBTClient client = new RUBTClient(torrentinfo, destination);
+		RUBTClient client = new RUBTClient(destfile);
 		client.start();
 		
 		
