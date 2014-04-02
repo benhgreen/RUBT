@@ -114,7 +114,9 @@ public class DestFile {
 			try {
 				this.dest.seek(i * this.torrentinfo.piece_length);
 				this.dest.read(temp);
-				this.verify(temp);
+				if(this.verify(temp)){
+					System.out.println("Piece " + i + " is valid.");
+				}
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
