@@ -82,9 +82,9 @@ public class RUBTClient extends Thread{
 		
 		//checks if destination file exists. If so, user auth is required
 		File mp3 = new File(destination);
-		if(mp3.exists()){
-			destfile.checkExistingFile();
-		}
+		//if(mp3.exists()){
+		//destfile.checkExistingFile();
+		//}
 		//run thread
 		RUBTClient client = new RUBTClient(destfile);
 		client.start();
@@ -338,12 +338,12 @@ public class RUBTClient extends Thread{
 		System.arraycopy(phandshake,28,peer_infohash,0,20); //copys the peer's infohash
 		if(Arrays.equals(peer_infohash, this.torrentinfo.info_hash.array()))
 		{
-			System.out.println("Valid info hash");
+			//System.out.println("Valid info hash");
 			return true;
 		}
 		else
 		{
-			System.err.println("Invalid info hash");
+			//System.err.println("Invalid info hash");
 			return false;
 		}
 	}
