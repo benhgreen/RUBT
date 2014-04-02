@@ -76,7 +76,6 @@ public class Peer extends Thread {
 		}
 		while(connected)
 		{
-			    
 				try {
 					int length_prefix = peerInputStream.readInt();
 					System.out.println(length_prefix);
