@@ -65,28 +65,24 @@ public class Peer extends Thread {
 	}
 	public void run()
 	{
-		System.out.println("peer thread run: " + Thread.currentThread());
 		while(connected)
 		{
 				try {
 					int length_prefix = peerInputStream.readInt();
-					System.out.println("length prefix_"+length_prefix);
-					byte id = peerInputStream.readByte();
-					System.out.println("id"+id);
-					response = new byte[length_prefix-1];
+					System.out.println("length prefix from "+Thread.currentThread()+":"+length_prefix);
+					response = new byte[length_prefix];
 					peerInputStream.readFully(response);
-					if(id==Message.BITFIELD)      //if the id is a bitfield, set this peers bitfield to this byte array.
+					if(response[0]==Message.BITFIELD)      //if the id is a bitfield, set this peers bitfield to this byte array.
 					{
 						System.out.println("setting the bitfield");
-						this.bitfield = response;
+						System.arraycopy(response,1,this.bitfield,0,length_prefix-1);
 					}
-					System.out.println(Arrays.toString(response));
 					message = new MessageTask(this,response);//makes the response into a  new message task, passes a peer as well
 					client.addMessage(message); //puts the message in its clients  task queue
+				
 					receive_timer.cancel();  //cancels the current timer for messages
 			        receive_timer = new Timer();
 			        receive_timer.schedule(new ReceiveTimerTask(), 120*1000);  //resets it for 2 minutes from last sent
-			        connected=false;
 					//TODO send message to RUBT client
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
