@@ -1,6 +1,7 @@
 package RUBTClient;
 
 import java.nio.ByteBuffer;
+import java.util.List;
 import java.util.Arrays;
 import java.io.*;
 
@@ -256,6 +257,18 @@ public class RUBTClient extends Thread{
 	
 		
 	}
+	
+	
+	
+	void addPeers(List<Peer> newPeers){
+		
+		
+	
+	}
+	
+	
+	
+	
 	
 	/**
 	 * This method compares the remote peers handshake to our infohash 
