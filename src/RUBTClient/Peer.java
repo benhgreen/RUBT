@@ -31,6 +31,7 @@ public class Peer extends Thread {
 	private Timer send_timer; //timers for sends
 	private Timer receive_timer; //timers for receives
 	private byte[] bitfield;
+	private RUBTClient client;
 	
 	public Peer(String ip, String peer_id, Integer port) {
 		super();
@@ -231,6 +232,11 @@ public class Peer extends Thread {
 			closeConnections();
 		}
 		return phandshake;
+	}
+	
+	public void setClient(RUBTClient client)
+	{
+		this.client=client;
 	}
 	
 	/**handshakePeer() sends the handshake message and reads the peers handshake and bitfield
