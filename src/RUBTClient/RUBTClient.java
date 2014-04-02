@@ -321,6 +321,7 @@ public class RUBTClient extends Thread{
 				continue;
 			}
 			peers.add(peer);
+			peer.start();
 		}
 	}
 	
