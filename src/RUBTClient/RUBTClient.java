@@ -15,6 +15,25 @@ import edu.rutgers.cs.cs352.bt.exceptions.BencodingException;
  */
 public class RUBTClient extends Thread{
 	
+	private final int portnum = 6881;
+	
+	private final TorrentInfo torrentinfo;
+	
+	private final String destinationFile;
+	
+	private boolean keepRunning = true;
+	
+	private Tracker tracker;
+
+	private DestFile destfile;
+	
+	public RUBTClient(DestFile destfile){
+		this.destfile = destfile;
+		this.torrentinfo = destfile.getTorrentinfo();
+		this.destinationFile = destfile.getFilename();
+		this.tracker = new Tracker();
+	}
+	
 	public static void main(String[] args){
 		int max_request = 16384;
 		//verifies command line args
@@ -173,25 +192,6 @@ public class RUBTClient extends Thread{
 //		myPeer.closeConnections();
 //		//close file stream
 //		resultFile.close();
-	}
-	
-	private final int portnum = 6881;
-	
-	private final TorrentInfo torrentinfo;
-	
-	private final String destinationFile;
-	
-	private boolean keepRunning = true;
-	
-	private Tracker tracker;
-
-	private DestFile destfile;
-	
-	public RUBTClient(DestFile destfile){
-		this.destfile = destfile;
-		this.torrentinfo = destfile.getTorrentinfo();
-		this.destinationFile = destfile.getFilename();
-		this.tracker = new Tracker();
 	}
 	
 	public void run(){

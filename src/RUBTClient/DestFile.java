@@ -20,6 +20,7 @@ public class DestFile {
 	int totalsize;
 	int incomplete;
 	private String filename;
+	private byte[] mybitfield;
 	
 	public DestFile(String name, TorrentInfo torrentinfo){
 		this.setTorrentinfo(torrentinfo);
@@ -29,6 +30,14 @@ public class DestFile {
 			dest.setLength(torrentinfo.file_length);
 			this.totalsize = torrentinfo.file_length;
 			this.incomplete = torrentinfo.file_length;
+			
+			int mod1;
+			if((mod1 = torrentinfo.file_length % 8) == 0){
+				this.mybitfield = new byte[mod1];
+			}else{
+				this.mybitfield = new byte[mod1 + 1];
+			}
+			
 		} catch (IOException e) {
 			System.err.println("Error while initializing RandomAccessFile");
 		}
@@ -95,6 +104,14 @@ public class DestFile {
 		}else{
 			return bitfield;
 		}
+	}
+	
+	public void checkExistingFile(){
+		
+		for(int i = 0; i < this.torrentinfo.piece_hashes.length; i++){
+			//check each piece here
+		}
+		
 	}
 
 	public String getFilename() {
