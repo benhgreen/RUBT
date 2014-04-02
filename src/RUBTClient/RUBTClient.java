@@ -3,6 +3,7 @@ package RUBTClient;
 import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Arrays;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.io.*;
 
 import edu.rutgers.cs.cs352.bt.TorrentInfo;
@@ -27,6 +28,9 @@ public class RUBTClient extends Thread{
 	private Tracker tracker;
 
 	private DestFile destfile;
+	
+	private final LinkedBlockingQueue<MessageTask> tasks = new LinkedBlockingQueue<MessageTask>();
+
 	
 	public RUBTClient(DestFile destfile){
 		this.destfile = destfile;
@@ -247,7 +251,8 @@ public class RUBTClient extends Thread{
 				//System.err.println("Invalid info hash from peer:"+peer_info[0]);
 			}
 		} catch (IOException e) {
-			System.err.println("prob bad");
+			System.err.println("prob bad
+			");
 			e.printStackTrace();
 		}
 		System.out.println("client thread: " + Thread.currentThread());
@@ -269,9 +274,12 @@ public class RUBTClient extends Thread{
 	 */
 	
 	void addPeers(List<Peer> newPeers){
-		
-		
-	
+		for(Peer peer: newPeers){
+			
+			
+			
+			
+		}
 	}
 	
 	
