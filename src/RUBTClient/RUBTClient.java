@@ -305,4 +305,8 @@ public class RUBTClient extends Thread{
 			return false;
 		}
 	}
+	public synchronized  void addMessage(MessageTask task)
+	{
+		tasks.add(task);
+	}
 }

@@ -32,7 +32,7 @@ public class Peer extends Thread {
 	private Timer receive_timer; //timers for receives
 	private byte[] bitfield;
 	private RUBTClient client;
-	
+	private MessageTask message;
 	public Peer(String ip, String peer_id, Integer port) {
 		super();
 		this.ip = ip;
@@ -81,6 +81,8 @@ public class Peer extends Thread {
 						this.bitfield = response;
 					}
 					System.out.println(Arrays.toString(response));
+					message = new MessageTask(this,response);//makes the response into a  new message task, passes a peer as well
+					client.addMessage(message); //puts the message in its clients  task queue
 					receive_timer.cancel();  //cancels the current timer for messages
 			        receive_timer = new Timer();
 			        receive_timer.schedule(new ReceiveTimerTask(), 120*1000);  //resets it for 2 minutes from last sent
