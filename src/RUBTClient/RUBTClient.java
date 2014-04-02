@@ -215,17 +215,23 @@ public class RUBTClient extends Thread{
 		//0 is peer_id, 1 is ip, 2 is port
 		//checks the list of peers from tracker
 		Response peer_list = new Response(response_string);
-		String[] peer_info;
 		//extracts array of peer info from valid peer
-		peer_info = peer_list.getValidPeer();
-		System.out.println(peer_info[0]);
-		System.out.println(torrentinfo.file_length);
-		System.out.println(torrentinfo.piece_length);
+		
+		
+		addPeers(peer_list.getValidPeers());
+		
+		
+		//peer_info = peer_list.getValidPeers();
+		//System.out.println(peer_info[0]);
+		//System.out.println(torrentinfo.file_length);
+		//System.out.println(torrentinfo.piece_length);
 		Peer myPeer = null;
 		
+		
+		/*
 		if(peer_info != null){
 			//peer_inf[0] = peer_id, peer_info[1] is ip, peer_info[2] is port
-			myPeer = new Peer(peer_info[1], peer_info[0], Integer.parseInt(peer_info[2]), this.destfile);
+			myPeer = new Peer(peer_info[1], peer_info[0], Integer.parseInt(peer_info[2]));
 		}else{
 			System.out.println("no valid peers");
 			System.exit(0);
@@ -238,7 +244,7 @@ public class RUBTClient extends Thread{
 			if(this.handshakeCheck(handshake)==false);
 			{
 				myPeer.closeConnections();
-				System.err.println("Invalid info hash from peer:"+peer_info[0]);
+				//System.err.println("Invalid info hash from peer:"+peer_info[0]);
 			}
 		} catch (IOException e) {
 			System.err.println("prob bad");
@@ -253,12 +259,14 @@ public class RUBTClient extends Thread{
 			e.printStackTrace();
 		}
 		System.out.println("The Bitfield"+Arrays.toString(myPeer.getbitfield()));
-		
+		*/
 	
 		
 	}
 	
-	
+	/**
+	 * @param newPeers List of Peers to be connected to
+	 */
 	
 	void addPeers(List<Peer> newPeers){
 		

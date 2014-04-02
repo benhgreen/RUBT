@@ -86,7 +86,7 @@ public class Response {
             			}
             		}
             		//Create new Peer object and append it to the ArrayList
-        			this.peers.add(new Peer(temp_ip, temp_peer_id, temp_port,null));
+        			this.peers.add(new Peer(temp_ip, temp_peer_id, temp_port));
             	}
             //Grab other information as needed
             }else if(string_key.equals("interval")){
@@ -128,22 +128,19 @@ public class Response {
 		
 	}
 	/**
-	 * @return String array containing a peer that matches specific parameters 
-	 *         and is found in the Response peer list from the tracker.
+	 * @return List of Peers containing all peers that matches specific parameters 
+	 *         and are found in the Response array list from the tracker.
 	 */
-	public String[] getValidPeer(){
+	public List<Peer> getValidPeers(){
 		Iterator<Peer> iter = this.peers.iterator();
-		String[] results = new String[3];
-		//0 IP address, 1 port, 2 peer_id
+		List<Peer> validPeers = new ArrayList<Peer>();
+		
 		while(iter.hasNext()){
 			Peer temp = iter.next();
 			if(((temp.getIp().equals("128.6.171.130"))||(temp.getIp().equals("128.6.171.131")))){
-				results[0] = temp.getPeer_id();
-				results[1] = temp.getIp();
-				results[2] = Integer.toString(temp.getPort());
-				return results;
+				validPeers.add(temp);
 			}
 		}
-		return null;
+		return validPeers;
 	}
 }

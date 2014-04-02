@@ -32,7 +32,7 @@ public class Peer extends Thread {
 	private Timer receive_timer; //timers for receives
 	private byte[] bitfield;
 	
-	public Peer(String ip, String peer_id, Integer port,DestFile destfile) {
+	public Peer(String ip, String peer_id, Integer port) {
 		super();
 		this.ip = ip;
 		this.peer_id = peer_id;
@@ -64,7 +64,6 @@ public class Peer extends Thread {
 	}
 	public void run()
 	{
-<<<<<<< HEAD
 		System.out.println("peer thread run: " + Thread.currentThread());
 		byte[] handshake = new byte[68]; //Receives initial handshake
 		try {
@@ -75,9 +74,7 @@ public class Peer extends Thread {
 			e1.printStackTrace();
 			closeConnections();
 		}
-=======
 		
->>>>>>> 374a7f4b9d982b86d0519afc211e028ed07f0d0d
 		while(connected)
 		{
 				try {
