@@ -65,7 +65,6 @@ public class Peer extends Thread {
 	public void run()
 	{
 		System.out.println("peer thread run: " + Thread.currentThread());
-<<<<<<< HEAD
 		byte[] handshake = new byte[68]; //Receives initial handshake
 		try {
 			peerInputStream.readFully(handshake);
@@ -76,8 +75,6 @@ public class Peer extends Thread {
 			closeConnections();
 		}
 		
-=======
->>>>>>> e90d605e716110dd08b49c4dec193224a583a856
 		while(connected)
 		{
 				try {
