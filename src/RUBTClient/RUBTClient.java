@@ -1,6 +1,8 @@
 package RUBTClient;
 
 import java.nio.ByteBuffer;
+import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Arrays;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -31,6 +33,8 @@ public class RUBTClient extends Thread{
 	
 	private final LinkedBlockingQueue<MessageTask> tasks = new LinkedBlockingQueue<MessageTask>();
 
+	private final List<Peer> peers = Collections.synchronizedList(new LinkedList<Peer>());
+	
 	
 	public RUBTClient(DestFile destfile){
 		this.destfile = destfile;
@@ -275,10 +279,23 @@ public class RUBTClient extends Thread{
 	
 	void addPeers(List<Peer> newPeers){
 		for(Peer peer: newPeers){
-			
-			
-			
-			
+			if(!peer.connectToPeer()){
+				continue;
+			}
+			Message current_message = new Message();
+			try {
+				peer.sendMessage(current_message.handShake(this.torrentinfo.info_hash.array(), tracker.getUser_id()));
+				byte[] handshake = peer.handshake();
+				
+				if(!this.handshakeCheck(handshake)){
+					peer.closeConnections();
+					System.err.println("Invalid info hash from peer:");
+				}
+			} catch (IOException e) {
+				System.err.println("random  IO ex");
+				continue;
+			}
+			peers.add(peer);
 		}
 	}
 	
