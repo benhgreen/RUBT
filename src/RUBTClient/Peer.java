@@ -64,20 +64,7 @@ public class Peer extends Thread {
 	}
 	public void run()
 	{
-<<<<<<< HEAD
 		System.out.println("peer thread run: " + Thread.currentThread());
-		byte[] handshake = new byte[68]; //Receives initial handshake
-		try {
-			peerInputStream.readFully(handshake);
-		} catch (IOException e1) {
-			// TODO Auto-generated catch block
-			System.err.println("Handshake Error");
-			e1.printStackTrace();
-			closeConnections();
-		}
-=======
-		
->>>>>>> 374a7f4b9d982b86d0519afc211e028ed07f0d0d
 		while(connected)
 		{
 				try {
