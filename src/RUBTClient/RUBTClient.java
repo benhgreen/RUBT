@@ -235,13 +235,13 @@ public class RUBTClient extends Thread{
 				Peer peer = task.getPeer();
 				switch(msg[0]){
 					case Message.UNCHOKE:
-						System.out.println("Peer " +peer.getPeer_id() +"sent unchoked");
+						System.out.println("Peer " +peer.getPeer_id() +" sent unchoked");
 						break;			
 					case Message.HAVE:
-						System.out.println("Peer " + peer.getPeer_id() + "sent have message");
+						System.out.println("Peer " + peer.getPeer_id() + " sent have message");
 						break;
 					case Message.BITFIELD:
-						System.out.println("Peer " + peer.getPeer_id() + "sent bitfield");
+						System.out.println("Peer " + peer.getPeer_id() + " sent bitfield");
 						break;
 
 				}
@@ -321,6 +321,7 @@ public class RUBTClient extends Thread{
 				continue;
 			}
 			peers.add(peer);
+			peer.setClient(this);
 			peer.start();
 		}
 	}
