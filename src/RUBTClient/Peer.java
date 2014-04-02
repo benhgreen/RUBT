@@ -65,8 +65,6 @@ public class Peer extends Thread {
 	public void run()
 	{
 		System.out.println("peer thread run: " + Thread.currentThread());
-		
-		
 		while(connected)
 		{
 				try {
