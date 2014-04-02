@@ -228,12 +228,37 @@ public class RUBTClient extends Thread{
 		
 		addPeers(peer_list.getValidPeers());
 		
+		while(this.keepRunning){
+			try{
+				MessageTask task = this.tasks.take();
+				byte[] msg = task.getMessage();
+				Peer peer = task.getPeer();
+				switch(msg[0]){
+					case Message.UNCHOKE:
+						System.out.println("Peer " +peer.getPeer_id() +"sent unchoked");
+						break;			
+					case Message.HAVE:
+						System.out.println("Peer " + peer.getPeer_id() + "sent have message");
+						break;
+					case Message.BITFIELD:
+						System.out.println("Peer " + peer.getPeer_id() + "sent bitfield");
+						break;
+
+				}
+			}catch (InterruptedException ie){
+				System.err.println("caught interrupt. continueing anyway");
+			}
+		
+		}
+		
+		
+		
 		
 		//peer_info = peer_list.getValidPeers();
 		//System.out.println(peer_info[0]);
 		//System.out.println(torrentinfo.file_length);
 		//System.out.println(torrentinfo.piece_length);
-		Peer myPeer = null;
+		//Peer myPeer = null;
 		
 		
 		/*
