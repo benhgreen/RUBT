@@ -21,6 +21,7 @@ public class DestFile {
 	int incomplete;
 	private String filename;
 	private byte[] mybitfield;
+	private boolean[] mypieces;
 	
 	public DestFile(String name, TorrentInfo torrentinfo){
 		this.setTorrentinfo(torrentinfo);
@@ -34,8 +35,10 @@ public class DestFile {
 			int mod1;
 			if((mod1 = torrentinfo.file_length % 8) == 0){
 				this.mybitfield = new byte[mod1];
+				this.mypieces = new boolean[mod1];
 			}else{
 				this.mybitfield = new byte[mod1 + 1];
+				this.mypieces= new boolean[mod1 + 1];
 			}
 			
 		} catch (IOException e) {
@@ -106,6 +109,9 @@ public class DestFile {
 		}
 	}
 	
+	/**
+	 *  Checks through a (presumed to exist) file for valid pieces and updates mypieces accordingly.
+	 */
 	public void checkExistingFile(){
 		
 		byte[] temp = new byte[this.torrentinfo.piece_length];
@@ -116,12 +122,32 @@ public class DestFile {
 				this.dest.read(temp);
 				if(this.verify(temp)){
 					System.out.println("Piece " + i + " is valid.");
+					this.mypieces[i] = true;
+				}else{
+					System.out.println("Piece " + i + " is INvalid.");
+					this.mypieces[i] = false;
 				}
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		}
 		
+	}
+	
+	/**
+	 *  Refreshes bitfield based on the current status of mypieces.
+	 */
+	public void renewBitfield(){
+		
+		for(int i = 0; i < this.mybitfield.length; i++){
+			
+			if(this.mypieces[i]){
+				this.mybitfield[i] |= (1 << i);
+			}else{
+				this.mybitfield[i] &= ~(1 << i);
+			}
+			
+		}
 	}
 
 	public String getFilename() {
