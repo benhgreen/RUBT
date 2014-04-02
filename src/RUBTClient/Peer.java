@@ -64,7 +64,20 @@ public class Peer extends Thread {
 	}
 	public void run()
 	{
+<<<<<<< HEAD
+		System.out.println("peer thread run: " + Thread.currentThread());
+		byte[] handshake = new byte[68]; //Receives initial handshake
+		try {
+			peerInputStream.readFully(handshake);
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			System.err.println("Handshake Error");
+			e1.printStackTrace();
+			closeConnections();
+		}
+=======
 		
+>>>>>>> 374a7f4b9d982b86d0519afc211e028ed07f0d0d
 		while(connected)
 		{
 				try {
@@ -205,7 +218,7 @@ public class Peer extends Thread {
 		send_timer.cancel();  //cancels the current timer for sent messages
         send_timer = new Timer();
         send_timer.schedule(new SendTimerTask(), 120*1000);  //resets it for 2 minutes from last sent
-        System.out.println("peer thread: " + Thread.currentThread());
+        System.out.println("peer thread send message: " + Thread.currentThread());
 		
 	}
 	
