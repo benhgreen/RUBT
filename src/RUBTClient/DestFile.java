@@ -73,7 +73,7 @@ public class DestFile {
 	 * @param Piece with data to verify
 	 * @return True if the piece's data hash was located in the TorrentInfo's data hash array, false if it was not found.
 	 */
-	public boolean verify(Piece piece){
+	public boolean verify(byte[] piece){
 		
 		//get data hash
 		MessageDigest md = null;
@@ -82,7 +82,7 @@ public class DestFile {
 		} catch (NoSuchAlgorithmException e) {
 			System.err.println("Error intitializing MessageDigest");
 		}
-		byte[] hash = md.digest(piece.getData());
+		byte[] hash = md.digest(piece);
 		
 		//iterate through torrentinfo piece hashes and look for a match
 		for(int i = 0; i<this.getTorrentinfo().piece_hashes.length; i++){
@@ -108,8 +108,18 @@ public class DestFile {
 	
 	public void checkExistingFile(){
 		
+		byte[] temp = new byte[this.torrentinfo.piece_length];
 		for(int i = 0; i < this.torrentinfo.piece_hashes.length; i++){
 			//check each piece here
+			try {
+				this.dest.seek(i * this.torrentinfo.piece_length);
+				this.dest.read(temp);
+				if(this.verify(temp)){
+					System.out.println("Piece " + i + " is valid.");
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 		
 	}

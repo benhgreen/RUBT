@@ -234,7 +234,11 @@ public class RUBTClient extends Thread{
 		try {
 			myPeer.sendMessage(current_message.handShake(this.torrentinfo.info_hash.array(), tracker.getUser_id()));
 			byte[] handshake = myPeer.handshake();
-			System.out.println("Their handshake"+Arrays.toString(handshake));
+			if(this.handshakeCheck(handshake)==false);
+			{
+				myPeer.closeConnections();
+				System.err.println("Invalid info hash from peer:"+peer_info[0]);
+			}
 		} catch (IOException e) {
 			System.err.println("prob bad");
 			e.printStackTrace();
@@ -251,5 +255,25 @@ public class RUBTClient extends Thread{
 		
 	
 		
+	}
+	
+	/**
+	 * This method compares the remote peers handshake to our infohash 
+	 * @param phandshake peer handshake
+	 */
+	private boolean handshakeCheck(byte[] phandshake)//TODO check that the expected peer name is correct?
+	{
+		byte[] peer_infohash = new byte [20];
+		System.arraycopy(phandshake,28,peer_infohash,0,20); //copys the peer's infohash
+		if(Arrays.equals(peer_infohash, this.torrentinfo.info_hash.array()))
+		{
+			System.out.println("Valid info hash");
+			return true;
+		}
+		else
+		{
+			System.err.println("Invalid info hash");
+			return false;
+		}
 	}
 }
