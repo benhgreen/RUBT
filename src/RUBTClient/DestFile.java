@@ -17,10 +17,10 @@ public class DestFile {
 	
 	private TorrentInfo torrentinfo;
 	private RandomAccessFile dest;
-	private int totalsize;
-	private int incomplete;
+	int totalsize;
+	int incomplete;
 	private String filename;
-	private byte[] bitfields;
+	private byte[] mybitfield;
 	
 	public DestFile(String name, TorrentInfo torrentinfo){
 		this.setTorrentinfo(torrentinfo);
@@ -32,13 +32,11 @@ public class DestFile {
 			this.incomplete = torrentinfo.file_length;
 			
 			int mod1;
-			if((mod1 = torrentinfo.piece_hashes.length % 8) != 0){
-				int mod2 = (torrentinfo.piece_hashes.length - mod1) / 8;
-				bitfields = new byte[mod2 + 1];
+			if((mod1 = torrentinfo.file_length % 8) == 0){
+				this.mybitfield = new byte[mod1];
 			}else{
-				bitfields = new byte[torrentinfo.piece_hashes.length / 8];
+				this.mybitfield = new byte[mod1 + 1];
 			}
-			
 			
 		} catch (IOException e) {
 			System.err.println("Error while initializing RandomAccessFile");
@@ -99,7 +97,7 @@ public class DestFile {
 	 * @param input Integer representation of bitfield
 	 * @return String representation of bitfield in binary form, two's complement
 	 */
-	public String generateBitField(byte input){
+	public String generateBitField(Integer input){
 		String bitfield = Integer.toBinaryString(input);
 		if(bitfield.length()>8){
 			return bitfield.substring(bitfield.length()-8);
@@ -108,19 +106,12 @@ public class DestFile {
 		}
 	}
 	
-	/**
-	 * check existing file for valid pieces and update bitfields accordingly
-	 */
-	public void checkExistingFile() {	
+	public void checkExistingFile(){
 		
-	}
-	
-	/**
-	 * @param action to perform on bitfield
-	 * @param piece to update in bitfield registry
-	 */
-	public void registerPiece(int action, int piece){
-		//TODO this method
+		for(int i = 0; i < this.torrentinfo.piece_hashes.length; i++){
+			//check each piece here
+		}
+		
 	}
 
 	public String getFilename() {
@@ -138,6 +129,4 @@ public class DestFile {
 	public void setTorrentinfo(TorrentInfo torrentinfo) {
 		this.torrentinfo = torrentinfo;
 	}
-
-	
 }

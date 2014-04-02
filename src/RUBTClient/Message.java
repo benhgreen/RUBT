@@ -23,13 +23,13 @@ public class Message
 	 * @field REQUEST Value of the request identifier
 	 * @field PIECE Value of the piece identifier
 	 */
-	public static final  int CHOKE = 0;
-	public static final int UNCHOKE = 1;
-	public static final int INTERESTED = 2;
-	public static final int HAVE = 4;
-	public static final int BITFIELD = 5;
-	public static final int REQUEST = 6;
-	public static final int PIECE = 7;
+	public static final  byte CHOKE = 0;
+	public static final byte UNCHOKE = 1;
+	public static final byte INTERESTED = 2;
+	public static final byte HAVE = 4;
+	public static final byte BITFIELD = 5;
+	public static final byte REQUEST = 6;
+	public static final byte PIECE = 7;
 	 //message headers
 	private final byte[] handshake_consts = {0x13,'B','i','t','T','o','r','r','e','n','t',' ','p','r','o','t','o','c','o','l',0,0,0,0,0,0,0,0};
 	private final byte[] have_consts = {0,0,0,5,4};
