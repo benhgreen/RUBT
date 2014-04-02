@@ -3,9 +3,9 @@ package RUBTClient;
 public class MessageTask {
 	
 	private final Peer peer;
-	private final Message message;
+	private final byte[] message;
 	
-	public MessageTask(final Peer peer, final Message message){
+	public MessageTask(final Peer peer, final byte[] message){
 		this.peer = peer;
 		this.message = message;
 	}
@@ -14,7 +14,7 @@ public class MessageTask {
 		return this.peer;
 	}
 	
-	public Message getMessage() {
+	public byte[] getMessage() {
 		return this.message;
 	}
 }
