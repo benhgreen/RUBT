@@ -75,7 +75,8 @@ public class Peer extends Thread {
 					if(response[0]==Message.BITFIELD)      //if the id is a bitfield, set this peers bitfield to this byte array.
 					{
 						System.out.println("setting the bitfield");
-						System.arraycopy(response,1,this.bitfield,0,length_prefix-1);
+						bitfield = new byte[length_prefix-1];
+						System.arraycopy(response,1,this.bitfield,0,bitfield.length);
 					}
 					message = new MessageTask(this,response);//makes the response into a  new message task, passes a peer as well
 					client.addMessage(message); //puts the message in its clients  task queue
@@ -198,7 +199,6 @@ public class Peer extends Thread {
 			System.out.println("stream is null");
 		}
 		else{
-			System.out.println(Arrays.toString(Message));
 			peerOutputStream.write(Message);
 		}
 		send_timer.cancel();  //cancels the current timer for sent messages
