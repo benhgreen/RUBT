@@ -98,9 +98,9 @@ public class Peer extends Thread {
 	}
 		
 	/**connectToPeer() sets socket connections and input/output streams to the peer
-	 * @return int 1 if successful/0 if failed
+	 * @return true if successful/false if failed
 	 */
-	public int connectToPeer(){
+	public boolean connectToPeer(){
 		//open sockets and input/output streams
 		try{
 			this.peerConnection = new Socket(ip, port);
@@ -110,14 +110,14 @@ public class Peer extends Thread {
 			connected =true;
 		}catch(UnknownHostException e){
 			System.err.println("UnknownHostException");
-			return 0;
+			return false;
 		}catch(IOException e){
 			System.err.println("IOException");
-			return 0;
+			return false;
 		}
 		send_timer.schedule(new SendTimerTask(),120*1000 );
 		receive_timer.schedule(new ReceiveTimerTask(),120*1000);
-		return 1;
+		return true;
 	}
 	
 	/** closes input/outputstreams and socket connections 
