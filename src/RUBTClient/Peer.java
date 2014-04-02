@@ -64,22 +64,14 @@ public class Peer extends Thread {
 	}
 	public void run()
 	{
-		System.out.println("peer thread: " + Thread.currentThread());
-		byte[] handshake = new byte[68]; //Receives initial handshake
-		try {
-			peerInputStream.readFully(handshake);
-		} catch (IOException e1) {
-			// TODO Auto-generated catch block
-			System.err.println("Handshake Error");
-			e1.printStackTrace();
-			closeConnections();
-		}
+		
 		while(connected)
 		{
 				try {
 					int length_prefix = peerInputStream.readInt();
-					System.out.println(length_prefix);
+					System.out.println("length prefix_"+length_prefix);
 					byte id = peerInputStream.readByte();
+					System.out.println("id"+id);
 					response = new byte[length_prefix-1];
 					peerInputStream.readFully(response);
 					if(id==Message.BITFIELD)      //if the id is a bitfield, set this peers bitfield to this byte array.
@@ -221,6 +213,24 @@ public class Peer extends Thread {
 	{
 		return this.bitfield;
 	}
+	
+	public synchronized byte[] handshake()
+	{
+		System.out.println("peer thread: " + Thread.currentThread());
+		byte[] phandshake = new byte[68]; //Receives initial handshake
+		try 
+		{
+			peerInputStream.readFully(phandshake);
+		} 
+		catch (IOException e1) 
+		{
+			System.err.println("Handshake Error");
+			e1.printStackTrace();
+			closeConnections();
+		}
+		return phandshake;
+	}
+	
 	/**handshakePeer() sends the handshake message and reads the peers handshake and bitfield
 	 * @param handshake
 	 * @return 1 if successful/0 if failed

@@ -233,12 +233,21 @@ public class RUBTClient extends Thread{
 		myPeer.connectToPeer();
 		try {
 			myPeer.sendMessage(current_message.handShake(this.torrentinfo.info_hash.array(), tracker.getUser_id()));
+			byte[] handshake = myPeer.handshake();
+			System.out.println("Their handshake"+Arrays.toString(handshake));
 		} catch (IOException e) {
 			System.err.println("prob bad");
 			e.printStackTrace();
 		}
 		System.out.println("client thread: " + Thread.currentThread());
-		myPeer.start(); 
+		myPeer.start();
+		try {
+			myPeer.join();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		System.out.println("The Bitfield"+Arrays.toString(myPeer.getbitfield()));
 		
 	
 		
