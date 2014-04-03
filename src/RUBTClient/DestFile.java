@@ -170,6 +170,7 @@ public class DestFile {
 			
 		}
 	}
+<<<<<<< HEAD
 	
 	/**
 	 * Initializes all bits to 0
@@ -183,6 +184,29 @@ public class DestFile {
 		}
 	}
 	
+=======
+	public byte[] getMybitfield(){
+		return mybitfield;
+	}
+	
+	/**
+	 * Manually set bit in bitfield
+	 * @param i Bit to set
+	 * @param bool Value to set
+	 */
+	public void manualMod(int i, boolean bool){
+		
+		int mod = i%8;
+		int currentbyte = (i-(mod)) / 8;
+		if(bool){
+			this.mybitfield[currentbyte] |= (1 << mod);
+		}else{
+			this.mybitfield[currentbyte] &= ~(1 << mod);
+		}
+		
+		
+	}
+>>>>>>> c841f5cec70e0363ae652108ade153b3993c04ae
 
 	public String getFilename() {
 		return filename;

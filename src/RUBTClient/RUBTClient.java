@@ -231,13 +231,9 @@ public class RUBTClient extends Thread{
 		//checks the list of peers from tracker
 		Response peer_list = new Response(response_string);
 		//extracts array of peer info from valid peer
-		
-		System.out.println("piece length: " + this.torrentinfo.piece_length);
-		System.out.println("file length " + this.torrentinfo.file_length);
-		
 		addPeers(peer_list.getValidPeers());
-		
 		while(this.keepRunning){
+
 			try{
 				System.out.println("task");
 				MessageTask task = this.tasks.take();

@@ -88,9 +88,10 @@ public class Peer extends Thread {
 			        receive_timer = new Timer();
 			        receive_timer.schedule(new ReceiveTimerTask(), 120*1000);  //resets it for 2 minutes from last sent
 					//TODO send message to RUBT client
-				} catch (IOException e) {
+				} catch (Exception e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
+					closeConnections();
 				}
 			
 		}
