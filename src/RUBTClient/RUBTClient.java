@@ -261,24 +261,27 @@ public class RUBTClient extends Thread{
 					case Message.BITFIELD:
 						System.out.println("Peer " + peer.getPeer_id() + " sent bitfield");
 						System.out.println("and here is it"+Arrays.toString(peer.getbitfield()));
-						destfile.manualMod(0, true);
-						System.out.println(destfile.firstNewPiece(peer.getbitfield()));
-						//TODO call the thing that ben makes, if not 0
-						
+						if(destfile.firstNewPiece(peer.getbitfield())!=-1)//then we are interested in a piece
+						{
+							peer.sendMessage(message.getInterested());
+						}
 						break;
 					case Message.REQUEST:
 						System.out.println("Peer " + peer.getPeer_id() + " sent request");
 						break;
 					case Message.PIECE:
 						System.out.println("Peer " + peer.getPeer_id()+ " sent Piece");
+						System.out.println(Arrays.toString(msg));
 						//TODO write piece to file
-						this.chooseAndRequestPiece(peer);
 						break;
 						//
 
 				}
 			}catch (InterruptedException ie){
 				System.err.println("caught interrupt. continuing anyway");
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
 		
 		}	
@@ -350,7 +353,7 @@ public class RUBTClient extends Thread{
 	   	byte[] request_message;
 		if(peer.isUnchoked()&&peer.isInterested()); //if our peer is unchoked and we are interested
 	   	{
-	   		//request_message= get index from bens thing
+	   		current_piece= destfile.firstNewPiece(peer.getbitfield());
 	   		for(int i = 0;i<=pieces;i++)
 	   		{
 	   			request_message=current_message.request(current_piece, offset_counter,max_request);
