@@ -79,20 +79,19 @@ public class RUBTClient extends Thread{
 		}
 		
 		
-		DestFile destfile = new DestFile(t
-				orrentinfo);
+		DestFile destfile = new DestFile(torrentinfo);
 		
 		//checks if destination file exists. If so, user auth is required
-		File mp3 = new File(destination);
-		if(mp3.exists()){
+		File mp3 = new File(torrentinfo.file_name);
+		/*if(mp3.exists()){
 			System.out.println("aaaaahhhh");
 			destfile.checkExistingFile();
 		}else{
 			System.out.println("no files to see here");
 			destfile.initializeRAF();
 		}
-		
-		destfile.renewBitfield();
+		*/
+		//destfile.renewBitfield();
 		//run thread
 		RUBTClient client = new RUBTClient(destfile);
 		client.start();
@@ -240,16 +239,20 @@ public class RUBTClient extends Thread{
 		
 		while(this.keepRunning){
 			try{
+				System.out.println("task");
 				MessageTask task = this.tasks.take();
 				byte[] msg = task.getMessage();
+				System.out.println("Message id"+msg[0]);
 				Peer peer = task.getPeer();
 				switch(msg[0]){  // i will have peer deal with keep alive.
 					case Message.CHOKE:
 						System.out.println("Peer " +peer.getPeer_id() +" sent choked");
 						peer.setChoked(true);
+						break;
 					case Message.UNCHOKE:
 						System.out.println("Peer " +peer.getPeer_id() +" sent unchoked");
 						peer.setChoked(false);
+						this.chooseAndRequestPiece(peer);
 						break;			
 					case Message.INTERESTED:
 						System.out.println("Peer " + peer.getPeer_id() + " sent interested");
@@ -260,12 +263,15 @@ public class RUBTClient extends Thread{
 						break;
 					case Message.BITFIELD:
 						System.out.println("Peer " + peer.getPeer_id() + " sent bitfield");
+						System.out.println("and here is it"+Arrays.toString(peer.getbitfield()));
 						break;
 					case Message.REQUEST:
 						System.out.println("Peer " + peer.getPeer_id() + " sent request");
 						break;
 					case Message.PIECE:
 						System.out.println("Peer " + peer.getPeer_id()+ " sent Piece");
+						this.chooseAndRequestPiece(peer);
+						break;
 						//
 
 				}
