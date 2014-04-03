@@ -73,8 +73,19 @@ public class Peer extends Thread {
 		while(connected)
 		{
 				try {
-					Thread.sleep(2*1000);
+					Thread.sleep(1*1000);
+					if(peerInputStream.available()==0)
+					{
+						System.out.println("Nothing to read");
+						continue;
+					}
 					int length_prefix = peerInputStream.readInt();
+					if(length_prefix==0)
+					{
+						System.out.println("keep alive");
+						//TODO reset timers
+						continue;
+					}
 					//System.out.println("length prefix"+length_prefix);
 					response = new byte[length_prefix];
 					//System.out.println("reponse length"+response.length);
