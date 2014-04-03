@@ -170,8 +170,6 @@ public class DestFile {
 			
 		}
 	}
-<<<<<<< HEAD
-	
 	/**
 	 * Initializes all bits to 0
 	 */
@@ -184,7 +182,6 @@ public class DestFile {
 		}
 	}
 	
-=======
 	public byte[] getMybitfield(){
 		return mybitfield;
 	}
@@ -203,11 +200,31 @@ public class DestFile {
 		}else{
 			this.mybitfield[currentbyte] &= ~(1 << mod);
 		}
+	}
+	
+	/**
+	 * @param input Other bitfield
+	 * @return First bit where input is 1 and mybitfield is 0
+	 */
+	public int firstNewPiece(byte[] input){
 		
+		for(int i = 0; i < this.mypieces.length; i++){
+			
+			int mod = i%8;
+			int currentbyte = (i-(mod)) / 8;
+			
+			if((input[currentbyte] >> mod & 1) == 1){
+				if((this.mybitfield[currentbyte] >> 1) != 1){
+					return i;
+				}
+			}
+		}
+		
+		return -1;
 		
 	}
->>>>>>> c841f5cec70e0363ae652108ade153b3993c04ae
-
+		
+		
 	public String getFilename() {
 		return filename;
 	}
