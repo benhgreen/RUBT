@@ -185,7 +185,11 @@ public class Peer extends Thread {
 	public void setPeerInputStream(DataInputStream peerInputStream) {
 		this.peerInputStream = peerInputStream;
 	}
-	
+	public void setChoked(boolean state)
+	{
+		this.choked = state;
+		this.unchoked = !state;
+	}
 	/**
 	 * Sends a message to the peer
 	 * Source: Taken From Rob Moore's skeleton code in our Sakai Resources folder
