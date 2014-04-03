@@ -262,7 +262,8 @@ public class RUBTClient extends Thread{
 						System.out.println("Peer " + peer.getPeer_id() + " sent request");
 						break;
 					case Message.PIECE:
-						System.out.println("Peer " + peer.getPeer_id()+ " sent Piece"); 
+						System.out.println("Peer " + peer.getPeer_id()+ " sent Piece");
+						//
 
 				}
 			}catch (InterruptedException ie){
