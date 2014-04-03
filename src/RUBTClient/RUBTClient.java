@@ -78,13 +78,18 @@ public class RUBTClient extends Thread{
 			e.printStackTrace();
 		}
 		
-		DestFile destfile = new DestFile(args[1], torrentinfo);
+		
+		DestFile destfile = new DestFile(torrentinfo);
 		
 		//checks if destination file exists. If so, user auth is required
 		File mp3 = new File(destination);
-		//if(mp3.exists()){
-		//destfile.checkExistingFile();
-		//}
+		if(mp3.exists()){
+			System.out.println("aaaaahhhh");
+			destfile.checkExistingFile();
+		}else{
+			System.out.println("no files to see here");
+			destfile.initializeRAF();
+		}
 		//run thread
 		RUBTClient client = new RUBTClient(destfile);
 		client.start();

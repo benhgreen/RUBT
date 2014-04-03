@@ -1,5 +1,6 @@
 package RUBTClient;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.security.MessageDigest;
@@ -22,27 +23,34 @@ public class DestFile {
 	private String filename;
 	private byte[] mybitfield;
 	private boolean[] mypieces;
+	private boolean initialized;
 	
-	public DestFile(String name, TorrentInfo torrentinfo){
+	public DestFile(TorrentInfo torrentinfo){
+		this.initialized = false;
 		this.setTorrentinfo(torrentinfo);
+		this.totalsize = torrentinfo.file_length;
+		this.incomplete = torrentinfo.file_length;
+		
+		int mod1;
+		if((mod1 = torrentinfo.file_length % 8) == 0){
+			this.mybitfield = new byte[mod1];
+			this.mypieces = new boolean[mod1];
+		}else{
+			this.mybitfield = new byte[mod1 + 1];
+			this.mypieces= new boolean[mod1 + 1];
+		}
+		System.out.println("done constructing");
+	}
+	
+	public void initializeRAF(){
 		try {
-			//initialize RandomAccessFile and set length
-			this.dest = new RandomAccessFile(name,"rw");
-			dest.setLength(torrentinfo.file_length);
-			this.totalsize = torrentinfo.file_length;
-			this.incomplete = torrentinfo.file_length;
-			
-			int mod1;
-			if((mod1 = torrentinfo.file_length % 8) == 0){
-				this.mybitfield = new byte[mod1];
-				this.mypieces = new boolean[mod1];
-			}else{
-				this.mybitfield = new byte[mod1 + 1];
-				this.mypieces= new boolean[mod1 + 1];
-			}
-			
+			this.dest = new RandomAccessFile(this.torrentinfo.file_name,"rw");
+			this.dest.setLength(torrentinfo.file_length);
+			this.initialized = true;
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
 		} catch (IOException e) {
-			System.err.println("Error while initializing RandomAccessFile");
+			e.printStackTrace();
 		}
 	}
 	
@@ -114,6 +122,9 @@ public class DestFile {
 	 */
 	public void checkExistingFile(){
 		
+		if(!this.initialized){
+			this.initializeRAF();
+		}
 		byte[] temp = new byte[this.torrentinfo.piece_length];
 		for(int i = 0; i < this.torrentinfo.piece_hashes.length; i++){
 			//check each piece here
