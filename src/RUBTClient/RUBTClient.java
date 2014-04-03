@@ -202,13 +202,13 @@ public class RUBTClient extends Thread{
 //		//close file stream
 //		resultFile.close();
 	}
-	
+	//TODO maybe think about changing the message class
 	public void run(){
 		
 		this.tracker.constructURL(this.torrentinfo.announce_url.toString(), this.torrentinfo.info_hash, this.portnum, this.torrentinfo.file_length);
-		
+		byte[] current_message;
 		byte[] response_string=null;
-		
+		Message message = new Message();
 		try{
 			response_string = this.tracker.requestPeerList();
 		}catch(Exception e){
@@ -233,68 +233,36 @@ public class RUBTClient extends Thread{
 				MessageTask task = this.tasks.take();
 				byte[] msg = task.getMessage();
 				Peer peer = task.getPeer();
-				switch(msg[0]){
+				switch(msg[0]){  // i will have peer deal with keep alive.
+					case Message.CHOKE:
+						System.out.println("Peer " +peer.getPeer_id() +" sent choked");
+						peer.setChoked(true);
 					case Message.UNCHOKE:
 						System.out.println("Peer " +peer.getPeer_id() +" sent unchoked");
+						peer.setChoked(false);
 						break;			
+					case Message.INTERESTED:
+						System.out.println("Peer " + peer.getPeer_id() + " sent interested");
+						msg = message.getInterested();
+						break;
 					case Message.HAVE:
 						System.out.println("Peer " + peer.getPeer_id() + " sent have message");
 						break;
 					case Message.BITFIELD:
 						System.out.println("Peer " + peer.getPeer_id() + " sent bitfield");
 						break;
+					case Message.REQUEST:
+						System.out.println("Peer " + peer.getPeer_id() + " sent request");
+						break;
+					case Message.PIECE:
+						System.out.println("Peer " + peer.getPeer_id()+ " sent Piece"); 
 
 				}
 			}catch (InterruptedException ie){
-				System.err.println("caught interrupt. continueing anyway");
+				System.err.println("caught interrupt. continuing anyway");
 			}
 		
-		}
-		
-		
-		
-		
-		//peer_info = peer_list.getValidPeers();
-		//System.out.println(peer_info[0]);
-		//System.out.println(torrentinfo.file_length);
-		//System.out.println(torrentinfo.piece_length);
-		//Peer myPeer = null;
-		
-		
-		/*
-		if(peer_info != null){
-			//peer_inf[0] = peer_id, peer_info[1] is ip, peer_info[2] is port
-			myPeer = new Peer(peer_info[1], peer_info[0], Integer.parseInt(peer_info[2]));
-		}else{
-			System.out.println("no valid peers");
-			System.exit(0);
-		}
-		Message current_message = new Message();
-		myPeer.connectToPeer();
-		try {
-			myPeer.sendMessage(current_message.handShake(this.torrentinfo.info_hash.array(), tracker.getUser_id()));
-			byte[] handshake = myPeer.handshake();
-			if(this.handshakeCheck(handshake)==false);
-			{
-				myPeer.closeConnections();
-				//System.err.println("Invalid info hash from peer:"+peer_info[0]);
-			}
-		} catch (IOException e) {
-			System.err.println("prob bad
-			");
-			e.printStackTrace();
-		}
-		System.out.println("client thread: " + Thread.currentThread());
-		myPeer.start();
-		try {
-			myPeer.join();
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		System.out.println("The Bitfield"+Arrays.toString(myPeer.getbitfield()));
-		*/
-	
+		}	
 		
 	}
 	
