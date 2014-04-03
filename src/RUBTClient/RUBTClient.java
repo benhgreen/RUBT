@@ -297,6 +297,7 @@ public class RUBTClient extends Thread{
 				if(!this.handshakeCheck(handshake)){
 					peer.closeConnections();
 					System.err.println("Invalid info hash from peer:");
+					continue;
 				}
 			} catch (IOException e) {
 				System.err.println("random  IO ex");
@@ -305,14 +306,11 @@ public class RUBTClient extends Thread{
 			peers.add(peer);
 			peer.setClient(this);
 			peer.start();
+			//guarentees only one thread spawns
 			return;
 		}
 		System.out.println("finished adding peers");
 	}
-	
-	
-	
-	
 	
 	/**
 	 * This method compares the remote peers handshake to our infohash 
@@ -338,6 +336,7 @@ public class RUBTClient extends Thread{
 		tasks.add(task);
 	}
 	
+
 	public void chooseAndRequestPiece(final Peer peer){
 	   	int current_piece=0;
 	   	int offset_counter=0;
@@ -361,7 +360,6 @@ public class RUBTClient extends Thread{
 	   			
 	   		}
 	   	}
-		
 	}
 	
 }
