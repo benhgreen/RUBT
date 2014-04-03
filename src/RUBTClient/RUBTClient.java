@@ -248,7 +248,7 @@ public class RUBTClient extends Thread{
 						break;			
 					case Message.INTERESTED:
 						System.out.println("Peer " + peer.getPeer_id() + " sent interested");
-						msg = message.getInterested();
+						peer.setRemoteInterested(true);
 						break;
 					case Message.HAVE:
 						System.out.println("Peer " + peer.getPeer_id() + " sent have message");

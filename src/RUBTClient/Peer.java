@@ -27,6 +27,8 @@ public class Peer extends Thread {
 	private boolean choking = true; //checks if we are choking the connected peer
 	private boolean unchoking = false; //checks if we are unchoking the connected peer
 	private boolean connected = false;//checks if peer is diconnected
+	private boolean interested=false;
+	private boolean remote_interested;
 	private byte[] response;
 	private Timer send_timer; //timers for sends
 	private Timer receive_timer; //timers for receives
@@ -190,6 +192,11 @@ public class Peer extends Thread {
 		this.choked = state;
 		this.unchoked = !state;
 	}
+	
+	public void setRemoteInterested(boolean state)
+	{
+		this.remote_interested=state;
+	}
 	/**
 	 * Sends a message to the peer
 	 * Source: Taken From Rob Moore's skeleton code in our Sakai Resources folder
@@ -237,6 +244,11 @@ public class Peer extends Thread {
 	public void setClient(RUBTClient client)
 	{
 		this.client=client;
+	}
+
+	public void setInterested(boolean state) {
+		interested = state;
+		
 	}
 	
 	/**handshakePeer() sends the handshake message and reads the peers handshake and bitfield
