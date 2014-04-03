@@ -35,14 +35,10 @@ public class DestFile {
 		int mod1;
 		if((mod1 = torrentinfo.piece_hashes.length % 8) == 0){
 			this.mybitfield = new byte[mod1];
-			
 		}else{
 			this.mybitfield = new byte[((torrentinfo.piece_hashes.length - mod1) / 8) + 1];
 		}
-		this.initializeBitfield();
-		for(int i = 0; i<this.mypieces.length; i++){
-			this.mypieces[i] = false;
-		}
+		System.out.println("done constructing");
 		System.out.println(this.mypieces.length + " pieces");
 		System.out.println(this.mybitfield.length + " bytes in bitfield");
 	}
@@ -68,8 +64,6 @@ public class DestFile {
 			long target = piece.getPiece()*getTorrentinfo().piece_length + piece.getOffset();
 			dest.seek(target);
 			dest.write(piece.getData());
-			this.mypieces[piece.getPiece()] = true;
-			this.renewBitfield();
 			this.incomplete -= (piece.getData().length);
 		} catch (IOException e) {
 			System.err.println("Error while writing to RandomAccessFile");
@@ -170,19 +164,6 @@ public class DestFile {
 			
 		}
 	}
-	
-	/**
-	 * Initializes all bits to 0
-	 */
-	public void initializeBitfield(){
-		
-		for(int i = 0; i < this.mypieces.length; i++){
-			int mod = i%8;
-			int currentbyte = (i-(mod)) / 8;
-			this.mybitfield[currentbyte] &= ~(1 << mod);
-		}
-	}
-	
 
 	public String getFilename() {
 		return filename;
