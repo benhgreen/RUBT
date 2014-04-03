@@ -71,7 +71,6 @@ public class Peer extends Thread {
 		{
 				try {
 					int length_prefix = peerInputStream.readInt();
-					System.out.println("length prefix from "+Thread.currentThread()+":"+length_prefix);
 					response = new byte[length_prefix];
 					peerInputStream.readFully(response);
 					if(response[0]==Message.BITFIELD)      //if the id is a bitfield, set this peers bitfield to this byte array.
