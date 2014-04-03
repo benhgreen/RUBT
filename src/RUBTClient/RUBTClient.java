@@ -256,10 +256,15 @@ public class RUBTClient extends Thread{
 						break;
 					case Message.HAVE:
 						System.out.println("Peer " + peer.getPeer_id() + " sent have message");
+						//TODO if this is the first have, we have to update the peers bitfield
 						break;
 					case Message.BITFIELD:
 						System.out.println("Peer " + peer.getPeer_id() + " sent bitfield");
 						System.out.println("and here is it"+Arrays.toString(peer.getbitfield()));
+						destfile.manualMod(0, true);
+						System.out.println(destfile.firstNewPiece(peer.getbitfield()));
+						//TODO call the thing that ben makes, if not 0
+						
 						break;
 					case Message.REQUEST:
 						System.out.println("Peer " + peer.getPeer_id() + " sent request");

@@ -214,7 +214,7 @@ public class DestFile {
 			int currentbyte = (i-(mod)) / 8;
 			
 			if((input[currentbyte] >> mod & 1) == 1){
-				if((this.mybitfield[currentbyte] >> 1) != 1){
+				if((this.mybitfield[currentbyte] >> mod & 1) != 1){
 					return i;
 				}
 			}
