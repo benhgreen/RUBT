@@ -31,15 +31,16 @@ public class DestFile {
 		this.totalsize = torrentinfo.file_length;
 		this.incomplete = torrentinfo.file_length;
 		
+		this.mypieces = new boolean[this.torrentinfo.piece_hashes.length];
 		int mod1;
-		if((mod1 = torrentinfo.file_length % 8) == 0){
+		if((mod1 = torrentinfo.piece_hashes.length % 8) == 0){
 			this.mybitfield = new byte[mod1];
-			this.mypieces = new boolean[mod1];
 		}else{
-			this.mybitfield = new byte[mod1 + 1];
-			this.mypieces= new boolean[mod1 + 1];
+			this.mybitfield = new byte[((torrentinfo.piece_hashes.length - mod1) / 8) + 1];
 		}
 		System.out.println("done constructing");
+		System.out.println(this.mypieces.length + " pieces");
+		System.out.println(this.mybitfield.length + " bytes in bitfield");
 	}
 	
 	public void initializeRAF(){
@@ -150,12 +151,15 @@ public class DestFile {
 	 */
 	public void renewBitfield(){
 		
-		for(int i = 0; i < this.mybitfield.length; i++){
+		for(int i = 0; i < this.mypieces.length; i++){
 			
-			if(this.mypieces[i]){
-				this.mybitfield[i] |= (1 << i);
+			int mod = i%8;
+			int currentbyte = (i-(mod)) / 8;
+			
+			if(this.mypieces[currentbyte]){
+				this.mybitfield[currentbyte] |= (1 << mod);
 			}else{
-				this.mybitfield[i] &= ~(1 << i);
+				this.mybitfield[currentbyte] &= ~(1 << mod);
 			}
 			
 		}

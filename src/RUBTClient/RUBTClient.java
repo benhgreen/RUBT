@@ -90,9 +90,11 @@ public class RUBTClient extends Thread{
 			System.out.println("no files to see here");
 			destfile.initializeRAF();
 		}
+		
+		destfile.renewBitfield();
 		//run thread
-		RUBTClient client = new RUBTClient(destfile);
-		client.start();
+//		RUBTClient client = new RUBTClient(destfile);
+//		client.start();
 		
 		
 //		
