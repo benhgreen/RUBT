@@ -308,6 +308,7 @@ public class RUBTClient extends Thread{
 			peers.add(peer);
 			peer.setClient(this);
 			peer.start();
+			return;
 		}
 		System.out.println("finished adding peers");
 	}
