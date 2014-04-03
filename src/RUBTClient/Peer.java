@@ -1,6 +1,7 @@
 package RUBTClient;
 
 import java.net.*;
+import java.nio.ByteBuffer;
 import java.io.*;
 import java.util.Arrays;
 import java.util.TimerTask;
@@ -74,10 +75,14 @@ public class Peer extends Thread {
 				try {
 					Thread.sleep(2*1000);
 					int length_prefix = peerInputStream.readInt();
-					System.out.println("length prefix"+length_prefix);
+					//System.out.println("length prefix"+length_prefix);
 					response = new byte[length_prefix];
-					System.out.println("reponse length"+response.length);
-					peerInputStream.readFully(response);
+					//System.out.println("reponse length"+response.length);
+					//if(length_prefix==0)
+				//	{
+						
+				//	}
+					peerInputStream.read(response,0,length_prefix);
 					if(response[0]==Message.BITFIELD)      //if the id is a bitfield, set this peers bitfield to this byte array.
 					{
 						System.out.println("setting the bitfield");
@@ -91,10 +96,16 @@ public class Peer extends Thread {
 			        receive_timer = new Timer();
 			        receive_timer.schedule(new ReceiveTimerTask(), 120*1000);  //resets it for 2 minutes from last sent
 					//TODO send message to RUBT client
-				} catch (Exception e) {
+				} catch (EOFException e) {
 					// TODO Auto-generated catch block
+					//e.printStackTrace();
+					System.err.println("EOF");
+					//closeConnections();
+				}
+				catch (Exception e)
+				{
 					e.printStackTrace();
-					closeConnections();
+					System.err.println("Other Exception");
 				}
 			
 		}
@@ -108,7 +119,7 @@ public class Peer extends Thread {
 		//open sockets and input/output streams
 		try{
 			this.peerConnection = new Socket(ip, port);
-			this.peerConnection.setSoTimeout(10*1000);
+			this.peerConnection.setSoTimeout(125*1000);
 			this.peerOutputStream = new DataOutputStream(peerConnection.getOutputStream());
 			this.peerInputStream = new DataInputStream(peerConnection.getInputStream());
 			connected =true;
