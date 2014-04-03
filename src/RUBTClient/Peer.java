@@ -166,11 +166,16 @@ public class Peer extends Thread {
 		this.port = port;
 	}
 
-	public boolean ischoked() {
+	public boolean isInterested()
+	{
+		return interested;
+	}
+	
+	public boolean isChoked() {
 		return choked;
 	}
 
-	public boolean isunchoked() {
+	public boolean isUnchoked() {
 		return unchoked;
 	}
 
@@ -228,7 +233,6 @@ public class Peer extends Thread {
 	
 	public synchronized byte[] handshake()
 	{
-		System.out.println("peer thread: " + Thread.currentThread());
 		byte[] phandshake = new byte[68]; //Receives initial handshake
 		try 
 		{

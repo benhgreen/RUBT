@@ -35,6 +35,7 @@ public class RUBTClient extends Thread{
 
 	private final List<Peer> peers = Collections.synchronizedList(new LinkedList<Peer>());
 	
+	private final int max_request = 16384;
 	
 	public RUBTClient(DestFile destfile){
 		this.destfile = destfile;
@@ -44,7 +45,7 @@ public class RUBTClient extends Thread{
 	}
 	
 	public static void main(String[] args){
-		int max_request = 16384;
+		
 		//verifies command line args
 		if(args.length != 2){
 			System.err.println("Usage: java RUBT <torrent> <destination>");
@@ -235,10 +236,9 @@ public class RUBTClient extends Thread{
 		while(this.keepRunning){
 
 			try{
-				System.out.println("task");
 				MessageTask task = this.tasks.take();
 				byte[] msg = task.getMessage();
-				System.out.println("Message id"+msg[0]);
+				System.out.println("Message id:"+msg[0]);
 				Peer peer = task.getPeer();
 				switch(msg[0]){  // i will have peer deal with keep alive.
 					case Message.CHOKE:
@@ -266,6 +266,7 @@ public class RUBTClient extends Thread{
 						break;
 					case Message.PIECE:
 						System.out.println("Peer " + peer.getPeer_id()+ " sent Piece");
+						//TODO write piece to file
 						this.chooseAndRequestPiece(peer);
 						break;
 						//
@@ -338,7 +339,29 @@ public class RUBTClient extends Thread{
 	}
 	
 	public void chooseAndRequestPiece(final Peer peer){
+	   	int current_piece=0;
+	   	int offset_counter=0;
+	   	int pieces = torrentinfo.piece_length/max_request;
+	   	Message current_message=new Message();
+	   	byte[] request_message;
+		if(peer.isUnchoked()&&peer.isInterested()); //if our peer is unchoked and we are interested
+	   	{
+	   		//request_message= get index from bens thing
+	   		for(int i = 0;i<=pieces;i++)
+	   		{
+	   			request_message=current_message.request(current_piece, offset_counter,max_request);
+	   			try {
+					peer.sendMessage(request_message);
+				} catch (IOException e) {
+					System.err.println("Error sending message to peer");
+					e.printStackTrace();
+					return;
+				}
+	   			offset_counter+=max_request;
+	   			
+	   		}
+	   	}
 		
-	
 	}
+	
 }
