@@ -164,6 +164,9 @@ public class DestFile {
 			
 		}
 	}
+	public byte[] getMybitfield(){
+		return mybitfield;
+	}
 
 	public String getFilename() {
 		return filename;
