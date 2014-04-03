@@ -79,7 +79,8 @@ public class RUBTClient extends Thread{
 		}
 		
 		
-		DestFile destfile = new DestFile(torrentinfo);
+		DestFile destfile = new DestFile(t
+				orrentinfo);
 		
 		//checks if destination file exists. If so, user auth is required
 		File mp3 = new File(destination);
@@ -332,8 +333,8 @@ public class RUBTClient extends Thread{
 		tasks.add(task);
 	}
 	
-	public int choosePiece(){
+	public void chooseAndRequestPiece(final Peer peer){
 		
-	}
+	
 	}
 }
