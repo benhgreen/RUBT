@@ -84,7 +84,6 @@ public class RUBTClient extends Thread{
 		//checks if destination file exists. If so, user auth is required
 		File mp3 = new File(torrentinfo.file_name);
 		/*if(mp3.exists()){
->>>>>>> 86c64486f99708bd95a5988a7cba7895ccb09cf4
 			System.out.println("aaaaahhhh");
 			destfile.checkExistingFile();
 		}else{
@@ -310,6 +309,7 @@ public class RUBTClient extends Thread{
 			peer.setClient(this);
 			peer.start();
 		}
+		System.out.println("finished adding peers");
 	}
 	
 	

@@ -35,6 +35,8 @@ public class Peer extends Thread {
 	private byte[] bitfield;
 	private RUBTClient client;
 	private MessageTask message;
+	
+	
 	public Peer(String ip, String peer_id, Integer port) {
 		super();
 		this.ip = ip;
