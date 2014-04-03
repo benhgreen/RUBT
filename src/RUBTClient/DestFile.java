@@ -39,9 +39,7 @@ public class DestFile {
 		}else{
 			this.mybitfield = new byte[((torrentinfo.piece_hashes.length - mod1) / 8) + 1];
 		}
-		for(int i = 0; i<this.mybitfield.length; i++){
-			this.mybitfield[i] = '0';
-		}
+		this.initializeBitfield();
 		for(int i = 0; i<this.mypieces.length; i++){
 			this.mypieces[i] = false;
 		}
@@ -170,6 +168,18 @@ public class DestFile {
 				this.mybitfield[currentbyte] &= ~(1 << mod);
 			}
 			
+		}
+	}
+	
+	/**
+	 * Initializes all bits to 0
+	 */
+	public void initializeBitfield(){
+		
+		for(int i = 0; i < this.mypieces.length; i++){
+			int mod = i%8;
+			int currentbyte = (i-(mod)) / 8;
+			this.mybitfield[currentbyte] &= ~(1 << mod);
 		}
 	}
 	
