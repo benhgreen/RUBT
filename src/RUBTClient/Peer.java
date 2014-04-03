@@ -104,7 +104,7 @@ public class Peer extends Thread {
 		//open sockets and input/output streams
 		try{
 			this.peerConnection = new Socket(ip, port);
-			this.peerConnection.setSoTimeout(60*1000);
+			this.peerConnection.setSoTimeout(10*1000);
 			this.peerOutputStream = new DataOutputStream(peerConnection.getOutputStream());
 			this.peerInputStream = new DataInputStream(peerConnection.getInputStream());
 			connected =true;
@@ -227,7 +227,7 @@ public class Peer extends Thread {
 	
 	public synchronized byte[] handshake()
 	{
-		System.out.println("peer thread: " + Thread.currentThread());
+		//System.out.println("peer thread: " + Thread.currentThread());
 		byte[] phandshake = new byte[68]; //Receives initial handshake
 		try 
 		{
