@@ -330,4 +330,9 @@ public class RUBTClient extends Thread{
 	{
 		tasks.add(task);
 	}
+	
+	public int choosePiece(){
+		
+	}
+	}
 }
