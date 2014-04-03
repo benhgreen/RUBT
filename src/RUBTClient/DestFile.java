@@ -202,6 +202,19 @@ public class DestFile {
 		}
 	}
 	
+	public byte[] manualMod(byte[] array, int i, boolean bool){
+		
+		int mod = i%8;
+		int currentbyte = (i-(mod)) / 8;
+		if(bool){
+			array[currentbyte] |= (1 << mod);
+		}else{
+			array[currentbyte] &= ~(1 << mod);
+		}
+		
+		return array;
+	}
+	
 	/**
 	 * @param input Other bitfield
 	 * @return First bit where input is 1 and mybitfield is 0
