@@ -84,17 +84,17 @@ public class RUBTClient extends Thread{
 		//checks if destination file exists. If so, user auth is required
 		File mp3 = new File(destination);
 		if(mp3.exists()){
-			System.out.println("aaaaahhhh");
+			//System.out.println("aaaaahhhh");
 			destfile.checkExistingFile();
 		}else{
-			System.out.println("no files to see here");
+			//System.out.println("no files to see here");
 			destfile.initializeRAF();
 		}
 		
 		destfile.renewBitfield();
 		//run thread
-//		RUBTClient client = new RUBTClient(destfile);
-//		client.start();
+		RUBTClient client = new RUBTClient(destfile);
+		client.start();
 		
 		
 //		
@@ -232,6 +232,8 @@ public class RUBTClient extends Thread{
 		Response peer_list = new Response(response_string);
 		//extracts array of peer info from valid peer
 		
+		System.out.println("piece length: " + this.torrentinfo.piece_length);
+		System.out.println("file length " + this.torrentinfo.file_length);
 		
 		addPeers(peer_list.getValidPeers());
 		
@@ -324,7 +326,7 @@ public class RUBTClient extends Thread{
 			return false;
 		}
 	}
-	public synchronized  void addMessage(MessageTask task)
+	public synchronized  void addMessageTask(MessageTask task)
 	{
 		tasks.add(task);
 	}

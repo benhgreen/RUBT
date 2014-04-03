@@ -81,7 +81,7 @@ public class Peer extends Thread {
 						System.arraycopy(response,1,this.bitfield,0,bitfield.length);
 					}
 					message = new MessageTask(this,response);//makes the response into a  new message task, passes a peer as well
-					client.addMessage(message); //puts the message in its clients  task queue
+					client.addMessageTask(message); //puts the message in its clients  task queue
 				
 					receive_timer.cancel();  //cancels the current timer for messages
 			        receive_timer = new Timer();
