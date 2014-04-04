@@ -265,6 +265,11 @@ public class RUBTClient extends Thread{
 
 							destfile.manualMod(peer.getBitfield(), piece, true);
 							System.out.println("updated bitfield: " + Arrays.toString(peer.getBitfield()));
+							if(destfile.firstNewPiece(peer.getBitfield()) != -1){		//then we are interested in a piece
+								System.out.println("peer has piece that we dont have");
+								peer.setInterested(true);
+								peer.sendMessage(message.getInterested());
+							}
 						}
 						//TODO if this is the first have, we have to update the peers bitfield, then request this piece if we want it
 						break;
@@ -393,7 +398,7 @@ public class RUBTClient extends Thread{
 	private synchronized void addChunk(int piece, int offset,byte[] data)
 	{
 		byte[] chunk = new byte[data.length-9];
-		System.arraycopy(data, 8, chunk, 0, data.length-9);
+		System.arraycopy(data, 9, chunk, 0, data.length-9);
 		destfile.pieces[piece].assemble(chunk,offset);
 	}
 	private void getNextBlock(byte[] block,Peer peer){
@@ -407,6 +412,7 @@ public class RUBTClient extends Thread{
 		int offset = ByteBuffer.wrap(offset_bytes).getInt();  //wraps the offset bytes in a buffer and converts them into an int
 		int piece = ByteBuffer.wrap(piece_bytes).getInt();
 		//checks if we got the last chunk of a piece
+
 		addChunk(piece,offset,block);  //places the chunk of data into a piece													//adds the chunk to the piece
 		if (offset + max_request == torrentinfo.piece_length){ 	//checks if we got the last chunk of a piece{
 			System.out.println("just asked for the last piece");
