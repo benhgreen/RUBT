@@ -43,7 +43,7 @@ public class DestFile {
 		}
 		this.initializeBitfield();
 		for(int i = 0; i<this.mypieces.length; i++){
-			this.mypieces[i] = false;
+			this.pieces[i] = new Piece(this.torrentinfo.piece_length);
 		}
 		System.out.println(this.mypieces.length + " pieces");
 		System.out.println(this.mybitfield.length + " bytes in bitfield");
