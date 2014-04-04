@@ -32,6 +32,8 @@ public class DestFile {
 		this.totalsize = torrentinfo.file_length;
 		this.incomplete = torrentinfo.file_length;
 		
+		printHashes();
+		
 		this.mypieces = new boolean[this.torrentinfo.piece_hashes.length];
 		this.pieces = new Piece[this.torrentinfo.piece_hashes.length];
 		int mod1;
@@ -49,6 +51,13 @@ public class DestFile {
 		System.out.println(this.mybitfield.length + " bytes in bitfield");
 	}
 	
+	private void printHashes() {
+		for(int i = 0; i < torrentinfo.piece_hashes.length; i++){
+			System.out.println("HASH " + i + ": " + Response.asString(torrentinfo.piece_hashes[i]).getBytes().toString());
+		}
+		
+	}
+
 	public void initializeRAF(){
 		try {
 			this.dest = new RandomAccessFile(this.torrentinfo.file_name,"rw");
@@ -60,6 +69,7 @@ public class DestFile {
 			e.printStackTrace();
 		}
 	}
+
 	
 	/**Takes in a Piece object and writes its data to the location specified by the piece length and offset.
 	 * @param Piece object containing data to add to the target file 
@@ -108,12 +118,21 @@ public class DestFile {
 		}
 		byte[] hash = md.digest(piece);
 		
+		System.out.println();
+		System.out.println();
+		System.out.println();
+		System.out.println("HASH OF NEW PIECE: " + hash.toString());
+		System.out.println();
+		System.out.println();
+		System.out.println();
 		//iterate through torrentinfo piece hashes and look for a match
 		for(int i = 0; i<this.getTorrentinfo().piece_hashes.length; i++){
 			if(Arrays.equals(hash, this.getTorrentinfo().piece_hashes[i].array())){
+				System.out.println("PASSED");
 				return true;
 			}
 		}
+		System.out.println("FAILED");
 		return false;
 	}
 	
@@ -242,9 +261,7 @@ public class DestFile {
 				}
 			}
 		}
-		
 		return -1;
-		
 	}
 		
 		
