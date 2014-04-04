@@ -16,24 +16,24 @@ import java.util.Timer;
 /** Peer object handles all communication between client and peer
  */
 public class Peer extends Thread {
-	
-	private String  	ip;          	//ip address of peer
-	private String 		peer_id;		//identifying name of peer
-	private int 		port;			//port number to access the peer
-	private Socket 			peerConnection;		//socket connection to peer
-	private DataOutputStream	peerOutputStream=null;	//OuputStream to peer for sending messages
-	private DataInputStream 	peerInputStream=null;	//InputStream to peer for reading responses
-	private boolean choked = true; //checks if we are being choked
-	private boolean choking = true; //checks if we are choking the connected peer
-	private boolean connected = false;//checks if peer is diconnected
-	private boolean interested=false;
-	private boolean remote_interested;
-	private byte[] response;
-	private byte[] bitfield;
-	private Timer send_timer; //timers for sends
-	private Timer receive_timer; //timers for receives
-	private RUBTClient client;
-	private MessageTask message;
+
+	private int 				port;				//port number to access the peer
+	private String  			ip;          		//ip address of peer
+	private String 				peer_id;			//identifying name of peer
+	private Socket 				peerSocket;			//socket connection to peer
+	private DataOutputStream	peerOutputStream;	//OuputStream to peer for sending messages
+	private DataInputStream 	peerInputStream;	//InputStream to peer for reading responses
+	private boolean 			choked; 			//checks if we are being choked
+	private boolean 			choking; 			//checks if we are choking the connected peer
+	private boolean 			connected;			//checks if peer is disconnected
+	private boolean 			interested;
+	private boolean 			remote_interested;
+	private byte[] 				response;
+	private byte[] 				bitfield;
+	private Timer 				send_timer; 		//timers for sends
+	private Timer 				receive_timer; 		//timers for receives
+	private RUBTClient 			client;
+	private MessageTask 		message;
 	
 	
 	public Peer(String ip, String peer_id, Integer port) {
@@ -41,22 +41,27 @@ public class Peer extends Thread {
 		this.ip = ip;
 		this.peer_id = peer_id;
 		this.port = port;
-		this.peerConnection = null;
+		this.peerSocket = null;
+		this.peerInputStream = null;
+		this.peerOutputStream = null;
+		
+		this.choked = true;
+		this.choking = true;
+		this.connected = false;
+		this.interested = false;
+		
 		send_timer = new Timer();
 		receive_timer = new Timer();
 	}
-	private static class SendTimerTask extends TimerTask
-	{
-
+	
+	private static class SendTimerTask extends TimerTask{
 		@Override
 		public void run() {
 			// TODO Do something when the timer is up
 			System.out.println("send timer is up");
 		}
-		
 	}
 	private static class ReceiveTimerTask extends TimerTask{
-
 		@Override
 		public void run() {
 			// TODO Do something when timer is up
@@ -119,11 +124,11 @@ public class Peer extends Thread {
 	public boolean connectToPeer(){
 		//open sockets and input/output streams
 		try{
-			this.peerConnection = new Socket(ip, port);
-			this.peerConnection.setSoTimeout(125*1000);
-			this.peerOutputStream = new DataOutputStream(peerConnection.getOutputStream());
-			this.peerInputStream = new DataInputStream(peerConnection.getInputStream());
-			connected =true;
+			this.peerSocket = new Socket(ip, port);
+			this.peerSocket.setSoTimeout(125*1000);
+			this.peerOutputStream = new DataOutputStream(peerSocket.getOutputStream());
+			this.peerInputStream = new DataInputStream(peerSocket.getInputStream());
+			connected = true;
 		}catch (UnknownHostException e){
 			System.err.println("UnknownHostException");
 			return false;
@@ -142,7 +147,7 @@ public class Peer extends Thread {
 		try{
 			peerInputStream.close();
 			peerOutputStream.close();
-			peerConnection.close();
+			peerSocket.close();
 			connected = false;
 		}catch (IOException e){
 			return;
@@ -156,7 +161,9 @@ public class Peer extends Thread {
 		try{Thread.sleep(milliseconds);}
 		catch(InterruptedException ex){Thread.currentThread().interrupt();}
 	}
-
+	public Socket getSocket(){
+		return this.peerSocket;
+	}
 	public String getIp() {
 		return ip;
 	}
@@ -213,8 +220,7 @@ public class Peer extends Thread {
 	 * @param Message message to be sent
 	 * @throws IOException 
 	 */
-	public synchronized void sendMessage(byte[] Message) throws IOException
-	{
+	public synchronized void sendMessage(byte[] Message) throws IOException {
 		if(this.peerOutputStream==null){
 			System.out.println("stream is null");
 		}else {
@@ -227,8 +233,7 @@ public class Peer extends Thread {
 		
 	}
 	
-	public byte[] getBitfield()
-	{
+	public byte[] getBitfield(){
 		return this.bitfield;
 	}
 	

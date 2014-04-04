@@ -293,7 +293,7 @@ public class RUBTClient extends Thread{
 	 */
 	public void addPeers(List<Peer> newPeers){
 		for(Peer peer: newPeers){
-			if (!peer.connectToPeer()){
+			if (peer.getSocket() != null && !peer.connectToPeer()){
 				continue;
 			}
 			Message current_message = new Message();
