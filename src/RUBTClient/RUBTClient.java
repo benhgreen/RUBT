@@ -351,21 +351,19 @@ public class RUBTClient extends Thread{
 		if (!peer.isChoked() && peer.isInterested()){ //if our peer is unchoked and we are interested
 	   		current_piece = destfile.firstNewPiece(peer.getBitfield());
 	   		System.out.println("Requesting piece: " + current_piece);
-	   		//for(int i = 0; i <= pieces; i++){
-	   			if (peer.isChoked()){
-	   				System.out.println("got choked out");
-	   				//break;
-	   			}
-	   			request_message=current_message.request(current_piece, offset_counter,max_request);
-	   			try {
-					peer.sendMessage(request_message);
-				}catch (IOException e) {
-					System.err.println("Error sending message to peer");
-					e.printStackTrace();
-					return;
-				}
-	   			//offset_counter+=max_request;
-	   		//}
+	   			
+	   		if (peer.isChoked()){
+	   			System.out.println("got choked out");
+	   			//break;
+	   		}
+	   		request_message=current_message.request(current_piece, offset_counter,max_request);
+	   		try {
+				peer.sendMessage(request_message);
+			}catch (IOException e) {
+				System.err.println("Error sending message to peer");
+				e.printStackTrace();
+				return;
+			}
 	   	}
 	}
 	/**
