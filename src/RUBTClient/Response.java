@@ -97,7 +97,7 @@ public class Response {
         }
 	}
 	//shamelessly stolen from the forums, original author Prof. Moore
-	private static String asString(ByteBuffer buff){
+	public static String asString(ByteBuffer buff){
 		  StringBuilder sb = new StringBuilder();
 		  byte[] b = buff.array();
 		  for(int i = 0; i < b.length; ++i){
