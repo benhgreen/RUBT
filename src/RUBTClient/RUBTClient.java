@@ -271,13 +271,9 @@ public class RUBTClient extends Thread{
 					case Message.BITFIELD:
 						System.out.println("Peer " + peer.getPeer_id() + " sent bitfield");
 						System.out.println("and here is it " + Arrays.toString(peer.getBitfield()));
-						if(peer.gethaveBitfield())   //if the peer already has a bitfield sent, and another is sent, we disconnect.
+						if(peer.getFirstSent())   //if the peer already has a bitfield sent, and another is sent, we disconnect.
 						{
 							peer.closeConnections();
-						}
-						else
-						{
-							peer.sethaveBitfield();
 						}
 						if(destfile.firstNewPiece(peer.getBitfield()) != -1){		//then we are interested in a piece
 							System.out.println("peer has piece that we dont have");
@@ -413,6 +409,7 @@ public class RUBTClient extends Thread{
 		//checks if we got the last chunk of a piece
 		addChunk(piece,offset,block);  //places the chunk of data into a piece													//adds the chunk to the piece
 		if (offset + max_request == torrentinfo.piece_length){ 	//checks if we got the last chunk of a piece{
+			System.out.println("just asked for the last piece");
 			destfile.addPiece(piece);
 			chooseAndRequestPiece(peer); 		//figures out the next piece to request
 		}else {

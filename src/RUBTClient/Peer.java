@@ -36,7 +36,7 @@ public class Peer extends Thread {
 	private Timer 				receive_timer; 		//timers for receives
 	private RUBTClient 			client;
 	private MessageTask 		message;
-	private boolean				have_bitfield; 
+	private boolean				first_sent;  //flag check that the first message after the handshake was sent. is used to make sure bitfield isnt sent in the wrong order. 
 	
 	public Peer(String ip, String peer_id, Integer port) {
 		super();
@@ -46,7 +46,7 @@ public class Peer extends Thread {
 		this.peerSocket = null;
 		this.peerInputStream = null;
 		this.peerOutputStream = null;
-		this.have_bitfield = false;
+		this.first_sent = false;
 		this.choked = true;
 		this.choking = true;
 		this.connected = false;
@@ -88,15 +88,12 @@ public class Peer extends Thread {
 					//TODO reset timers
 					continue;
 				}
-				//System.out.println("length prefix"+length_prefix);
 				response = new byte[length_prefix];
-			
-				//Keep alive case
-				//if(length_prefix==0){
-				
-				//}
-				
 				peerInputStream.read(response,0,length_prefix);
+				if(first_sent ==false)//checks if first sent has been recorded, if not sets it to true.
+				{
+					first_sent =true;
+				}
 				if(response[0] == Message.BITFIELD){      //if the id is a bitfield, set this peers bitfield to this byte array.
 					System.out.println("setting the bitfield");
 					bitfield = new byte[length_prefix-1];
@@ -261,14 +258,9 @@ public class Peer extends Thread {
 		interested = state;
 	}
 	
-	public void sethaveBitfield()
+	public boolean getFirstSent()
 	{
-		this.have_bitfield=true;
-	}
-	
-	public boolean gethaveBitfield()
-	{
-		return have_bitfield;
+		return first_sent;
 	}
 	public boolean equals(Peer peer){
 		return(this.ip == peer.getIp() && this.peer_id.equals(peer.getPeer_id()));
