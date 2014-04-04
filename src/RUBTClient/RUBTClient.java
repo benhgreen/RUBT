@@ -265,6 +265,8 @@ public class RUBTClient extends Thread{
 						System.out.println("Peer " + peer.getPeer_id() + " sent bitfield");
 						System.out.println("and here is it " + Arrays.toString(peer.getBitfield()));
 						if(destfile.firstNewPiece(peer.getBitfield()) != -1){		//then we are interested in a piece
+							System.out.println("in here");
+							peer.setInterested(true);
 							peer.sendMessage(message.getInterested());
 						}
 						break;
@@ -340,15 +342,15 @@ public class RUBTClient extends Thread{
 	}
 	
 	private synchronized void chooseAndRequestPiece(final Peer peer){
-	   	
 		int current_piece = 0;
 	   	int offset_counter = 0;
 	   	int pieces = torrentinfo.piece_length/max_request;
 	   	Message current_message = new Message();
 	   	byte[] request_message;
-	   	
-		if (!peer.isChoked() && peer.isInterested()){ //if our peer is unchoked and we are interested
-	   		current_piece = destfile.firstNewPiece(peer.getBitfield());
+	   	System.out.println(!peer.isChoked());
+	   	System.out.println(peer.isInterested());
+		if(!peer.isChoked() && peer.isInterested()){ //if our peer is unchoked and we are interested
+			current_piece = destfile.firstNewPiece(peer.getBitfield());
 	   		System.out.println("Requesting piece: " + current_piece);
 	   		request_message=current_message.request(current_piece, offset_counter, max_request);
 	   		
@@ -369,7 +371,10 @@ public class RUBTClient extends Thread{
 	
 	private synchronized void addChunk(int piece, int offset,byte[] data)
 	{
-			destfile.pieces[piece].assemble(Arrays.copyOfRange(data,8 , data.length-1), offset);
+		System.out.println(data.length);
+		byte[] chunk = new byte[data.length-9];
+		System.arraycopy(data, 8, chunk, 0, data.length-9);
+		destfile.pieces[piece].assemble(chunk,offset);
 	}
 	private void getNextBlock(byte[] block,Peer peer){
 		
