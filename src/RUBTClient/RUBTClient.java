@@ -293,7 +293,7 @@ public class RUBTClient extends Thread{
 	public void addPeers(List<Peer> newPeers){
 		
 		for(Peer peer: newPeers){
-			if(peer.getPeer_id().startsWith("-RU1101-J")){
+			if(peer.getPeer_id().startsWith("-RU1101-BD#J")){
 				continue;
 			}
 			
