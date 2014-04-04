@@ -24,7 +24,7 @@ public class DestFile {
 	private byte[] mybitfield;
 	private boolean[] mypieces;
 	private boolean initialized;
-	private Piece[] pieces;
+	public Piece[] pieces;
 	
 	public DestFile(TorrentInfo torrentinfo){
 		this.initialized = false;
@@ -64,18 +64,22 @@ public class DestFile {
 	/**Takes in a Piece object and writes its data to the location specified by the piece length and offset.
 	 * @param Piece object containing data to add to the target file 
 	 */
-	public void addPiece(int id){
-		try {
-			//calculate location to write data in the file using piece length and offset if applicable
-			long target = id*getTorrentinfo().piece_length + this.pieces[id].getOffset();
-			dest.seek(target);
-			dest.write(this.pieces[id].getData());
-			this.mypieces[id] = true;
-			this.renewBitfield();
-			this.incomplete -= (this.pieces[id].getData().length);
-		} catch (IOException e) {
-			System.err.println("Error while writing to RandomAccessFile");
+	public boolean addPiece(int id){
+		if(verify(this.pieces[id].getData())){
+			try {
+				//calculate location to write data in the file using piece length and offset if applicable
+				long target = id*getTorrentinfo().piece_length + this.pieces[id].getOffset();
+				dest.seek(target);
+				dest.write(this.pieces[id].getData());
+				this.mypieces[id] = true;
+				this.renewBitfield();
+				this.incomplete -= (this.pieces[id].getData().length);
+				return true;
+			} catch (IOException e) {
+				System.err.println("Error while writing to RandomAccessFile");
+			}
 		}
+		return false;
 	}
 	
 	/**
