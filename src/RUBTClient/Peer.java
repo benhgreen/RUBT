@@ -24,16 +24,14 @@ public class Peer extends Thread {
 	private DataOutputStream	peerOutputStream=null;	//OuputStream to peer for sending messages
 	private DataInputStream 	peerInputStream=null;	//InputStream to peer for reading responses
 	private boolean choked = true; //checks if we are being choked
-	private boolean unchoked=false; //checks if we are being unchoked
 	private boolean choking = true; //checks if we are choking the connected peer
-	private boolean unchoking = false; //checks if we are unchoking the connected peer
 	private boolean connected = false;//checks if peer is diconnected
 	private boolean interested=false;
 	private boolean remote_interested;
 	private byte[] response;
+	private byte[] bitfield;
 	private Timer send_timer; //timers for sends
 	private Timer receive_timer; //timers for receives
-	private byte[] bitfield;
 	private RUBTClient client;
 	private MessageTask message;
 	
@@ -57,8 +55,7 @@ public class Peer extends Thread {
 		}
 		
 	}
-	private static class ReceiveTimerTask extends TimerTask
-	{
+	private static class ReceiveTimerTask extends TimerTask{
 
 		@Override
 		public void run() {
@@ -66,59 +63,52 @@ public class Peer extends Thread {
 			System.out.println("recieve timer is up");
 			
 		}
-		
 	}
-	public void run()
-	{
-		while(connected)
-		{
-				try {
-					Thread.sleep(1*1000);
-					if(peerInputStream.available()==0)
-					{
-						System.out.println("Nothing to read");
-						continue;
-					}
-					int length_prefix = peerInputStream.readInt();
-					if(length_prefix==0)
-					{
-						System.out.println("keep alive");
-						//TODO reset timers
-						continue;
-					}
-					//System.out.println("length prefix"+length_prefix);
-					response = new byte[length_prefix];
-					//System.out.println("reponse length"+response.length);
-					//if(length_prefix==0)
-				//	{
-						
-				//	}
-					peerInputStream.read(response,0,length_prefix);
-					if(response[0]==Message.BITFIELD)      //if the id is a bitfield, set this peers bitfield to this byte array.
-					{
-						System.out.println("setting the bitfield");
-						bitfield = new byte[length_prefix-1];
-						System.arraycopy(response,1,this.bitfield,0,bitfield.length);
-					}
-					message = new MessageTask(this, response);//makes the response into a  new message task, passes a peer as well
-					client.addMessageTask(message); //puts the message in its clients  task queue
+	
+	public void run(){
+		
+		while(connected){
+			try {
+				Thread.sleep(1*1000);
+				if(peerInputStream.available()==0){
+					System.out.println("Nothing to read");
+					continue;
+				}
 				
-					receive_timer.cancel();  //cancels the current timer for messages
-			        receive_timer = new Timer();
-			        receive_timer.schedule(new ReceiveTimerTask(), 120*1000);  //resets it for 2 minutes from last sent
-					//TODO send message to RUBT client
-				} catch (EOFException e) {
-					// TODO Auto-generated catch block
-					//e.printStackTrace();
-					System.err.println("EOF");
-					//closeConnections();
+				int length_prefix = peerInputStream.readInt();
+				if(length_prefix==0){
+					System.out.println("keep alive");
+					//TODO reset timers
+					continue;
 				}
-				catch (Exception e)
-				{
-					e.printStackTrace();
-					System.err.println("Other Exception");
+				//System.out.println("length prefix"+length_prefix);
+				response = new byte[length_prefix];
+				//System.out.println("reponse length"+response.length);
+			//	if(length_prefix==0){
+				
+			//	}
+				
+				peerInputStream.read(response,0,length_prefix);
+				if(response[0] == Message.BITFIELD){      //if the id is a bitfield, set this peers bitfield to this byte array.
+					System.out.println("setting the bitfield");
+					bitfield = new byte[length_prefix-1];
+					System.arraycopy(response,1,this.bitfield,0,bitfield.length);
 				}
+				message = new MessageTask(this, response);//makes the response into a  new message task, passes a peer as well
+				client.addMessageTask(message); //puts the message in its clients  task queue
 			
+				receive_timer.cancel();  //cancels the current timer for messages
+		        receive_timer = new Timer();
+		        receive_timer.schedule(new ReceiveTimerTask(), 120*1000);  //resets it for 2 minutes from last sent				//TODO send message to RUBT client
+			}catch (EOFException e) {
+				// TODO Auto-generated catch block
+				//e.printStackTrace();
+				System.err.println("EOF");
+				//closeConnections();
+			}catch (Exception e){
+				e.printStackTrace();
+				System.err.println("Other Exception");
+			}
 		}
 		closeConnections();
 	}
@@ -134,10 +124,10 @@ public class Peer extends Thread {
 			this.peerOutputStream = new DataOutputStream(peerConnection.getOutputStream());
 			this.peerInputStream = new DataInputStream(peerConnection.getInputStream());
 			connected =true;
-		}catch(UnknownHostException e){
+		}catch (UnknownHostException e){
 			System.err.println("UnknownHostException");
 			return false;
-		}catch(IOException e){
+		}catch (IOException e){
 			System.err.println("IOException");
 			return false;
 		}
@@ -154,7 +144,7 @@ public class Peer extends Thread {
 			peerOutputStream.close();
 			peerConnection.close();
 			connected = false;
-		}catch(IOException e){
+		}catch (IOException e){
 			return;
 		}
 	}
@@ -191,8 +181,7 @@ public class Peer extends Thread {
 		this.port = port;
 	}
 
-	public boolean isInterested()
-	{
+	public boolean isInterested() {
 		return interested;
 	}
 	
@@ -200,16 +189,8 @@ public class Peer extends Thread {
 		return choked;
 	}
 
-	public boolean isUnchoked() {
-		return unchoked;
-	}
-
 	public boolean isChoking() {
 		return choking;
-	}
-
-	public boolean isUnchoking() {
-		return unchoking;
 	}
 
 	public InputStream getPeerInputStream() {
@@ -219,14 +200,11 @@ public class Peer extends Thread {
 	public void setPeerInputStream(DataInputStream peerInputStream) {
 		this.peerInputStream = peerInputStream;
 	}
-	public void setChoked(boolean state)
-	{
+	public void setChoked(boolean state){
 		this.choked = state;
-		this.unchoked = !state;
 	}
 	
-	public void setRemoteInterested(boolean state)
-	{
+	public void setRemoteInterested(boolean state){
 		this.remote_interested=state;
 	}
 	/**
@@ -237,11 +215,9 @@ public class Peer extends Thread {
 	 */
 	public synchronized void sendMessage(byte[] Message) throws IOException
 	{
-		if(this.peerOutputStream==null)
-		{
+		if(this.peerOutputStream==null){
 			System.out.println("stream is null");
-		}
-		else{
+		}else {
 			peerOutputStream.write(Message);
 		}
 		send_timer.cancel();  //cancels the current timer for sent messages
@@ -251,21 +227,17 @@ public class Peer extends Thread {
 		
 	}
 	
-	public byte[] getbitfield()
+	public byte[] getBitfield()
 	{
 		return this.bitfield;
 	}
 	
-	public synchronized byte[] handshake()
-	{
+	public synchronized byte[] handshake(){
 
 		byte[] phandshake = new byte[68]; //Receives initial handshake
-		try 
-		{
+		try{
 			peerInputStream.readFully(phandshake);
-		} 
-		catch (IOException e1) 
-		{
+		}catch (IOException e1){
 			System.err.println("Handshake Error");
 			e1.printStackTrace();
 			closeConnections();
@@ -273,14 +245,12 @@ public class Peer extends Thread {
 		return phandshake;
 	}
 	
-	public void setClient(RUBTClient client)
-	{
+	public void setClient(RUBTClient client){
 		this.client=client;
 	}
 
-	public void setInterested(boolean state) {
+	public void setInterested(boolean state){
 		interested = state;
-		
 	}
 	
 	/**handshakePeer() sends the handshake message and reads the peers handshake and bitfield
@@ -443,6 +413,4 @@ public class Peer extends Thread {
 //		return destfile;
 //	}
 //	
-	
-	
 }

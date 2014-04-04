@@ -72,9 +72,9 @@ public class RUBTClient extends Thread{
 			e.printStackTrace();
 		}
 		
-		try {
+		try{
 			torrentinfo = new TorrentInfo(torrentbytes);
-		} catch (BencodingException e) {
+		}catch (BencodingException e) {
 			System.err.println("Beencoding Exception!");
 			e.printStackTrace();
 		}
@@ -96,7 +96,6 @@ public class RUBTClient extends Thread{
 		//run thread
 		RUBTClient client = new RUBTClient(destfile);
 		client.start();
-		
 		
 //		
 //		
@@ -219,12 +218,12 @@ public class RUBTClient extends Thread{
 		Message message = new Message();
 		try{
 			response_string = this.tracker.requestPeerList();
-		}catch(Exception e){
+		}catch (Exception e){
 			System.out.println("exception thrown requesting peer list from tracker");
 			e.printStackTrace();
 			System.exit(0);
-		};
-		if(response_string==null){
+		}
+		if (response_string == null){
 			System.out.println("null response");
 			System.exit(0);
 		}
@@ -233,20 +232,21 @@ public class RUBTClient extends Thread{
 		Response peer_list = new Response(response_string);
 		//extracts array of peer info from valid peer
 		addPeers(peer_list.getValidPeers());
+		
 		while(this.keepRunning){
 
 			try{
 				MessageTask task = this.tasks.take();
 				byte[] msg = task.getMessage();
-				System.out.println("Message id:"+msg[0]);
+				System.out.println("Message id: " + msg[0]);
 				Peer peer = task.getPeer();
 				switch(msg[0]){  // i will have peer deal with keep alive.
 					case Message.CHOKE:
-						System.out.println("Peer " +peer.getPeer_id() +" sent choked");
+						System.out.println("Peer " +peer.getPeer_id() + " sent choked");
 						peer.setChoked(true);
 						break;
 					case Message.UNCHOKE:
-						System.out.println("Peer " +peer.getPeer_id() +" sent unchoked");
+						System.out.println("Peer " +peer.getPeer_id() + " sent unchoked");
 						peer.setChoked(false);
 						this.chooseAndRequestPiece(peer);
 						break;			
@@ -256,16 +256,15 @@ public class RUBTClient extends Thread{
 						break;
 					case Message.HAVE:
 						System.out.println("Peer " + peer.getPeer_id() + " sent have message");
-						if(peer.isChoked())
-						{
+						if(peer.isChoked()){
 							System.out.println("first have message");
 						}
 						//TODO if this is the first have, we have to update the peers bitfield, then request this piece if we want it
 						break;
 					case Message.BITFIELD:
 						System.out.println("Peer " + peer.getPeer_id() + " sent bitfield");
-						System.out.println("and here is it"+Arrays.toString(peer.getbitfield()));
-						if(destfile.firstNewPiece(peer.getbitfield())!=-1)//then we are interested in a piece
+						System.out.println("and here is it " + Arrays.toString(peer.getBitfield()));
+						if(destfile.firstNewPiece(peer.getBitfield()) != -1)//then we are interested in a piece
 						{
 							peer.sendMessage(message.getInterested());
 						}
@@ -276,30 +275,25 @@ public class RUBTClient extends Thread{
 					case Message.PIECE://check where we are in the piece, then request the next part i think.
 						System.out.println("Peer " + peer.getPeer_id()+ " sent Piece");
 						System.out.println(Arrays.toString(msg));
-						GetNextBlock(msg,peer);
+						getNextBlock(msg,peer);
 						//TODO write piece to file
 						break;
 						//
-
 				}
 			}catch (InterruptedException ie){
 				System.err.println("caught interrupt. continuing anyway");
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
+			}catch (IOException e) {
 				e.printStackTrace();
 			}
-		
 		}	
-		
 	}
 	
 	/**
 	 * @param newPeers List of Peers to be connected to
 	 */
-	
-	void addPeers(List<Peer> newPeers){
+	public void addPeers(List<Peer> newPeers){
 		for(Peer peer: newPeers){
-			if(!peer.connectToPeer()){
+			if (!peer.connectToPeer()){
 				continue;
 			}
 			Message current_message = new Message();
@@ -312,15 +306,14 @@ public class RUBTClient extends Thread{
 					System.err.println("Invalid info hash from peer:");
 					continue;
 				}
-			} catch (IOException e) {
+			}catch (IOException e) {
 				System.err.println("random  IO ex");
 				continue;
 			}
 			peers.add(peer);
 			peer.setClient(this);
 			peer.start();
-			//guarentees only one thread spawns
-			return;
+			return;     //guarentees only one thread spawns
 		}
 		System.out.println("finished adding peers");
 	}
@@ -329,54 +322,49 @@ public class RUBTClient extends Thread{
 	 * This method compares the remote peers handshake to our infohash 
 	 * @param phandshake peer handshake
 	 */
-	private boolean handshakeCheck(byte[] phandshake)//TODO check that the expected peer name is correct?
-	{
+	private boolean handshakeCheck(byte[] peer_handshake){	//TODO check that the expected peer name is correct?
+		
 		byte[] peer_infohash = new byte [20];
-		System.arraycopy(phandshake,28,peer_infohash,0,20); //copys the peer's infohash
-		if(Arrays.equals(peer_infohash, this.torrentinfo.info_hash.array()))
-		{
+		System.arraycopy(peer_handshake,28,peer_infohash,0,20); //copys the peer's infohash
+		
+		if (Arrays.equals(peer_infohash, this.torrentinfo.info_hash.array())){
 			//System.out.println("Valid info hash");
 			return true;
-		}
-		else
-		{
+		}else {
 			//System.err.println("Invalid info hash");
 			return false;
 		}
 	}
-	public synchronized  void addMessageTask(MessageTask task)
-	{
+	
+	public synchronized  void addMessageTask(MessageTask task){
 		tasks.add(task);
 	}
 	
-
-	public synchronized void chooseAndRequestPiece(final Peer peer){
-	   	int current_piece=0;
-	   	int offset_counter=0;
+	private synchronized void chooseAndRequestPiece(final Peer peer){
+	   	
+		int current_piece = 0;
+	   	int offset_counter = 0;
 	   	int pieces = torrentinfo.piece_length/max_request;
-	   	Message current_message=new Message();
+	   	Message current_message = new Message();
 	   	byte[] request_message;
-		if(peer.isUnchoked()&&peer.isInterested()); //if our peer is unchoked and we are interested
-	   	{
-	   		current_piece= destfile.firstNewPiece(peer.getbitfield());
-	   		System.out.println("Requesting piece:"+current_piece);
-	   		//for(int i = 0;i<=pieces;i++)
-	   		//{
-	   			if(peer.isChoked())
-	   			{
+	   	
+		if (!peer.isChoked() && peer.isInterested()){ //if our peer is unchoked and we are interested
+	   		current_piece = destfile.firstNewPiece(peer.getBitfield());
+	   		System.out.println("Requesting piece: " + current_piece);
+	   		//for(int i = 0; i <= pieces; i++){
+	   			if (peer.isChoked()){
 	   				System.out.println("got choked out");
 	   				//break;
 	   			}
 	   			request_message=current_message.request(current_piece, offset_counter,max_request);
 	   			try {
 					peer.sendMessage(request_message);
-				} catch (IOException e) {
+				}catch (IOException e) {
 					System.err.println("Error sending message to peer");
 					e.printStackTrace();
 					return;
 				}
 	   			//offset_counter+=max_request;
-	   			
 	   		//}
 	   	}
 	}
@@ -385,39 +373,33 @@ public class RUBTClient extends Thread{
 	 * @param block
 	 * @param peer
 	 */
-	private void GetNextBlock(byte[] block,Peer peer)
-	{
+	private void getNextBlock(byte[] block,Peer peer){
 		Message message = new Message();
 		byte[] request;
 		byte[] piece_bytes = new byte[4];
 		byte[] offset_bytes = new byte[4]; 
+		
 		System.arraycopy(block, 5, offset_bytes, 0, 4); //gets the offset bytes from the piece message
 		System.arraycopy(block, 1, piece_bytes, 0, 4); //gets the piece number bytes from the piece message
 		System.out.println(Arrays.toString(offset_bytes));
+		
 		int offset = ByteBuffer.wrap(offset_bytes).getInt();  //wraps the offset bytes in a buffer and converts them into an int
 		int piece = ByteBuffer.wrap(piece_bytes).getInt();
-		if(offset+max_request==torrentinfo.piece_length) //checks if we got the last chunk of a piece
-		{
-			chooseAndRequestPiece(peer); //figures out the next piece to request
-		}
-		else
-		{
-			if(peer.isChoked())//TODO i don't know how to handle starting up again if we get choked mid piece request
-   			{
+		
+		if (offset + max_request == torrentinfo.piece_length){ 	//checks if we got the last chunk of a piece{
+			chooseAndRequestPiece(peer); 		//figures out the next piece to request
+		}else {
+			if (peer.isChoked()){			//TODO i don't know how to handle starting up again if we get choked mid piece request
    				System.out.println("got choked out");
    				return;
-   			}
-			else
-			{
+   			}else {
 				request = message.request(piece, offset+max_request, max_request);
 				try {
 					peer.sendMessage(request);
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
+				}catch (IOException e) {
 					e.printStackTrace();
 				}
 			}
 		}
 	}
-	
 }
