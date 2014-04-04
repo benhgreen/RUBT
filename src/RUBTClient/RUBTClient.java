@@ -364,8 +364,16 @@ public class RUBTClient extends Thread{
 		if(!peer.isChoked() && peer.isInterested()){ //if our peer is unchoked and we are interested
 			current_piece = destfile.firstNewPiece(peer.getBitfield());
 	   		System.out.println("Requesting piece: " + current_piece);
+	   		offset_counter = destfile.pieces[current_piece].getOffset();
+			if(offset_counter!=-1)
+			{
+				offset_counter+=max_request;
+			}
+			else
+			{
+				offset_counter =0;
+			}
 	   		request_message=current_message.request(current_piece, offset_counter, max_request);
-	   		
 	   		try {
 				peer.sendMessage(request_message);
 			}catch (IOException e) {
