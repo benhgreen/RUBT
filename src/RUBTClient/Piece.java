@@ -10,21 +10,12 @@ package RUBTClient;
 public class Piece {
 	
 	private byte[] data;
-	private int piece;
 	private int offset;
 	
-	public Piece(byte[] data, int piece, int offset)
+	public Piece(int size)
 	{
-		this.data = data;
-		this.piece = piece;
-		this.offset = offset;
-	}
-	
-	/**
-	 * @return number identifying the piece as part of the file
-	 */
-	public int getPiece() {
-		return piece;
+		this.data = new byte[size];
+		this.offset = -1;
 	}
 	
 	/**
@@ -40,5 +31,12 @@ public class Piece {
 	public byte[] getData()
 	{
 		return data;
+	}
+	
+	public void assemble(byte[] data, int offset){
+		for(int i = 0; i < data.length; i++){
+			this.data[offset+i] = data[i];
+			this.offset = offset;
+		}
 	}
 }
