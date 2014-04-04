@@ -247,6 +247,7 @@ public class RUBTClient extends Thread{
 					case Message.UNCHOKE:
 						System.out.println("Peer " +peer.getPeer_id() + " sent unchoked");
 						peer.setChoked(false);
+						System.out.println("");
 						this.chooseAndRequestPiece(peer);
 						break;			
 					case Message.INTERESTED:
@@ -294,6 +295,10 @@ public class RUBTClient extends Thread{
 	public void addPeers(List<Peer> newPeers){
 		
 		for(Peer peer: newPeers){
+			if(peer.getPeer_id().startsWith("-RU1101-BD#J")){
+				continue;
+			}
+			
 			if (peer.getSocket() == null && !peer.connectToPeer()){
 				continue;
 			}
