@@ -366,21 +366,32 @@ public class RUBTClient extends Thread{
 	 * @param block
 	 * @param peer
 	 */
+	
+	private synchronized void addChunk(int piece, int offset,byte[] data)
+	{
+			destfile.pieces[piece].assemble(Arrays.copyOfRange(data,8 , data.length-1), offset);
+	}
 	private void getNextBlock(byte[] block,Peer peer){
 		
 		Message message = new Message();
 		byte[] request;
 		byte[] piece_bytes = new byte[4];
 		byte[] offset_bytes = new byte[4]; 
-		
+	
 		System.arraycopy(block, 5, offset_bytes, 0, 4); //gets the offset bytes from the piece message
 		System.arraycopy(block, 1, piece_bytes, 0, 4); //gets the piece number bytes from the piece message
 		System.out.println(Arrays.toString(offset_bytes));
 		
 		int offset = ByteBuffer.wrap(offset_bytes).getInt();  //wraps the offset bytes in a buffer and converts them into an int
 		int piece = ByteBuffer.wrap(piece_bytes).getInt();
+<<<<<<< HEAD
 		
 		if (offset + max_request == torrentinfo.piece_length){ 	//checks if we got the last chunk of a piece
+=======
+		addChunk(piece,offset,block);  //places the chunk of data into a piece													//adds the chunk to the piece
+		if (offset + max_request == torrentinfo.piece_length){ 	//checks if we got the last chunk of a piece{
+			destfile.addPiece(piece);
+>>>>>>> 34aaf3c7231c60fd293195ba76ae4d578cf8cc01
 			chooseAndRequestPiece(peer); 		//figures out the next piece to request
 		}else {
 			if (peer.isChoked()){			//TODO i don't know how to handle starting up again if we get choked mid piece request
