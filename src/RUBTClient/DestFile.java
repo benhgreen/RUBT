@@ -24,7 +24,7 @@ public class DestFile {
 	private byte[] mybitfield;
 	private boolean[] mypieces;
 	private boolean initialized;
-	private Piece[] pieces;
+	public Piece[] pieces;
 	
 	public DestFile(TorrentInfo torrentinfo){
 		this.initialized = false;
