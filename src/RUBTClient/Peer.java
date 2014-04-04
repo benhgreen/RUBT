@@ -90,10 +90,6 @@ public class Peer extends Thread {
 				}
 				response = new byte[length_prefix];
 				peerInputStream.read(response,0,length_prefix);
-				if(first_sent ==false)//checks if first sent has been recorded, if not sets it to true.
-				{
-					first_sent =true;
-				}
 				if(response[0] == Message.BITFIELD){      //if the id is a bitfield, set this peers bitfield to this byte array.
 					System.out.println("setting the bitfield");
 					bitfield = new byte[length_prefix-1];
@@ -101,7 +97,10 @@ public class Peer extends Thread {
 				}
 				message = new MessageTask(this, response);//makes the response into a  new message task, passes a peer as well
 				client.addMessageTask(message); //puts the message in its clients  task queue
-			
+				if(first_sent ==false)//checks if first sent has been recorded, if not sets it to true.
+				{
+					first_sent =true;
+				}
 				receive_timer.cancel();  //cancels the current timer for messages
 		        receive_timer = new Timer();
 		        receive_timer.schedule(new ReceiveTimerTask(), 120*1000);  //resets it for 2 minutes from last sent				//TODO send message to RUBT client

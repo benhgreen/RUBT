@@ -273,7 +273,7 @@ public class RUBTClient extends Thread{
 						System.out.println("and here is it " + Arrays.toString(peer.getBitfield()));
 						if(peer.getFirstSent())   //if the peer already has a bitfield sent, and another is sent, we disconnect.
 						{
-							peer.closeConnections();
+							//peer.closeConnections();
 						}
 						if(destfile.firstNewPiece(peer.getBitfield()) != -1){		//then we are interested in a piece
 							System.out.println("peer has piece that we dont have");
@@ -287,7 +287,6 @@ public class RUBTClient extends Thread{
 						break;
 					case Message.PIECE:		//check where we are in the piece, then request the next part i think.
 						System.out.println("Peer " + peer.getPeer_id()+ " sent Piece");
-						System.out.println(Arrays.toString(msg));
 						getNextBlock(msg,peer);
 						//TODO write piece to file
 						break;
@@ -362,9 +361,6 @@ public class RUBTClient extends Thread{
 	   	int pieces = torrentinfo.piece_length/max_request;
 	   	Message current_message = new Message();
 	   	byte[] request_message;
-	   	System.out.println(!peer.isChoked());
-	   	System.out.println(peer.isInterested());
-	   	
 		if(!peer.isChoked() && peer.isInterested()){ //if our peer is unchoked and we are interested
 			current_piece = destfile.firstNewPiece(peer.getBitfield());
 	   		System.out.println("Requesting piece: " + current_piece);
@@ -388,7 +384,6 @@ public class RUBTClient extends Thread{
 	
 	private synchronized void addChunk(int piece, int offset,byte[] data)
 	{
-		System.out.println(data.length);
 		byte[] chunk = new byte[data.length-9];
 		System.arraycopy(data, 8, chunk, 0, data.length-9);
 		destfile.pieces[piece].assemble(chunk,offset);
@@ -399,11 +394,8 @@ public class RUBTClient extends Thread{
 		byte[] request;
 		byte[] piece_bytes = new byte[4];
 		byte[] offset_bytes = new byte[4]; 
-	
 		System.arraycopy(block, 5, offset_bytes, 0, 4); //gets the offset bytes from the piece message
 		System.arraycopy(block, 1, piece_bytes, 0, 4); //gets the piece number bytes from the piece message
-		System.out.println(Arrays.toString(offset_bytes));
-		
 		int offset = ByteBuffer.wrap(offset_bytes).getInt();  //wraps the offset bytes in a buffer and converts them into an int
 		int piece = ByteBuffer.wrap(piece_bytes).getInt();
 		//checks if we got the last chunk of a piece
