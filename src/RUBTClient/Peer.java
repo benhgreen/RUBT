@@ -90,10 +90,11 @@ public class Peer extends Thread {
 				}
 				//System.out.println("length prefix"+length_prefix);
 				response = new byte[length_prefix];
-				//System.out.println("reponse length"+response.length);
-			//	if(length_prefix==0){
+			
+				//Keep alive case
+				//if(length_prefix==0){
 				
-			//	}
+				//}
 				
 				peerInputStream.read(response,0,length_prefix);
 				if(response[0] == Message.BITFIELD){      //if the id is a bitfield, set this peers bitfield to this byte array.
@@ -258,6 +259,10 @@ public class Peer extends Thread {
 
 	public void setInterested(boolean state){
 		interested = state;
+	}
+	
+	public boolean equals(Peer peer){
+		return(this.ip == peer.getIp() && this.peer_id.equals(peer.getPeer_id()));
 	}
 	
 	/**handshakePeer() sends the handshake message and reads the peers handshake and bitfield
