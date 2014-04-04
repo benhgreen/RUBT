@@ -47,6 +47,7 @@ public class Peer extends Thread {
 		this.peerInputStream = null;
 		this.peerOutputStream = null;
 		this.have_bitfield = false;
+		
 		this.choked = true;
 		this.choking = true;
 		this.connected = false;
@@ -254,7 +255,8 @@ public class Peer extends Thread {
 	}
 	
 	public void setClient(RUBTClient client){
-		this.client=client;
+		this.client = client;
+		this.bitfield = new byte[client.getbitfield().length]; 
 	}
 
 	public void setInterested(boolean state){

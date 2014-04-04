@@ -440,4 +440,8 @@ public class RUBTClient extends Thread{
 			peers.remove(peer);
 		}
 	}
+	
+	public byte[] getbitfield(){
+		return this.destfile.getMybitfield();
+	}
 }
