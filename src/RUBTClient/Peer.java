@@ -5,13 +5,15 @@ import java.nio.ByteBuffer;
 import java.io.*;
 import java.util.Arrays;
 import java.util.TimerTask;
+import java.util.Timer;
+
 /**
  * @author Manuel Lopez
  * @author Ben Green
  * @author Christopher Rios
  *
  */
-import java.util.Timer;
+
 
 /** Peer object handles all communication between client and peer
  */
@@ -61,12 +63,12 @@ public class Peer extends Thread {
 			System.out.println("send timer is up");
 		}
 	}
+	
 	private static class ReceiveTimerTask extends TimerTask{
 		@Override
 		public void run() {
 			// TODO Do something when timer is up
 			System.out.println("recieve timer is up");
-			
 		}
 	}
 	
@@ -221,7 +223,7 @@ public class Peer extends Thread {
 	 * @throws IOException 
 	 */
 	public synchronized void sendMessage(byte[] Message) throws IOException {
-		if(this.peerOutputStream==null){
+		if(this.peerOutputStream == null){
 			System.out.println("stream is null");
 		}else {
 			peerOutputStream.write(Message);
