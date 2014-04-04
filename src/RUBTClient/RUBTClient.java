@@ -384,14 +384,10 @@ public class RUBTClient extends Thread{
 		
 		int offset = ByteBuffer.wrap(offset_bytes).getInt();  //wraps the offset bytes in a buffer and converts them into an int
 		int piece = ByteBuffer.wrap(piece_bytes).getInt();
-<<<<<<< HEAD
-		
-		if (offset + max_request == torrentinfo.piece_length){ 	//checks if we got the last chunk of a piece
-=======
+	//checks if we got the last chunk of a piece
 		addChunk(piece,offset,block);  //places the chunk of data into a piece													//adds the chunk to the piece
 		if (offset + max_request == torrentinfo.piece_length){ 	//checks if we got the last chunk of a piece{
 			destfile.addPiece(piece);
->>>>>>> 34aaf3c7231c60fd293195ba76ae4d578cf8cc01
 			chooseAndRequestPiece(peer); 		//figures out the next piece to request
 		}else {
 			if (peer.isChoked()){			//TODO i don't know how to handle starting up again if we get choked mid piece request

@@ -36,7 +36,7 @@ public class Piece {
 	public void assemble(byte[] data, int offset){
 		for(int i = 0; i < data.length; i++){
 			this.data[offset+i] = data[i];
-			this.offset = offset;
 		}
+		this.offset = offset;
 	}
 }
