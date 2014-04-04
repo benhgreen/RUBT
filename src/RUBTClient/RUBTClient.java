@@ -257,8 +257,14 @@ public class RUBTClient extends Thread{
 					case Message.HAVE:
 						System.out.println("Peer " + peer.getPeer_id() + " sent have message");
 						if(peer.isChoked()){
-							//TODO set peers bitfield relative to the have message 
+							//TODO set peers bitfield relative to the have message if chocked
 							System.out.println("first have message");
+							byte[] piece_bytes = new byte[4];
+							System.arraycopy(msg, 1, piece_bytes, 0, 4); //gets the piece number bytes from the piece message
+							int piece = ByteBuffer.wrap(piece_bytes).getInt();
+
+							destfile.manualMod(peer.getBitfield(), piece, true);
+							System.out.println("updated bitfield: " + Arrays.toString(peer.getBitfield()));
 						}
 						//TODO if this is the first have, we have to update the peers bitfield, then request this piece if we want it
 						break;
@@ -274,7 +280,7 @@ public class RUBTClient extends Thread{
 							peer.sethaveBitfield();
 						}
 						if(destfile.firstNewPiece(peer.getBitfield()) != -1){		//then we are interested in a piece
-							System.out.println("in here");
+							System.out.println("peer has piece that we dont have");
 							peer.setInterested(true);
 							peer.sendMessage(message.getInterested());
 						}
@@ -307,7 +313,6 @@ public class RUBTClient extends Thread{
 			if(peer.getPeer_id().startsWith("-RU1101-BD#J")){
 				continue;
 			}
-			
 			if (peer.getSocket() == null && !peer.connectToPeer()){
 				continue;
 			}
@@ -363,6 +368,7 @@ public class RUBTClient extends Thread{
 	   	byte[] request_message;
 	   	System.out.println(!peer.isChoked());
 	   	System.out.println(peer.isInterested());
+	   	
 		if(!peer.isChoked() && peer.isInterested()){ //if our peer is unchoked and we are interested
 			current_piece = destfile.firstNewPiece(peer.getBitfield());
 	   		System.out.println("Requesting piece: " + current_piece);
@@ -377,6 +383,7 @@ public class RUBTClient extends Thread{
 			}
 	   	}
 	}
+	
 	/**
 	 * Takes a piece message from a peer, saves it to our file and figures out what piece to request next
 	 * @param block
@@ -403,7 +410,7 @@ public class RUBTClient extends Thread{
 		
 		int offset = ByteBuffer.wrap(offset_bytes).getInt();  //wraps the offset bytes in a buffer and converts them into an int
 		int piece = ByteBuffer.wrap(piece_bytes).getInt();
-	//checks if we got the last chunk of a piece
+		//checks if we got the last chunk of a piece
 		addChunk(piece,offset,block);  //places the chunk of data into a piece													//adds the chunk to the piece
 		if (offset + max_request == torrentinfo.piece_length){ 	//checks if we got the last chunk of a piece{
 			destfile.addPiece(piece);
@@ -420,6 +427,17 @@ public class RUBTClient extends Thread{
 					e.printStackTrace();
 				}
 			}
+		}
+	}
+	
+	
+	/**
+	 * Remove peer takes in a peer and removes/disconnects it from the list of active peers
+	 */
+	private void removePeer(Peer peer){
+		if (peers.contains(peer)){
+			peer.closeConnections();
+			peers.remove(peer);
 		}
 	}
 }
