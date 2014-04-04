@@ -36,7 +36,7 @@ public class Peer extends Thread {
 	private Timer 				receive_timer; 		//timers for receives
 	private RUBTClient 			client;
 	private MessageTask 		message;
-	
+	private boolean				have_bitfield; 
 	
 	public Peer(String ip, String peer_id, Integer port) {
 		super();
@@ -46,7 +46,7 @@ public class Peer extends Thread {
 		this.peerSocket = null;
 		this.peerInputStream = null;
 		this.peerOutputStream = null;
-		
+		this.have_bitfield = false;
 		this.choked = true;
 		this.choking = true;
 		this.connected = false;
@@ -260,6 +260,15 @@ public class Peer extends Thread {
 		interested = state;
 	}
 	
+	public void sethaveBitfield()
+	{
+		this.have_bitfield=true;
+	}
+	
+	public boolean gethaveBitfield()
+	{
+		return have_bitfield;
+	}
 	/**handshakePeer() sends the handshake message and reads the peers handshake and bitfield
 	 * @param handshake
 	 * @return 1 if successful/0 if failed

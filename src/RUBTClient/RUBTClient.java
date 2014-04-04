@@ -265,11 +265,20 @@ public class RUBTClient extends Thread{
 					case Message.BITFIELD:
 						System.out.println("Peer " + peer.getPeer_id() + " sent bitfield");
 						System.out.println("and here is it " + Arrays.toString(peer.getBitfield()));
+						if(peer.gethaveBitfield())   //if the peer already has a bitfield sent, and another is sent, we disconnect.
+						{
+							peer.closeConnections();
+						}
+						else
+						{
+							peer.sethaveBitfield();
+						}
 						if(destfile.firstNewPiece(peer.getBitfield()) != -1){		//then we are interested in a piece
 							System.out.println("in here");
 							peer.setInterested(true);
 							peer.sendMessage(message.getInterested());
 						}
+						
 						break;
 					case Message.REQUEST:
 						System.out.println("Peer " + peer.getPeer_id() + " sent request");
