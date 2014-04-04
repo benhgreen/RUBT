@@ -111,6 +111,10 @@ public class DestFile {
 		return false;
 	}
 	
+	public boolean verify(Piece piece){
+		return verify(piece.getData());
+	}
+	
 	/**
 	 * @param input Integer representation of bitfield
 	 * @return String representation of bitfield in binary form, two's complement
