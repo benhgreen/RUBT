@@ -223,7 +223,7 @@ public class Peer extends Thread {
 	 * @throws IOException 
 	 */
 	public synchronized void sendMessage(byte[] Message) throws IOException {
-		if(this.peerOutputStream==null){
+		if(this.peerOutputStream == null){
 			System.out.println("stream is null");
 		}else {
 			peerOutputStream.write(Message);

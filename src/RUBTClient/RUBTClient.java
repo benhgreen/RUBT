@@ -256,6 +256,7 @@ public class RUBTClient extends Thread{
 					case Message.HAVE:
 						System.out.println("Peer " + peer.getPeer_id() + " sent have message");
 						if(peer.isChoked()){
+							//TODO set peers bitfield relative to the have message 
 							System.out.println("first have message");
 						}
 						//TODO if this is the first have, we have to update the peers bitfield, then request this piece if we want it
@@ -263,14 +264,14 @@ public class RUBTClient extends Thread{
 					case Message.BITFIELD:
 						System.out.println("Peer " + peer.getPeer_id() + " sent bitfield");
 						System.out.println("and here is it " + Arrays.toString(peer.getBitfield()));
-						if(destfile.firstNewPiece(peer.getBitfield()) != -1){//then we are interested in a piece
+						if(destfile.firstNewPiece(peer.getBitfield()) != -1){		//then we are interested in a piece
 							peer.sendMessage(message.getInterested());
 						}
 						break;
 					case Message.REQUEST:
 						System.out.println("Peer " + peer.getPeer_id() + " sent request");
 						break;
-					case Message.PIECE://check where we are in the piece, then request the next part i think.
+					case Message.PIECE:		//check where we are in the piece, then request the next part i think.
 						System.out.println("Peer " + peer.getPeer_id()+ " sent Piece");
 						System.out.println(Arrays.toString(msg));
 						getNextBlock(msg,peer);
@@ -349,7 +350,7 @@ public class RUBTClient extends Thread{
 		if (!peer.isChoked() && peer.isInterested()){ //if our peer is unchoked and we are interested
 	   		current_piece = destfile.firstNewPiece(peer.getBitfield());
 	   		System.out.println("Requesting piece: " + current_piece);
-	   		request_message=current_message.request(current_piece, offset_counter,max_request);
+	   		request_message=current_message.request(current_piece, offset_counter, max_request);
 	   		
 	   		try {
 				peer.sendMessage(request_message);
@@ -386,7 +387,7 @@ public class RUBTClient extends Thread{
    				System.out.println("got choked out");
    				return;
    			}else {
-				request = message.request(piece, offset+max_request, max_request);
+				request = message.request(piece, offset + max_request, max_request);
 				try {
 					peer.sendMessage(request);
 				}catch (IOException e) {

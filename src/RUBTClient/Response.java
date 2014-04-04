@@ -137,7 +137,7 @@ public class Response {
 		
 		while(iter.hasNext()){
 			Peer temp = iter.next();
-			if(((temp.getIp().equals("128.6.171.130"))||(temp.getIp().equals("128.6.171.131")))){
+			if(((temp.getIp().equals("128.6.171.130")) || (temp.getIp().equals("128.6.171.131")))){
 				validPeers.add(temp);
 			}
 		}
