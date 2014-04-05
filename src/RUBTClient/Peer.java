@@ -191,6 +191,10 @@ public class Peer extends Thread {
 		return interested;
 	}
 	
+	public boolean isRemoteInterested() {
+		return remote_interested;
+	}
+	
 	public boolean isChoked() {
 		return choked;
 	}

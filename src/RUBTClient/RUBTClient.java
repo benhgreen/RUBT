@@ -292,6 +292,7 @@ public class RUBTClient extends Thread{
 						break;
 					case Message.PIECE:		//check where we are in the piece, then request the next part i think.
 						//System.out.println("Peer " + peer.getPeer_id()+ " sent chunk");
+						//if(!peer.getRemoteInterested())
 						getNextBlock(msg,peer);
 						//TODO write piece to file
 						break;
@@ -370,6 +371,10 @@ public class RUBTClient extends Thread{
 			
 			//returns -1 when peer has no piece that we need
 			current_piece = destfile.firstNewPiece(peer.getBitfield());
+			if (current_piece == -1){
+				peer.setInterested(false);
+				return;
+			}
 	   		
 	   		System.out.println("our bitfield: " + Arrays.toString(destfile.getMybitfield()));
 			System.out.println("");
