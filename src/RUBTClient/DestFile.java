@@ -191,7 +191,7 @@ public class DestFile {
 			int mod = i%8;
 			int currentbyte = (i-(mod)) / 8;
 			
-			if(this.mypieces[currentbyte]){
+			if(this.mypieces[i]){
 				this.mybitfield[currentbyte] |= (1 << mod);
 			}else{
 				this.mybitfield[currentbyte] &= ~(1 << mod);
