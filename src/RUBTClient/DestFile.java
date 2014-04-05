@@ -78,7 +78,7 @@ public class DestFile {
 		if(verify(this.pieces[id].getData())){
 			try {
 				//calculate location to write data in the file using piece length and offset if applicable
-				long target = id*getTorrentinfo().piece_length + this.pieces[id].getOffset();
+				long target = id*getTorrentinfo().piece_length;
 				dest.seek(target);
 				dest.write(this.pieces[id].getData());
 				this.mypieces[id] = true;
@@ -117,14 +117,8 @@ public class DestFile {
 			System.err.println("Error intitializing MessageDigest");
 		}
 		byte[] hash = md.digest(piece);
-		
-		System.out.println();
-		System.out.println();
-		System.out.println();
-		System.out.println("HASH OF NEW PIECE: " + hash.toString());
-		System.out.println();
-		System.out.println();
-		System.out.println();
+		System.out.println("Piece size: " + piece.length);
+		System.out.println("HASH CHECKED: " + hash.toString());
 		//iterate through torrentinfo piece hashes and look for a match
 		for(int i = 0; i<this.getTorrentinfo().piece_hashes.length; i++){
 			if(Arrays.equals(hash, this.getTorrentinfo().piece_hashes[i].array())){
