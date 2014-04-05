@@ -237,7 +237,7 @@ public class RUBTClient extends Thread{
 			try{
 				MessageTask task = this.tasks.take();
 				byte[] msg = task.getMessage();
-				System.out.println("Message id: " + msg[0]);
+				//System.out.println("Message id: " + msg[0]);
 				Peer peer = task.getPeer();
 				switch(msg[0]){  // i will have peer deal with keep alive.
 					case Message.CHOKE:
@@ -275,13 +275,13 @@ public class RUBTClient extends Thread{
 						break;
 					case Message.BITFIELD:
 						System.out.println("Peer " + peer.getPeer_id() + " sent bitfield");
-						System.out.println("and here is it " + Arrays.toString(peer.getBitfield()));
+						System.out.println( peer.getPeer_id() + " bitfield: "+ Arrays.toString(peer.getBitfield()));
 						if(peer.getFirstSent())   //if the peer already has a bitfield sent, and another is sent, we disconnect.
 						{
 							//peer.closeConnections();
 						}
 						if(destfile.firstNewPiece(peer.getBitfield()) != -1){		//then we are interested in a piece
-							System.out.println("peer has piece that we dont have");
+							//System.out.println("peer has piece that we dont have");
 							peer.setInterested(true);
 							peer.sendMessage(message.getInterested());
 						}
@@ -291,7 +291,7 @@ public class RUBTClient extends Thread{
 						System.out.println("Peer " + peer.getPeer_id() + " sent request");
 						break;
 					case Message.PIECE:		//check where we are in the piece, then request the next part i think.
-						System.out.println("Peer " + peer.getPeer_id()+ " sent Piece");
+						//System.out.println("Peer " + peer.getPeer_id()+ " sent chunk");
 						getNextBlock(msg,peer);
 						//TODO write piece to file
 						break;
@@ -345,7 +345,7 @@ public class RUBTClient extends Thread{
 	private boolean handshakeCheck(byte[] peer_handshake){	//TODO check that the expected peer name is correct?
 		
 		byte[] peer_infohash = new byte [20];
-		System.arraycopy(peer_handshake,28,peer_infohash,0,20); //copys the peer's infohash
+		System.arraycopy(peer_handshake, 28, peer_infohash, 0, 20); //copys the peer's infohash
 		
 		if (Arrays.equals(peer_infohash, this.torrentinfo.info_hash.array())){
 			//System.out.println("Valid info hash");
@@ -366,17 +366,17 @@ public class RUBTClient extends Thread{
 	   	int pieces = torrentinfo.piece_length/max_request;
 	   	Message current_message = new Message();
 	   	byte[] request_message;
-		if(!peer.isChoked() && peer.isInterested()){ //if our peer is unchoked and we are interested
+		if (!peer.isChoked() && peer.isInterested()){ //if our peer is unchoked and we are interested
 			current_piece = destfile.firstNewPiece(peer.getBitfield());
-	   		System.out.println("Requesting piece: " + current_piece);
-	   		System.out.println(Arrays.toString(destfile.getMybitfield()));
+	   		
+	   		System.out.println("our bitfield: " + Arrays.toString(destfile.getMybitfield()));
+			System.out.println("");
+	   		System.out.println("requesting piece: " + current_piece);
+	   		
 	   		offset_counter = destfile.pieces[current_piece].getOffset();
-			if(offset_counter != -1)
-			{
+			if(offset_counter != -1){
 				offset_counter += max_request;
-			}
-			else
-			{
+			}else {
 				offset_counter = 0;
 			}
 	   		request_message = current_message.request(current_piece, offset_counter, max_request);
@@ -396,8 +396,7 @@ public class RUBTClient extends Thread{
 	 * @param peer
 	 */
 	
-	private synchronized void addChunk(int piece, int offset,byte[] data)
-	{
+	private synchronized void addChunk(int piece, int offset,byte[] data){
 		byte[] chunk = new byte[data.length-9];
 		System.arraycopy(data, 9, chunk, 0, data.length-9);
 		destfile.pieces[piece].assemble(chunk,offset);
@@ -416,7 +415,7 @@ public class RUBTClient extends Thread{
 
 		addChunk(piece,offset,block);  //places the chunk of data into a piece													//adds the chunk to the piece
 		if (offset + max_request == torrentinfo.piece_length){ 	//checks if we got the last chunk of a piece{
-			System.out.println("just asked for the last piece");
+			System.out.println("just asked for the last chunk");
 			destfile.addPiece(piece);
 			chooseAndRequestPiece(peer); 		//figures out the next piece to request
 		}else {
