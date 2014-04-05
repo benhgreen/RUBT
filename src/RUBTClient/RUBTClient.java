@@ -266,7 +266,7 @@ public class RUBTClient extends Thread{
 							destfile.manualMod(peer.getBitfield(), piece, true);
 							System.out.println("updated bitfield: " + Arrays.toString(peer.getBitfield()));
 							if(destfile.firstNewPiece(peer.getBitfield()) != -1){		//then we are interested in a piece
-								System.out.println("peer has piece that we dont have");
+								//System.out.println("peer has piece that we dont have");
 								peer.setInterested(true);
 								peer.sendMessage(message.getInterested());
 							}
