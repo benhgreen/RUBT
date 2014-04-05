@@ -367,6 +367,8 @@ public class RUBTClient extends Thread{
 	   	Message current_message = new Message();
 	   	byte[] request_message;
 		if (!peer.isChoked() && peer.isInterested()){ //if our peer is unchoked and we are interested
+			
+			//returns -1 when peer has no piece that we need
 			current_piece = destfile.firstNewPiece(peer.getBitfield());
 	   		
 	   		System.out.println("our bitfield: " + Arrays.toString(destfile.getMybitfield()));
