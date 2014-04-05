@@ -97,9 +97,9 @@ public class Peer extends Thread {
 				}
 				message = new MessageTask(this, response);//makes the response into a  new message task, passes a peer as well
 				client.addMessageTask(message); //puts the message in its clients  task queue
-				if(first_sent ==false)//checks if first sent has been recorded, if not sets it to true.
+				if(first_sent == false)//checks if first sent has been recorded, if not sets it to true.
 				{
-					first_sent =true;
+					first_sent = true;
 				}
 				receive_timer.cancel();  //cancels the current timer for messages
 		        receive_timer = new Timer();
@@ -211,7 +211,7 @@ public class Peer extends Thread {
 	}
 	
 	public void setRemoteInterested(boolean state){
-		this.remote_interested=state;
+		this.remote_interested = state;
 	}
 	/**
 	 * Sends a message to the peer

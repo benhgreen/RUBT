@@ -333,7 +333,7 @@ public class RUBTClient extends Thread{
 			peers.add(peer);
 			peer.setClient(this);
 			peer.start();
-			return;     //guarentees only one thread spawns
+			return;     //guarantees only one thread spawns
 		}
 		System.out.println("finished adding peers");
 	}
@@ -370,15 +370,15 @@ public class RUBTClient extends Thread{
 			current_piece = destfile.firstNewPiece(peer.getBitfield());
 	   		System.out.println("Requesting piece: " + current_piece);
 	   		offset_counter = destfile.pieces[current_piece].getOffset();
-			if(offset_counter!=-1)
+			if(offset_counter != -1)
 			{
-				offset_counter+=max_request;
+				offset_counter += max_request;
 			}
 			else
 			{
-				offset_counter =0;
+				offset_counter = 0;
 			}
-	   		request_message=current_message.request(current_piece, offset_counter, max_request);
+	   		request_message = current_message.request(current_piece, offset_counter, max_request);
 	   		try {
 				peer.sendMessage(request_message);
 			}catch (IOException e) {
