@@ -334,7 +334,7 @@ public class RUBTClient extends Thread{
 			peers.add(peer);
 			peer.setClient(this);
 			peer.start();
-			return;     //guarantees only one thread spawns
+			//return;     //guarantees only one thread spawns
 		}
 		System.out.println("finished adding peers");
 	}
