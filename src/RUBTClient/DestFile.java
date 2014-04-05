@@ -32,7 +32,7 @@ public class DestFile {
 		this.totalsize = torrentinfo.file_length;
 		this.incomplete = torrentinfo.file_length;
 		
-		printHashes();
+		//printHashes();
 		
 		this.mypieces = new boolean[this.torrentinfo.piece_hashes.length];
 		this.pieces = new Piece[this.torrentinfo.piece_hashes.length];
@@ -128,7 +128,7 @@ public class DestFile {
 		//iterate through torrentinfo piece hashes and look for a match
 		for(int i = 0; i<this.getTorrentinfo().piece_hashes.length; i++){
 			if(Arrays.equals(hash, this.getTorrentinfo().piece_hashes[i].array())){
-				System.out.println("PASSED");
+				System.out.println("PASSED at piece " + i);
 				return true;
 			}
 		}
