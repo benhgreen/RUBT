@@ -22,7 +22,7 @@ public class DestFile {
 	int incomplete;
 	private String filename;
 	private byte[] mybitfield;
-	private boolean[] mypieces;
+	private int[] mypieces;
 	private boolean initialized;
 	public Piece[] pieces;
 	
@@ -34,7 +34,7 @@ public class DestFile {
 		
 		//printHashes();
 		
-		this.mypieces = new boolean[this.torrentinfo.piece_hashes.length];
+		this.mypieces = new int[this.torrentinfo.piece_hashes.length];
 		this.pieces = new Piece[this.torrentinfo.piece_hashes.length];
 		int mod1;
 		if((mod1 = torrentinfo.piece_hashes.length % 8) == 0){
@@ -81,7 +81,7 @@ public class DestFile {
 				long target = id*getTorrentinfo().piece_length;
 				dest.seek(target);
 				dest.write(this.pieces[id].getData());
-				this.mypieces[id] = true;
+				this.mypieces[id] = 2;
 				this.renewBitfield();
 				this.incomplete -= (this.pieces[id].getData().length);
 				return true;
@@ -163,10 +163,10 @@ public class DestFile {
 				this.dest.read(temp);
 				if(this.verify(temp)){
 					System.out.println("Piece " + i + " is valid.");
-					this.mypieces[i] = true;
+					this.mypieces[i] = 2;
 				}else{
 					System.out.println("Piece " + i + " is INvalid.");
-					this.mypieces[i] = false;
+					this.mypieces[i] = 0;
 				}
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -185,7 +185,7 @@ public class DestFile {
 			int mod = i%8;
 			int currentbyte = (i-(mod)) / 8;
 			
-			if(this.mypieces[i]){
+			if(this.mypieces[i] == 2){
 				this.mybitfield[currentbyte] |= (1 << mod);
 			}else{
 				this.mybitfield[currentbyte] &= ~(1 << mod);
