@@ -349,7 +349,7 @@ public class RUBTClient extends Thread{
 				peer.sendMessage(current_message.handShake(this.torrentinfo.info_hash.array(), tracker.getUser_id()));
 				byte[] handshake = peer.handshake();
 				
-				if(!this.handshakeCheck(handshake)){
+				if(!this.handshakeCheck(handshake,peer)){
 					peer.closeConnections();
 					System.err.println("Invalid info hash from peer:");
 					continue;
@@ -362,7 +362,7 @@ public class RUBTClient extends Thread{
 			System.out.println("added new peer: " + peer.getPeer_id());
 			peer.setClient(this);
 			peer.start();
-			//return here to only run first peer
+			return; 		//here to only run first peer
 		}
 		System.out.println("finished adding peers");
 	}
@@ -380,13 +380,19 @@ public class RUBTClient extends Thread{
 	 * This method compares the remote peers handshake to our infohash 
 	 * @param phandshake peer handshake
 	 */
-	private boolean handshakeCheck(byte[] peer_handshake){	
+	private boolean handshakeCheck(byte[] peer_handshake,Peer peer){	
 		//TODO check that the expected peer name is correct?
 		
 		byte[] peer_infohash = new byte [20];
-		System.arraycopy(peer_handshake, 28, peer_infohash, 0, 20); //copys the peer's infohash
-		
-		if (Arrays.equals(peer_infohash, this.torrentinfo.info_hash.array())){
+		System.arraycopy(peer_handshake, 28, peer_infohash, 0, 20); //copies the peer's infohash
+		byte[] peer_id = new byte[20];
+		System.arraycopy(peer_handshake,48,peer_id,0,19);//copies the peer id.
+		if(!Arrays.equals(peer.getPeer_id().getBytes(),peer_id))  //fails if the id in the hash doenst match the expected id.
+		{
+				return false;
+		}
+		System.out.println("Peer id in the handshake"+Arrays.toString(peer_id));
+		if (Arrays.equals(peer_infohash, this.torrentinfo.info_hash.array())){  //returns true if the peer id matches and the info hash matches
 			return true;
 		}else {
 			return false;
