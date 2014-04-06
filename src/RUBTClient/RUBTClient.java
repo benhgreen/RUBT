@@ -5,6 +5,8 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Arrays;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.io.*;
 
@@ -37,6 +39,9 @@ public class RUBTClient extends Thread{
 	
 	private final int max_request = 16384;
 	
+	//private ExecutorService workers = Executors.newFixedThreadPool(10);
+	private ExecutorService workers = Executors.newCachedThreadPool();
+
 	public RUBTClient(DestFile destfile){
 		this.destfile = destfile;
 		this.torrentinfo = destfile.getTorrentinfo();
@@ -214,7 +219,7 @@ public class RUBTClient extends Thread{
 		
 		this.tracker.constructURL(this.torrentinfo.announce_url.toString(), this.torrentinfo.info_hash, this.portnum, this.torrentinfo.file_length);
 		byte[] response_string = null;
-		Message message = new Message();
+		final Message message = new Message();
 		try{
 			response_string = this.tracker.requestPeerList();
 		}catch (Exception e){
@@ -235,73 +240,82 @@ public class RUBTClient extends Thread{
 		while(this.keepRunning){
 
 			try{
-				MessageTask task = this.tasks.take();
-				byte[] msg = task.getMessage();
-				//System.out.println("Message id: " + msg[0]);
-				Peer peer = task.getPeer();
-				switch(msg[0]){  // i will have peer deal with keep alive.
-					case Message.CHOKE:
-						System.out.println("Peer " +peer.getPeer_id() + " sent choked");
-						peer.setChoked(true);
-						break;
-					case Message.UNCHOKE:
-						System.out.println("Peer " +peer.getPeer_id() + " sent unchoked");
-						peer.setChoked(false);
-						System.out.println("");
-						this.chooseAndRequestPiece(peer);
-						break;			
-					case Message.INTERESTED:
-						System.out.println("Peer " + peer.getPeer_id() + " sent interested");
-						peer.setRemoteInterested(true);
-						break;
-					case Message.HAVE:
-						System.out.println("Peer " + peer.getPeer_id() + " sent have message");
-						if(peer.isChoked()){
-							//TODO set peers bitfield relative to the have message if chocked
-							System.out.println("first have message");
-							byte[] piece_bytes = new byte[4];
-							System.arraycopy(msg, 1, piece_bytes, 0, 4); //gets the piece number bytes from the piece message
-							int piece = ByteBuffer.wrap(piece_bytes).getInt();
-
-							destfile.manualMod(peer.getBitfield(), piece, true);
-							System.out.println("updated bitfield: " + Arrays.toString(peer.getBitfield()));
-							if(destfile.firstNewPiece(peer.getBitfield()) != -1){		//then we are interested in a piece
-								//System.out.println("peer has piece that we dont have");
-								peer.setInterested(true);
-								peer.sendMessage(message.getInterested());
-							}
+				final MessageTask task = this.tasks.take();
+				this.workers.execute(new Runnable() {
+					public void run(){
+						byte[] msg = task.getMessage();
+						//System.out.println("Message id: " + msg[0]);
+						Peer peer = task.getPeer();
+						switch(msg[0]){  // i will have peer deal with keep alive.
+							case Message.CHOKE:
+								System.out.println("Peer " +peer.getPeer_id() + " sent choked");
+								peer.setChoked(true);
+								break;
+							case Message.UNCHOKE:
+								System.out.println("Peer " +peer.getPeer_id() + " sent unchoked");
+								peer.setChoked(false);
+								System.out.println("");
+								chooseAndRequestPiece(peer);
+								break;			
+							case Message.INTERESTED:
+								System.out.println("Peer " + peer.getPeer_id() + " sent interested");
+								peer.setRemoteInterested(true);
+								break;
+							case Message.HAVE:
+								System.out.println("Peer " + peer.getPeer_id() + " sent have message");
+								if (peer.isChoked()){
+									
+									System.out.println("first have message");
+									byte[] piece_bytes = new byte[4];
+									System.arraycopy(msg, 1, piece_bytes, 0, 4); //gets the piece number bytes from the piece message
+									int piece = ByteBuffer.wrap(piece_bytes).getInt();
+		
+									destfile.manualMod(peer.getBitfield(), piece, true);
+									System.out.println("updated bitfield: " + Arrays.toString(peer.getBitfield()));
+									if(destfile.firstNewPiece(peer.getBitfield()) != -1){		//then we are interested in a piece
+										peer.setInterested(true);
+										try{
+											peer.sendMessage(message.getInterested());
+										}catch(IOException e){
+											System.out.println("peer send error");
+										}
+										// TODO Auto-generated catch block
+									}
+								}
+								//TODO if this is the first have, we have to update the peers bitfield, then request this piece if we want it
+								break;
+							case Message.BITFIELD:
+								System.out.println("Peer " + peer.getPeer_id() + " sent bitfield");
+								System.out.println( peer.getPeer_id() + " bitfield: "+ Arrays.toString(peer.getBitfield()));
+								if (peer.getFirstSent()){   //if the peer already has a bitfield sent, and another is sent, we disconnect.
+									//peer.closeConnections();
+								}
+								if (destfile.firstNewPiece(peer.getBitfield()) != -1){		//then we are interested in a piece
+									peer.setInterested(true);
+									try{
+										peer.sendMessage(message.getInterested());
+									}catch(IOException e){
+										System.out.println("peer send error");
+									}
+								}
+								break;
+							case Message.REQUEST:
+								System.out.println("Peer " + peer.getPeer_id() + " sent request");
+								break;
+							case Message.PIECE:		//check where we are in the piece, then request the next part i think.
+								//System.out.println("Peer " + peer.getPeer_id()+ " sent chunk");
+								//if(!peer.getRemoteInterested())
+								getNextBlock(msg,peer);
+								break;
 						}
-						//TODO if this is the first have, we have to update the peers bitfield, then request this piece if we want it
-						break;
-					case Message.BITFIELD:
-						System.out.println("Peer " + peer.getPeer_id() + " sent bitfield");
-						System.out.println( peer.getPeer_id() + " bitfield: "+ Arrays.toString(peer.getBitfield()));
-						if(peer.getFirstSent())   //if the peer already has a bitfield sent, and another is sent, we disconnect.
-						{
-							//peer.closeConnections();
-						}
-						if(destfile.firstNewPiece(peer.getBitfield()) != -1){		//then we are interested in a piece
-							//System.out.println("peer has piece that we dont have");
-							peer.setInterested(true);
-							peer.sendMessage(message.getInterested());
-						}
-						
-						break;
-					case Message.REQUEST:
-						System.out.println("Peer " + peer.getPeer_id() + " sent request");
-						break;
-					case Message.PIECE:		//check where we are in the piece, then request the next part i think.
-						//System.out.println("Peer " + peer.getPeer_id()+ " sent chunk");
-						//if(!peer.getRemoteInterested())
-						getNextBlock(msg,peer);
-						//TODO write piece to file
-						break;
-				}
+					}
+				});
 			}catch (InterruptedException ie){
 				System.err.println("caught interrupt. continuing anyway");
-			}catch (IOException e) {
+			}/*catch (IOException e){ 
 				e.printStackTrace();
-			}
+			}*/
+			
 		}	
 	}
 	
@@ -334,7 +348,7 @@ public class RUBTClient extends Thread{
 			peers.add(peer);
 			peer.setClient(this);
 			peer.start();
-			return;     //guarantees only one thread spawns
+			//return;     //guarantees only one thread spawns
 		}
 		System.out.println("finished adding peers");
 	}
@@ -361,7 +375,7 @@ public class RUBTClient extends Thread{
 		tasks.add(task);
 	}
 	
-	private synchronized void chooseAndRequestPiece(final Peer peer){
+	public synchronized void chooseAndRequestPiece(final Peer peer){
 		int current_piece = 0;
 	   	int offset_counter = 0;
 	   	int pieces = torrentinfo.piece_length/max_request;
