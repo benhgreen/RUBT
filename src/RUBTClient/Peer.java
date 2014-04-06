@@ -132,10 +132,12 @@ public class Peer extends Thread {
 				}
 				message = new MessageTask(this, response);//makes the response into a  new message task, passes a peer as well
 				client.addMessageTask(message); //puts the message in its clients  task queue
+				/*
 				if(first_sent == false)//checks if first sent has been recorded, if not sets it to true.
 				{
 					first_sent = true;
 				}
+				*/
 				receive_timer.cancel();
 		        receive_timer = new Timer();
 		        receive_timer.schedule(new ReceiveTimerTask(this), 125*1000);
@@ -297,10 +299,14 @@ public class Peer extends Thread {
 		interested = state;
 	}
 	
-	public boolean getFirstSent()
-	{
+	public boolean getFirstSent(){
 		return first_sent;
 	}
+	
+	public void setFirstSent(boolean first_sent){
+		this.first_sent = first_sent;
+	}
+	
 	public boolean equals(Peer peer){
 		return(this.ip == peer.getIp() && this.peer_id.equals(peer.getPeer_id()));
 	}
