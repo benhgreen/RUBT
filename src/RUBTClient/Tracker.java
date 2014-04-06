@@ -26,15 +26,26 @@ public class Tracker {
 	private int	 			uploaded;			//number of bytes uploaded to peer
 	private String 			url; 				//url contructed by contruct url class to for get request to tracker
 	private String			encodedInfoHash;	//escaped info hash of torrent info 
-	private static String 	usrid;				//identifying peer id for client
+	private String 			usrid;				//identifying peer id for client
 	
 	
 	/**GetRequest contructor
 	 */
-	public Tracker(){
-		downloaded = 0;
-		uploaded = 0;
+	public Tracker(int file_length){
+		this.downloaded = 0;
+		this.uploaded = 0;
+		this.file_length = file_length;
 		randomID();
+	}
+	
+	/**
+	 * Updates downloaded and uploaded fields for tracker
+	 * @param downloaded
+	 * @param uploaded
+	 */
+	public void updateProgress(int downloaded, int uploaded){
+		this.downloaded = downloaded;
+		this.uploaded = uploaded;
 	}
 
 	/** constructURL() builds the initial url to contact the tracker
@@ -43,7 +54,7 @@ public class Tracker {
 	 * @param port_num  port number extracted from torreninfo
 	 * @param file_length file length in bytes extracted from torrentinfo
 	 */
-	public void constructURL(String announce_url, ByteBuffer info_hash, int port_num, int file_length){   //construct url key/value pairs
+	public void constructURL(String announce_url, ByteBuffer info_hash, int port_num){   //construct url key/value pairs
 		
 		setPort_num(port_num);
 		setFile_length(file_length);
@@ -51,10 +62,11 @@ public class Tracker {
 		String peer_id = "&peer_id=" + usrid;
 		String port = "&port=" + port_num;
 		String download_field = "&downloaded=" + downloaded;
-		String uploaded = "&uploaded=" + 0;
-		String left =  "&left=" + file_length;
+		String upload_field = "&uploaded=" + uploaded;
+		String left =  "&left=" + (file_length - downloaded);
 	
-		setUrl(announce_url + info_hash_encoded + peer_id + port + download_field + uploaded+ left);
+		//setUrl(announce_url + info_hash_encoded + peer_id + port + download_field + upload_field+ left);
+		this.url = (announce_url + info_hash_encoded + peer_id + port + download_field + upload_field+ left);
 	}
 	
 	/**encodeHash() escapes the info hash for sending to the tracker 
@@ -97,9 +109,13 @@ public class Tracker {
 	 * @return bencoded response of peer list
 	 * @throws Exception IOException when opening connection to tracker
 	 */
-	public byte[] requestPeerList() throws Exception{   
+	public byte[] requestPeerList(String event) throws Exception{   
 		
-		URL obj = new URL(getUrl());
+		URL obj;
+		if(event != null){
+			//obj = new URL(this.url); 
+		}
+		obj = new URL(this.url);
 		URLConnection connection = obj.openConnection(); //sends request
 
 		//int contentLength = connection.getContentLength();
@@ -133,7 +149,7 @@ public class Tracker {
 				randomChar = String.valueOf((char)(randomKey + 22));
 			id = id+randomChar;
 		}
-		usrid=id;
+		this.usrid=id;
 	}
 	
 	 /**@return GetRequest.userid
