@@ -23,6 +23,7 @@ public class Message
 	 * @field BITFIELD Value of the bitfield identifier
 	 * @field REQUEST Value of the request identifier
 	 * @field PIECE Value of the piece identifier
+	 * @field QUIT Value of the quit identifier
 	 */
 	public static final  byte CHOKE = 0;
 	public static final byte UNCHOKE = 1;
@@ -69,7 +70,7 @@ public class Message
 	 * @param index index of the piece wanted
 	 * @param begin offset of the byte inside of the piece
 	 * @param length length that we want to download
-	 * @return returns a composed request byte[] message
+	 * @return returns a composed request message
 	 */
 	public byte[] request(int index, int begin, int length)
 	{
@@ -105,7 +106,7 @@ public class Message
 	}
 	
 	/**
-	 * @return not interested array
+	 * @return not interested message
 	 */
 	public byte[] getNot_interested() 
 	{
@@ -122,6 +123,7 @@ public class Message
 		return keep_alive;
 	}
 	/**
+	 * 
 	 * @return request message prefix
 	 */
 	public int getRequest_Prefix()
@@ -130,7 +132,7 @@ public class Message
 	}
 	
 	/**
-	 * 
+	 * Generates a bitfield array to send to a newly connected peer
 	 * @param mybitfield the clients bitfield
 	 */
 	public byte[] getBitFieldMessage(byte[] mybitfield) 
@@ -145,15 +147,39 @@ public class Message
 		return bitfield;
 	}
 	
-	public void getPieceMessage(DestFile file,int req_index,int req_length,int offset)
+	/**
+	 * Generates a piece message to send to a requesting peer
+	 * @param file file the data will come from
+	 * @param req_index piece index requested
+	 * @param req_length requested length
+	 * @param offset index that we will start the piece at
+	 * @return constructed quit message
+	 */
+	public byte[] getPieceMessage(DestFile file,byte[] req_index,int req_length,byte[] req_begin)
 	{
-		int index = req_index;
-		int length = req_length;
-		int begin = offset;
-		byte[] block = new byte[length];
-		block = file.getPieceData(index, begin, length);
+		byte[] index_bytes = req_index;  //index bytes
+		byte[] begin_bytes = req_begin;
+		byte[] piece_message = new byte[req_length+13]; //size of piece is length of request, plus 13 bytes for header info
+		byte[] block = new byte[req_length];
+		int length = req_length+9;            
+		int index = ByteBuffer.wrap(index_bytes).getInt();  //wraps the offset bytes in a buffer and converts them into an int
+		int begin = ByteBuffer.wrap(begin_bytes).getInt();
+		ByteBuffer buffer = ByteBuffer.allocate(4);
+		buffer.putInt(length);
+		block = file.getPieceData(index, begin, length); //gets the requested chunk from the file
+		System.arraycopy(buffer.array(), 0, piece_message, 0, 4);    //copy length
+		piece_message[4]=PIECE;
+		System.arraycopy(index_bytes, 0, piece_message, 5, 4);   //copy index
+		System.arraycopy(begin_bytes,0,piece_message,9,4);       //copy begin
+		System.arraycopy(block, 0, piece_message, 13, req_length);
+		System.out.println(Arrays.toString(piece_message));
+		return piece_message;
 	}
 	
+	/**
+	 * Generates a quit message
+	 * @return quit message
+	 */
 	public byte[] getQuitMessage()
 	{
 		byte[] quit_message = {QUIT};
