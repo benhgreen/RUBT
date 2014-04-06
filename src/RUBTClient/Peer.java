@@ -312,4 +312,10 @@ public class Peer extends Thread {
 	public boolean equals(Peer peer){
 		return(this.ip == peer.getIp() && this.peer_id.equals(peer.getPeer_id()));
 	}
+
+	public void setChoking(boolean b) {
+		
+		this.choking=b;
+		
+	}
 }
