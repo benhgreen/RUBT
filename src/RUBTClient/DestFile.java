@@ -53,7 +53,7 @@ public class DestFile {
 		if(diff == 0){
 			pieces[torrentinfo.piece_hashes.length - 1] = new Piece(torrentinfo.piece_length);
 		}else{
-			pieces[torrentinfo.piece_length] = new Piece(diff);
+			pieces[torrentinfo.piece_hashes.length - 1] = new Piece(diff);
 		}
 
 		
