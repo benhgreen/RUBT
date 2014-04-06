@@ -347,7 +347,7 @@ public class RUBTClient extends Thread{
 								break;
 							case Message.REQUEST:
 								System.out.println("Peer " + peer.getPeer_id() + " sent request");
-								if(!isValidRequest(msg))  //if the request is not valid, we disconnect the peer
+								if(!isValidRequest(msg,peer))  //if the request is not valid, we disconnect the peer
 								{
 									peer.setConnected(false);
 									removePeer(peer);
@@ -596,11 +596,13 @@ public class RUBTClient extends Thread{
 	 * Check to see if we have been issued a valid request, if true composes and sends the piece data
 	 * @param message request message in question
 	 */
-	private boolean isValidRequest(byte[] message)
+	private boolean isValidRequest(byte[] message,Peer peer)
 	{
+		Message piece_message = new Message();
 		byte[]	index_bytes= new byte[4];
 		byte[]  begin_bytes = new byte[4];
 		byte[]  length_bytes = new byte[4];
+		byte[] piece;
 		int index = ByteBuffer.wrap(index_bytes).getInt();  //wraps the offset bytes in a buffer and converts them into an int
 		int begin = ByteBuffer.wrap(begin_bytes).getInt();
 		int length = ByteBuffer.wrap(length_bytes).getInt();
@@ -608,8 +610,14 @@ public class RUBTClient extends Thread{
 		{
 				return false;
 		}
-				
-		return false;
+		piece = piece_message.getPieceMessage(destfile, index_bytes, length, begin_bytes);  //gets a piece message
+		try {
+			peer.sendMessage(piece);  //sends it off to peer to be uploaded through the socket
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return true;
 	}
 	
 	public byte[] getbitfield(){
