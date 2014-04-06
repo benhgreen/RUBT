@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Arrays;
+import java.util.Scanner;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ExecutorService;
@@ -242,9 +243,29 @@ public class RUBTClient extends Thread{
 	
 	public void run(){
 		
-		ShutdownHook sample = new ShutdownHook(this);
-		sample.attachShutdownHook();
+		//ShutdownHook sample = new ShutdownHook(this);
+		//sample.attachShutdownHook();
 		//sample.run();
+		
+		this.workers.execute(new Runnable(){
+			public void run(){
+				System.out.println("started quit thread");
+				Scanner scanner = new Scanner(System.in);
+				while(true){
+					if(scanner.nextLine().equals("quit")){
+						System.out.println("quitting caught. ending thread");
+						Message quit_message = new Message();
+						MessageTask quit_task = new MessageTask(null, quit_message.getQuitMessage());
+						System.out.println("sending quit message");
+						addMessageTask(quit_task);
+						break;
+					}else{
+						System.out.println("incorrect input. try typing \"quit\"");
+					}
+				}
+				
+			}
+		});
 		
 		/*
 		System.out.println("last instruction");
