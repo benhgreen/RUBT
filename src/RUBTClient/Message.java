@@ -132,7 +132,8 @@ public class Message
 	 * 
 	 * @param mybitfield the clients bitfield
 	 */
-	public void getBitFieldMessage(byte[] mybitfield) {
+	public byte[] getBitFieldMessage(byte[] mybitfield) 
+	{
 		int field_length = mybitfield.length+1;
 		ByteBuffer buffer = ByteBuffer.allocate(4);
 		buffer.putInt(field_length);
@@ -140,6 +141,22 @@ public class Message
 		System.arraycopy(buffer.array(), 0, bitfield, 0, 4);
 		bitfield[4]=BITFIELD;
 		System.arraycopy(mybitfield,0,bitfield,5,mybitfield.length);
+		return bitfield;
+	}
+	
+	public void getPieceMessage(DestFile file,int req_index,int req_length,int offset)
+	{
+		int index = req_index;
+		int length = req_length;
+		int begin = offset;
+		byte[] block = new byte[length];
+		block = file.getPieceData(index, begin, length);
+	}
+	
+	public byte[] getQuitMessage()
+	{
+		byte[] quit_message = {QUIT};
+		return quit_message
 	}
 }
 

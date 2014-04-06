@@ -325,6 +325,11 @@ public class RUBTClient extends Thread{
 								break;
 							case Message.REQUEST:
 								System.out.println("Peer " + peer.getPeer_id() + " sent request");
+								if(!isValidRequest(msg))  //if the request is not valid, we disconnect the peer
+								{
+									peer.setConnected(false);
+									removePeer(peer);
+								}
 								break;
 							case Message.PIECE:		//check where we are in the piece, then request the next part i think.
 								//System.out.println("Peer " + peer.getPeer_id()+ " sent chunk");
@@ -550,6 +555,7 @@ public class RUBTClient extends Thread{
 	
 	/**
 	 * Remove peer takes in a peer and removes/disconnects it from the list of active peers
+	 * @param peer peer to be removed
 	 */
 	private void removePeer(Peer peer){
 		if (peers.contains(peer)){
@@ -557,6 +563,26 @@ public class RUBTClient extends Thread{
 			peer.closeConnections();
 			peers.remove(peer);
 		}
+	}
+	
+	/**
+	 * Check to see if we have been issued a valid request, if true composes and sends the piece data
+	 * @param message request message in question
+	 */
+	private boolean isValidRequest(byte[] message)
+	{
+		byte[]	index_bytes= new byte[4];
+		byte[]  begin_bytes = new byte[4];
+		byte[]  length_bytes = new byte[4];
+		int index = ByteBuffer.wrap(index_bytes).getInt();  //wraps the offset bytes in a buffer and converts them into an int
+		int begin = ByteBuffer.wrap(begin_bytes).getInt();
+		int length = ByteBuffer.wrap(length_bytes).getInt();
+		if((length>max_request||length<=0)||(index>destfile.pieces.length||index<0)||(begin<0||begin>torrentinfo.piece_length))//checks if any of the fields in the request method are invalid
+		{
+				return false;
+		}
+				
+		return false;
 	}
 	
 	public byte[] getbitfield(){
