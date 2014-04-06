@@ -28,7 +28,7 @@ public class Peer extends Thread {
 	private DataInputStream 	peerInputStream;	//InputStream to peer for reading responses
 	private boolean 			choked; 			//checks if we are being choked
 	private boolean 			choking; 			//checks if we are choking the connected peer
-	private volatile boolean 	connected;			//checks if peer is disconnected
+	private boolean			 	connected;			//checks if peer is disconnected
 	private boolean 			interested;
 	private boolean 			remote_interested;
 	private byte[] 				response;
@@ -74,7 +74,7 @@ public class Peer extends Thread {
 			if(peer.connected)
 			{
 			message.getKeep_alive();
-			keep_alive=message.getKeep_alive();
+			keep_alive = message.getKeep_alive();
 			System.out.println(Arrays.toString(keep_alive));
 			try {
 				System.out.println("sending a keep alive");
