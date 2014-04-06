@@ -157,7 +157,7 @@ public class Message
 	public byte[] getQuitMessage()
 	{
 		byte[] quit_message = {QUIT};
-		return quit_message
+		return quit_message;
 	}
 }
 

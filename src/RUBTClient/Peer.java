@@ -277,11 +277,13 @@ public class Peer extends Thread {
 		return this.bitfield;
 	}
 	
-	public synchronized byte[] handshake(){
-
+	public byte[] handshake(){
+		
+		System.out.println("waiting for handshake...");
 		byte[] phandshake = new byte[68]; //Receives initial handshake
 		try{
 			peerInputStream.readFully(phandshake);
+			System.out.println("handshake caught");
 		}catch (IOException e1){
 			System.err.println("Handshake Error");  //there was an error reading the handshake, disconnects from the peer.
 			e1.printStackTrace();

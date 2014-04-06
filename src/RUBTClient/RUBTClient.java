@@ -46,7 +46,7 @@ public class RUBTClient extends Thread{
 	private final int max_request = 16384;
 	
 	//private ExecutorService workers = Executors.newFixedThreadPool(10);
-	private ExecutorService workers = Executors.newCachedThreadPool();
+	public ExecutorService workers = Executors.newCachedThreadPool();
 	
 	private final Timer trackerTimer = new Timer();
 	
@@ -242,10 +242,9 @@ public class RUBTClient extends Thread{
 	
 	public void run(){
 		
-		//System.out.println(" torrent info piece length " + torrentinfo.piece_length);
-		ShutdownHook sample = new ShutdownHook();
+		ShutdownHook sample = new ShutdownHook(this);
 		sample.attachShutdownHook();
-		sample.run();
+		//sample.run();
 		
 		/*
 		System.out.println("last instruction");
@@ -262,21 +261,22 @@ public class RUBTClient extends Thread{
 		
 		
 		final Message message = new Message();
+		System.out.println("contacting tracker");
 		Response peer_list = contactTracker("started");
+		System.out.println("done contacting");
 		addPeers(peer_list.getValidPeers());
 		{
 			int interval = peer_list.interval;
 			if(interval <= 0){
 				interval = 60;
 			}
-			interval = 10;
 			System.out.println("tracker announce interval: " + interval);
 			this.tracker.setInterval(interval);
 			this.trackerTimer.schedule(new TrackerAnnounceTask(this), interval * 1000);
 		}
 		
 
-		while(this.keepRunning){
+		while(keepRunning){
 
 			try{
 				final MessageTask task = this.tasks.take();
@@ -284,7 +284,7 @@ public class RUBTClient extends Thread{
 					public void run(){
 						byte[] msg = task.getMessage();
 						Peer peer = task.getPeer();
-						if(!peers.contains(peer)){
+						if(peer!= null && !peers.contains(peer)){
 							System.out.println("leftover task from a disconnected peer");
 							return;
 						}
@@ -361,7 +361,8 @@ public class RUBTClient extends Thread{
 								
 							case Message.QUIT:
 								//keep
-								
+								System.out.println("QUIT CASE");
+								quitClient();
 								break;
 						}
 					}
@@ -369,7 +370,10 @@ public class RUBTClient extends Thread{
 			}catch (InterruptedException ie){
 				System.err.println("caught interrupt. continuing anyway");
 			}
-		}	
+		}
+		
+		System.out.println("ending client");
+		System.exit(0);
 	}
 	
 	/**
@@ -377,16 +381,21 @@ public class RUBTClient extends Thread{
 	 */
 	public void addPeers(List<Peer> newPeers){
 		
-		for(Peer peer: newPeers){
+		for(final Peer peer: newPeers){
+			System.out.println("checking peer: " + peer.getPeer_id());
 			if (alreadyConnected(peer.getPeer_id()) || !peer.connectToPeer()){
 				continue;
 			}
 			Message current_message = new Message();
 			try {
-				peer.sendMessage(current_message.handShake(this.torrentinfo.info_hash.array(), tracker.getUser_id()));
-				byte[] handshake = peer.handshake();
+				System.out.println("sending handshake");
+				peer.sendMessage(current_message.handShake(torrentinfo.info_hash.array(), tracker.getUser_id()));
+				System.out.println("recieving handshake");
 				
-				if(!this.handshakeCheck(handshake,peer)){
+				byte[] handshake = peer.handshake();
+				System.out.println("checking handshake");
+				if(!handshakeCheck(handshake,peer)){
+					System.out.println("handshake failed");
 					peer.closeConnections();
 					System.err.println("Invalid info hash from peer:");
 					continue;
@@ -395,12 +404,10 @@ public class RUBTClient extends Thread{
 				System.err.println("random  IO ex");
 				continue;
 			}
-			current_message.getBitFieldMessage(destfile.getMybitfield());
+			peer.setClient(this);
 			peers.add(peer);
 			System.out.println("added new peer: " + peer.getPeer_id());
-			peer.setClient(this);
 			peer.start();
-			return; 		//here to only run first peer
 		}
 		System.out.println("finished adding peers");
 	}
@@ -423,14 +430,16 @@ public class RUBTClient extends Thread{
 		
 		byte[] peer_infohash = new byte [20];
 		System.arraycopy(peer_handshake, 28, peer_infohash, 0, 20); //copies the peer's infohash
-		byte[] peer_id = new byte[20];
-		System.arraycopy(peer_handshake,48,peer_id,0,20);//copies the peer id.
+		//byte[] peer_id = new byte[20];
+		//System.arraycopy(peer_handshake,48,peer_id,0,20);//copies the peer id.
+		/*
 		if(!(Arrays.equals(peer.getPeer_id().getBytes(),peer_id)))  //fails if the id in the hash doenst match the expected id.
 		{
 				System.out.println("Peer id didnt match");
 				return false;
 		}
-		System.out.println("Peer id in the handshake"+Arrays.toString(peer_id));
+		*/
+		//System.out.println("Peer id in the handshake"+Arrays.toString(peer_id));
 		if (Arrays.equals(peer_infohash, this.torrentinfo.info_hash.array())){  //returns true if the peer id matches and the info hash matches
 			return true;
 		}else {
@@ -538,8 +547,7 @@ public class RUBTClient extends Thread{
 			destfile.addPiece(piece);
 			chooseAndRequestPiece(peer); 		//figures out the next piece to request
 		}
-		else 
-		{
+		else {
 			if (peer.isChoked()){			//TODO i don't know how to handle starting up again if we get choked mid piece request
    				System.out.println("got choked out");
    				return;
@@ -614,5 +622,9 @@ public class RUBTClient extends Thread{
 	
 	public byte[] getbitfield(){
 		return this.destfile.getMybitfield();
+	}
+	
+	public synchronized void quitClient(){
+		this.keepRunning = false;
 	}
 }
