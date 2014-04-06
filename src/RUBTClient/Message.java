@@ -172,7 +172,6 @@ public class Message
 		System.arraycopy(index_bytes, 0, piece_message, 5, 4);   //copy index
 		System.arraycopy(begin_bytes,0,piece_message,9,4);       //copy begin
 		System.arraycopy(block, 0, piece_message, 13, req_length);
-		System.out.println(Arrays.toString(piece_message));
 		return piece_message;
 	}
 	
