@@ -74,7 +74,7 @@ public class DestFile {
 	/**Takes in a Piece object and writes its data to the location specified by the piece length and offset.
 	 * @param Piece object containing data to add to the target file 
 	 */
-	public boolean addPiece(int id){
+	public synchronized boolean addPiece(int id){
 		if(verify(this.pieces[id].getData())){
 			try {
 				//calculate location to write data in the file using piece length and offset if applicable
@@ -255,6 +255,19 @@ public class DestFile {
 			}
 		}
 		return -1;
+	}
+	
+	public byte[] getPieceData(int piece, int start, int amount){
+		byte[] ret  = new byte[amount];
+		try {
+			dest.seek(piece*torrentinfo.piece_length + start);
+			dest.read(ret);
+			return ret;
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
 	}
 		
 		
