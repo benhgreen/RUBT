@@ -326,7 +326,6 @@ public class RUBTClient extends Thread{
 								peer.setRemoteInterested(true);
 								break;
 							case Message.HAVE:
-								System.out.println("Peer " + peer.getPeer_id() + " sent have message");
 								if (peer.isChoked()){
 									//System.out.println("first have message");
 									byte[] piece_bytes = new byte[4];
@@ -451,16 +450,14 @@ public class RUBTClient extends Thread{
 		
 		byte[] peer_infohash = new byte [20];
 		System.arraycopy(peer_handshake, 28, peer_infohash, 0, 20); //copies the peer's infohash
-		//byte[] peer_id = new byte[20];
-		//System.arraycopy(peer_handshake,48,peer_id,0,20);//copies the peer id.
-		/*
+		byte[] peer_id = new byte[20];
+		System.arraycopy(peer_handshake,48,peer_id,0,20);//copies the peer id.
+		
 		if(!(Arrays.equals(peer.getPeer_id().getBytes(),peer_id)))  //fails if the id in the hash doenst match the expected id.
 		{
-				System.out.println("Peer id didnt match");
+				System.err.println("Peer id didnt match");
 				return false;
 		}
-		*/
-		//System.out.println("Peer id in the handshake"+Arrays.toString(peer_id));
 		if (Arrays.equals(peer_infohash, this.torrentinfo.info_hash.array())){  //returns true if the peer id matches and the info hash matches
 			return true;
 		}else {
@@ -488,9 +485,6 @@ public class RUBTClient extends Thread{
 			}
 	   		
 	   		System.out.println("our bitfield: " + Arrays.toString(destfile.getMybitfield()));
-			System.out.println("");
-	   		System.out.println("requesting piece: " + current_piece);
-	   		
 	   		offset_counter = destfile.pieces[current_piece].getOffset();
 			if(offset_counter != -1){
 				offset_counter += max_request;
@@ -534,19 +528,16 @@ public class RUBTClient extends Thread{
 		addChunk(piece,offset,block);  //places the chunk of data into a piece
 		//offset+max_request
 		//torrentinfo.file_length%torrentinfo.piece_length
-		System.out.println(offset);
 		if((piece==torrentinfo.file_length/torrentinfo.piece_length)&&(offset+2*max_request>torrentinfo.file_length%torrentinfo.piece_length))//checks if we are at the last chunk of the last piece
 		{
 			small_request = (torrentinfo.file_length%torrentinfo.piece_length)%max_request;
 			if(small_request+offset ==torrentinfo.file_length%torrentinfo.piece_length)//just got back the last chunk of the last piece
 			{
-				System.out.println("Getting this junk to the guy");
 				destfile.addPiece(piece);
 				chooseAndRequestPiece(peer);
 			}
 			else
 			{
-				System.out.println("sending the last chunk request");
 				small_request = (torrentinfo.file_length%torrentinfo.piece_length) % max_request;
 				request = message.request(piece, offset + max_request, small_request);
 				if (peer.isChoked()){			//TODO i don't know how to handle starting up again if we get choked mid piece request
