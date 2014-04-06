@@ -63,7 +63,7 @@ public class RUBTClient extends Thread{
 		this.destfile = destfile;
 		this.torrentinfo = destfile.getTorrentinfo();
 		this.destinationFile = destfile.getFilename();
-		this.tracker = new Tracker();
+		this.tracker = new Tracker(this.torrentinfo.file_length);
 	}
 	
 	public static void main(String[] args){
@@ -234,7 +234,7 @@ public class RUBTClient extends Thread{
 	//TODO maybe think about changing the message class
 	public void run(){
 		
-		this.tracker.constructURL(this.torrentinfo.announce_url.toString(), this.torrentinfo.info_hash, this.portnum, this.torrentinfo.file_length);
+		this.tracker.constructURL(this.torrentinfo.announce_url.toString(), this.torrentinfo.info_hash, this.portnum);
 		byte[] response_string = null;
 		final Message message = new Message();
 		try{
