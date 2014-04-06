@@ -1,6 +1,7 @@
 package RUBTClient;
 
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 //import java.util.Arrays;
 /**
  * @author Manuel Lopez
@@ -115,6 +116,8 @@ public class Message
 	 */
 	public byte[] getKeep_alive() 
 	{
+		System.out.println("trying to get the keep alive huh?");
+		System.out.println(Arrays.toString(keep_alive));
 		return keep_alive;
 	}
 	/**

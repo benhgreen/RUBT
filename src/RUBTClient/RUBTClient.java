@@ -264,6 +264,8 @@ public class RUBTClient extends Thread{
 			this.trackerTimer.schedule(new TrackerAnnounceTask(this), interval * 1000);
 		}
 		
+		//System.out.println(torrentinfo.file_length%torrentinfo.piece_length);
+
 		while(this.keepRunning){
 
 			try{
@@ -375,7 +377,7 @@ public class RUBTClient extends Thread{
 			peers.add(peer);
 			peer.setClient(this);
 			peer.start();
-			//return;     //guarantees only one thread spawns
+			return;     //guarantees only one thread spawns
 		}
 		System.out.println("finished adding peers");
 	}
@@ -454,19 +456,52 @@ public class RUBTClient extends Thread{
 		Message message = new Message();
 		byte[] request;
 		byte[] piece_bytes = new byte[4];
-		byte[] offset_bytes = new byte[4]; 
+		byte[] offset_bytes = new byte[4];
+		int small_request;
 		System.arraycopy(block, 5, offset_bytes, 0, 4); //gets the offset bytes from the piece message
 		System.arraycopy(block, 1, piece_bytes, 0, 4); //gets the piece number bytes from the piece message
 		int offset = ByteBuffer.wrap(offset_bytes).getInt();  //wraps the offset bytes in a buffer and converts them into an int
 		int piece = ByteBuffer.wrap(piece_bytes).getInt();
 		//checks if we got the last chunk of a piece
-
-		addChunk(piece,offset,block);  //places the chunk of data into a piece													//adds the chunk to the piece
-		if (offset + max_request == torrentinfo.piece_length){ 	//checks if we got the last chunk of a piece{
-			System.out.println("just asked for the last chunk");
+		addChunk(piece,offset,block);  //places the chunk of data into a piece
+		//offset+max_request
+		//torrentinfo.file_length%torrentinfo.piece_length
+		System.out.println(offset);
+		if((piece==torrentinfo.file_length/torrentinfo.piece_length)&&(offset+2*max_request>torrentinfo.file_length%torrentinfo.piece_length))//checks if we are at the last chunk of the last piece
+		{
+			small_request = (torrentinfo.file_length%torrentinfo.piece_length)%max_request;
+			if(small_request+offset ==torrentinfo.file_length%torrentinfo.piece_length)//just got back the last chunk of the last piece
+			{
+				System.out.println("Getting this junk to the guy");
+				destfile.addPiece(piece);
+				chooseAndRequestPiece(peer);
+			}
+			else
+			{
+				System.out.println("sending the last chunk request");
+				small_request = (torrentinfo.file_length%torrentinfo.piece_length)%max_request;
+				request = message.request(piece, offset+max_request,small_request);
+				if (peer.isChoked()){			//TODO i don't know how to handle starting up again if we get choked mid piece request
+	   				System.out.println("got choked out");
+	   				return;
+	   			}
+				else 
+				{
+					try {
+						peer.sendMessage(request);
+					}catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+			
+		}
+		else if (offset + max_request == torrentinfo.piece_length){ 	//checks if we got the last chunk of a piece{
 			destfile.addPiece(piece);
 			chooseAndRequestPiece(peer); 		//figures out the next piece to request
-		}else {
+		}
+		else 
+		{
 			if (peer.isChoked()){			//TODO i don't know how to handle starting up again if we get choked mid piece request
    				System.out.println("got choked out");
    				return;
