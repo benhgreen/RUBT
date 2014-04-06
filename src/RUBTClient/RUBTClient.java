@@ -267,7 +267,7 @@ public class RUBTClient extends Thread{
 						byte[] msg = task.getMessage();
 						//System.out.println("Message id: " + msg[0]);
 						Peer peer = task.getPeer();
-						if(peers.contains(peer)){
+						if(!peers.contains(peer)){
 							System.out.println("leftover task from a disconnected peer");
 							return;
 						}
@@ -531,9 +531,10 @@ public class RUBTClient extends Thread{
 			System.out.println("exception thrown requesting peer list from tracker");
 			e.printStackTrace();
 
-			if(event == null){
+			if(event == null || event.equals("stopped")  || event.equals("completed") ){
 				System.out.println("already downloading. carry on");
-			}else{
+			}else if(event.equals("started")){
+				System.out.println("Havent start yet so just quit");
 				System.exit(0);
 			}
 		}
