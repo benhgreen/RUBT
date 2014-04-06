@@ -34,21 +34,31 @@ public class DestFile {
 		
 		//printHashes();
 		
-		this.mypieces = new int[this.torrentinfo.piece_hashes.length];
-		this.pieces = new Piece[this.torrentinfo.piece_hashes.length];
+		mypieces = new int[torrentinfo.piece_hashes.length];
+		pieces = new Piece[torrentinfo.piece_hashes.length];
 		int mod1;
 		if((mod1 = torrentinfo.piece_hashes.length % 8) == 0){
-			this.mybitfield = new byte[mod1];
+			mybitfield = new byte[mod1];
 			
 		}else{
-			this.mybitfield = new byte[((torrentinfo.piece_hashes.length - mod1) / 8) + 1];
+			mybitfield = new byte[((torrentinfo.piece_hashes.length - mod1) / 8) + 1];
 		}
 		this.initializeBitfield();
-		for(int i = 0; i<this.mypieces.length; i++){
-			this.pieces[i] = new Piece(this.torrentinfo.piece_length);
+		for(int i = 0; i<mypieces.length - 1; i++){
+			pieces[i] = new Piece(torrentinfo.piece_length);
 		}
-		System.out.println(this.mypieces.length + " pieces");
-		System.out.println(this.mybitfield.length + " bytes in bitfield");
+		
+		//deal with possibility of different last piece length
+		int diff = torrentinfo.file_length % torrentinfo.piece_length;
+		if(diff == 0){
+			pieces[torrentinfo.piece_hashes.length - 1] = new Piece(torrentinfo.piece_length);
+		}else{
+			pieces[torrentinfo.piece_length] = new Piece(diff);
+		}
+
+		
+		System.out.println(mypieces.length + " pieces");
+		System.out.println(mybitfield.length + " bytes in bitfield");
 	}
 	
 	private void printHashes() {
@@ -60,9 +70,9 @@ public class DestFile {
 
 	public void initializeRAF(){
 		try {
-			this.dest = new RandomAccessFile(this.torrentinfo.file_name,"rw");
-			this.dest.setLength(torrentinfo.file_length);
-			this.initialized = true;
+			dest = new RandomAccessFile(torrentinfo.file_name,"rw");
+			dest.setLength(torrentinfo.file_length);
+			initialized = true;
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
@@ -121,7 +131,7 @@ public class DestFile {
 		}
 		byte[] hash = md.digest(piece);
 		//iterate through torrentinfo piece hashes and look for a match
-		for(int i = 0; i<this.getTorrentinfo().piece_hashes.length; i++){
+		for(int i = 0; i < this.getTorrentinfo().piece_hashes.length; i++){
 			if(Arrays.equals(hash, this.getTorrentinfo().piece_hashes[i].array())){
 				System.out.println("PASSED at piece " + i);
 				return true;
@@ -153,20 +163,20 @@ public class DestFile {
 	 */
 	public void checkExistingFile(){
 		
-		if(!this.initialized){
+		if(!initialized){
 			this.initializeRAF();
 		}
-		byte[] temp = new byte[this.torrentinfo.piece_length];
-		for(int i = 0; i < this.torrentinfo.piece_hashes.length; i++){
+		byte[] temp = new byte[torrentinfo.piece_length];
+		for(int i = 0; i < torrentinfo.piece_hashes.length; i++){
 			//check each piece here
 			try {
-				this.dest.seek(i * this.torrentinfo.piece_length);
+				this.dest.seek(i * torrentinfo.piece_length);
 				this.dest.read(temp);
 				if(this.verify(temp)){
-					this.mypieces[i] = 2;
+					mypieces[i] = 2;
 				}else{
 					System.out.println("Piece " + i + " is INvalid.");
-					this.mypieces[i] = 0;
+					mypieces[i] = 0;
 				}
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -198,11 +208,11 @@ public class DestFile {
 	 */
 	public void initializeBitfield(){
 		
-		for(int i = 0; i < this.mypieces.length; i++){
+		for(int i = 0; i < mypieces.length; i++){
 			int mod = i%8;
 			int currentbyte = (i-(mod)) / 8;
-			this.mybitfield[currentbyte] &= ~(1 << mod);
-			this.mypieces[i] = 0;
+			mybitfield[currentbyte] &= ~(1 << mod);
+			mypieces[i] = 0;
 		}
 	}
 	
@@ -220,9 +230,9 @@ public class DestFile {
 		int mod = i%8;
 		int currentbyte = (i-(mod)) / 8;
 		if(bool){
-			this.mybitfield[currentbyte] |= (1 << mod);
+			mybitfield[currentbyte] |= (1 << mod);
 		}else{
-			this.mybitfield[currentbyte] &= ~(1 << mod);
+			mybitfield[currentbyte] &= ~(1 << mod);
 		}
 	}
 	
@@ -245,12 +255,12 @@ public class DestFile {
 	 */
 	public int firstNewPiece(byte[] input){
 	
-		for(int i = 0; i < this.mypieces.length; i++){
+		for(int i = 0; i < mypieces.length; i++){
 			
 			int mod = i%8;
 			int currentbyte = (i-(mod)) / 8;
 			
-			if((this.mybitfield[currentbyte] >> (mod) & 1) != 1){
+			if((mybitfield[currentbyte] >> (mod) & 1) != 1){
 				if((input[currentbyte] >> (8-mod) & 1) == 1){
 					return i;
 				}
