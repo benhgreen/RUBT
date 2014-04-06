@@ -84,6 +84,9 @@ public class DestFile {
 				this.mypieces[id] = 2;
 				this.renewBitfield();
 				this.incomplete -= (this.pieces[id].getData().length);
+				if(this.incomplete < 0){
+					this.incomplete = 0;
+				}
 				return true;
 			} catch (IOException e) {
 				System.err.println("Error while writing to RandomAccessFile");
@@ -237,7 +240,7 @@ public class DestFile {
 	}
 	
 	/**
-	 * @param input Other bitfield
+//	 * @param input Other bitfield
 	 * @return First bit where input is 1 and mybitfield is 0
 	 */
 	public int firstNewPiece(byte[] input){
@@ -250,7 +253,6 @@ public class DestFile {
 			if((this.mybitfield[currentbyte] >> (mod) & 1) != 1){
 				if((input[currentbyte] >> (8-mod) & 1) == 1){
 					return i;
-				}else{
 				}
 			}
 		}
