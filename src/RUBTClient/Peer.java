@@ -28,7 +28,7 @@ public class Peer extends Thread {
 	private DataInputStream 	peerInputStream;	//InputStream to peer for reading responses
 	private boolean 			choked; 			//checks if we are being choked
 	private boolean 			choking; 			//checks if we are choking the connected peer
-	private boolean 			connected;			//checks if peer is disconnected
+	private volatile boolean 	connected;			//checks if peer is disconnected
 	private boolean 			interested;
 	private boolean 			remote_interested;
 	private byte[] 				response;
@@ -107,8 +107,13 @@ public class Peer extends Thread {
 		while(connected){
 			try {
 				Thread.sleep(1*100);
-				if(peerInputStream.available()==0){
-					continue;     //means the peer hasn't written anything to the socket yet, I would like to find a better way to do this
+				try{
+					if(peerInputStream.available()==0){
+						continue;     //means the peer hasn't written anything to the socket yet, I would like to find a better way to do this
+					}
+				}catch(IOException e){
+					System.out.println("caught exception. exiting");
+					return;
 				}
 				
 				int length_prefix = peerInputStream.readInt();
@@ -192,6 +197,10 @@ public class Peer extends Thread {
 	}
 	public String getIp() {
 		return ip;
+	}
+	
+	public void setConnected(boolean connected){
+		this.connected = connected;
 	}
 
 	public void setIp(String ip) {
