@@ -117,8 +117,6 @@ public class DestFile {
 			System.err.println("Error intitializing MessageDigest");
 		}
 		byte[] hash = md.digest(piece);
-		System.out.println("Piece size: " + piece.length);
-		System.out.println("HASH CHECKED: " + hash.toString());
 		//iterate through torrentinfo piece hashes and look for a match
 		for(int i = 0; i<this.getTorrentinfo().piece_hashes.length; i++){
 			if(Arrays.equals(hash, this.getTorrentinfo().piece_hashes[i].array())){
@@ -162,7 +160,6 @@ public class DestFile {
 				this.dest.seek(i * this.torrentinfo.piece_length);
 				this.dest.read(temp);
 				if(this.verify(temp)){
-					System.out.println("Piece " + i + " is valid.");
 					this.mypieces[i] = 2;
 				}else{
 					System.out.println("Piece " + i + " is INvalid.");
@@ -202,6 +199,7 @@ public class DestFile {
 			int mod = i%8;
 			int currentbyte = (i-(mod)) / 8;
 			this.mybitfield[currentbyte] &= ~(1 << mod);
+			this.mypieces[i] = 0;
 		}
 	}
 	
@@ -243,15 +241,16 @@ public class DestFile {
 	 * @return First bit where input is 1 and mybitfield is 0
 	 */
 	public int firstNewPiece(byte[] input){
-		
+	
 		for(int i = 0; i < this.mypieces.length; i++){
 			
 			int mod = i%8;
 			int currentbyte = (i-(mod)) / 8;
 			
-			if((input[currentbyte] >> mod & 1) == 1){
-				if((this.mybitfield[currentbyte] >> mod & 1) != 1){
+			if((this.mybitfield[currentbyte] >> (mod) & 1) != 1){
+				if((input[currentbyte] >> (8-mod) & 1) == 1){
 					return i;
+				}else{
 				}
 			}
 		}
