@@ -76,9 +76,9 @@ public class Peer extends Thread {
 		
 		while(connected){
 			try {
-				Thread.sleep(1*1000);
+				Thread.sleep(1*250);
 				if(peerInputStream.available()==0){
-					System.out.println("Nothing to read");
+					//System.out.println("Nothing to read");
 					continue;
 				}
 				
