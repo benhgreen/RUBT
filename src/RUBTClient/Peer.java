@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.TimerTask;
 import java.util.Timer;
 
+
 /**
  * @author Manuel Lopez
  * @author Ben Green
@@ -57,18 +58,40 @@ public class Peer extends Thread {
 	}
 	
 	private static class SendTimerTask extends TimerTask{
-		@Override
+		private Peer peer;
+		private Message message;
+		private byte[] keep_alive;
+		public SendTimerTask(Peer peer)
+		{
+			this.peer = peer;
+			Message message = new Message();
+		}
 		public void run() {
 			// TODO Do something when the timer is up
 			System.out.println("send timer is up");
+			keep_alive=message.getKeep_alive();
+			try {
+				System.out.println("sending a keep alive");
+				peer.sendMessage(keep_alive);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
 		}
 	}
 	
 	private static class ReceiveTimerTask extends TimerTask{
-		@Override
-		public void run() {
+		private Peer peer;
+		public ReceiveTimerTask(Peer peer)
+		{
+			this.peer = peer;
+		}
+		public void run() 
+		{
 			// TODO Do something when timer is up
-			System.out.println("recieve timer is up");
+			System.out.println("recieve timer is up,disconnecting peer");
+			peer.closeConnections();
 		}
 	}
 	
@@ -103,7 +126,7 @@ public class Peer extends Thread {
 				}
 				receive_timer.cancel();  //cancels the current timer for messages
 		        receive_timer = new Timer();
-		        receive_timer.schedule(new ReceiveTimerTask(), 120*1000);  //resets it for 2 minutes from last sent				//TODO send message to RUBT client
+		        receive_timer.schedule(new ReceiveTimerTask(this), 120*1000);  //resets it for 2 minutes from last sent				//TODO send message to RUBT client
 			}catch (EOFException e) {
 				// TODO Auto-generated catch block
 				//e.printStackTrace();
@@ -135,8 +158,8 @@ public class Peer extends Thread {
 			System.err.println("IOException");
 			return false;
 		}
-		send_timer.schedule(new SendTimerTask(),120*1000 );
-		receive_timer.schedule(new ReceiveTimerTask(),120*1000);
+		send_timer.schedule(new SendTimerTask(this),120*1000 );
+		receive_timer.schedule(new ReceiveTimerTask(this),120*1000);
 		return true;
 	}
 	
@@ -231,7 +254,7 @@ public class Peer extends Thread {
 		}
 		send_timer.cancel();  //cancels the current timer for sent messages
         send_timer = new Timer();
-        send_timer.schedule(new SendTimerTask(), 120*1000);  //resets it for 2 minutes from last sent
+        send_timer.schedule(new SendTimerTask(this), 120*1000);  //resets it for 2 minutes from last sent
         //System.out.println("peer thread send message: " + Thread.currentThread());
 		
 	}
