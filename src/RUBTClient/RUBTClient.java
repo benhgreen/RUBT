@@ -26,13 +26,9 @@ public class RUBTClient extends Thread{
 	
 	private final int port = 6881;
 	
-	private int downloaded;
-	
 	private int uploaded;
 	
 	private final TorrentInfo torrentinfo;
-	
-	private final String destinationFile;
 	
 	private boolean keepRunning = true;
 	
@@ -50,13 +46,10 @@ public class RUBTClient extends Thread{
 	public ExecutorService workers = Executors.newCachedThreadPool();
 	
 	private final Timer trackerTimer = new Timer();
-	
-	
 
 	public RUBTClient(DestFile destfile){
 		this.destfile = destfile;
 		this.torrentinfo = destfile.getTorrentinfo();
-		this.destinationFile = destfile.getFilename();
 		this.tracker = new Tracker(this.torrentinfo.file_length);
 	}
 	
@@ -132,9 +125,10 @@ public class RUBTClient extends Thread{
 	
 	public void run(){
 		
-		//ShutdownHook sample = new ShutdownHook(this);
-		//sample.attachShutdownHook();
-		//sample.run();
+		ShutdownHook sample = new ShutdownHook();
+		sample.attachShutdownHook();
+		
+		//System.exit(0);
 		
 		this.workers.execute(new Runnable(){
 			public void run(){
@@ -152,23 +146,8 @@ public class RUBTClient extends Thread{
 						System.out.println("incorrect input. try typing \"quit\"");
 					}
 				}
-				
 			}
 		});
-		
-		/*
-		System.out.println("last instruction");
-		
-		try {
-			Thread.sleep(10*1000);
-		} catch (InterruptedException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-		System.out.println("Exiting");
-		System.exit(0);
-		*/
-		
 		
 		final Message message = new Message();
 		System.out.println("contacting tracker");
@@ -281,6 +260,8 @@ public class RUBTClient extends Thread{
 				System.err.println("caught interrupt. continuing anyway");
 			}
 		}
+		
+		
 		
 		System.out.println("ending client");
 		System.exit(0);
