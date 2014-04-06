@@ -241,6 +241,26 @@ public class RUBTClient extends Thread{
 	}
 	
 	public void run(){
+		
+		//System.out.println(" torrent info piece length " + torrentinfo.piece_length);
+		ShutdownHook sample = new ShutdownHook();
+		sample.attachShutdownHook();
+		sample.run();
+		
+		/*
+		System.out.println("last instruction");
+		
+		try {
+			Thread.sleep(10*1000);
+		} catch (InterruptedException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		System.out.println("Exiting");
+		System.exit(0);
+		*/
+		
+		
 		final Message message = new Message();
 		Response peer_list = contactTracker("started");
 		addPeers(peer_list.getValidPeers());
@@ -307,13 +327,15 @@ public class RUBTClient extends Thread{
 							case Message.BITFIELD:
 								System.out.println("Peer " + peer.getPeer_id() + " sent bitfield");
 								System.out.println( peer.getPeer_id() + " bitfield: "+ Arrays.toString(peer.getBitfield()));
-								if (peer.getFirstSent()){   //if the peer already has a bitfield sent, and another is sent, we disconnect.
-									//peer.closeConnections();
+								if(!peer.getFirstSent()){
+									peer.setFirstSent(true);
+								}else{
 									peer.setConnected(false);
 									removePeer(peer);
 									System.out.println("closing peer");
 									return;
 								}
+								
 								if (destfile.firstNewPiece(peer.getBitfield()) != -1){		//then we are interested in a piece
 									peer.setInterested(true);
 									try{
@@ -335,6 +357,11 @@ public class RUBTClient extends Thread{
 								//System.out.println("Peer " + peer.getPeer_id()+ " sent chunk");
 								//if(!peer.getRemoteInterested())
 								getNextBlock(msg,peer);
+								break;
+								
+							case Message.QUIT:
+								//keep
+								
 								break;
 						}
 					}
@@ -490,8 +517,8 @@ public class RUBTClient extends Thread{
 			else
 			{
 				System.out.println("sending the last chunk request");
-				small_request = (torrentinfo.file_length%torrentinfo.piece_length)%max_request;
-				request = message.request(piece, offset+max_request,small_request);
+				small_request = (torrentinfo.file_length%torrentinfo.piece_length) % max_request;
+				request = message.request(piece, offset + max_request, small_request);
 				if (peer.isChoked()){			//TODO i don't know how to handle starting up again if we get choked mid piece request
 	   				System.out.println("got choked out");
 	   				return;

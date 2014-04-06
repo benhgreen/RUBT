@@ -28,7 +28,7 @@ public class Peer extends Thread {
 	private DataInputStream 	peerInputStream;	//InputStream to peer for reading responses
 	private boolean 			choked; 			//checks if we are being choked
 	private boolean 			choking; 			//checks if we are choking the connected peer
-	private volatile boolean 	connected;			//checks if peer is disconnected
+	private boolean			 	connected;			//checks if peer is disconnected
 	private boolean 			interested;
 	private boolean 			remote_interested;
 	private byte[] 				response;
@@ -74,7 +74,7 @@ public class Peer extends Thread {
 			if(peer.connected)
 			{
 			message.getKeep_alive();
-			keep_alive=message.getKeep_alive();
+			keep_alive = message.getKeep_alive();
 			System.out.println(Arrays.toString(keep_alive));
 			try {
 				System.out.println("sending a keep alive");
@@ -132,10 +132,12 @@ public class Peer extends Thread {
 				}
 				message = new MessageTask(this, response);//makes the response into a  new message task, passes a peer as well
 				client.addMessageTask(message); //puts the message in its clients  task queue
+				/*
 				if(first_sent == false)//checks if first sent has been recorded, if not sets it to true.
 				{
 					first_sent = true;
 				}
+				*/
 				receive_timer.cancel();
 		        receive_timer = new Timer();
 		        receive_timer.schedule(new ReceiveTimerTask(this), 125*1000);
@@ -297,10 +299,14 @@ public class Peer extends Thread {
 		interested = state;
 	}
 	
-	public boolean getFirstSent()
-	{
+	public boolean getFirstSent(){
 		return first_sent;
 	}
+	
+	public void setFirstSent(boolean first_sent){
+		this.first_sent = first_sent;
+	}
+	
 	public boolean equals(Peer peer){
 		return(this.ip == peer.getIp() && this.peer_id.equals(peer.getPeer_id()));
 	}
