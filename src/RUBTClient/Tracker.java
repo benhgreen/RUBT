@@ -24,6 +24,7 @@ public class Tracker {
 	private int 			file_length;		//file length of target file held by peer
 	private int 			downloaded;			//number of bytes downloaded from peer
 	private int	 			uploaded;			//number of bytes uploaded to peer
+	private int 			interval;
 	private String 			url; 				//url contructed by contruct url class to for get request to tracker
 	private String			encodedInfoHash;	//escaped info hash of torrent info 
 	private String 			usrid;				//identifying peer id for client
@@ -230,5 +231,13 @@ public class Tracker {
 	 */
 	public void setUploaded(int uploaded) {
 		this.uploaded = uploaded;
+	}
+	
+	public int getInterval() {
+		return this.interval;
+	}	
+	
+	public void setInterval(int interval) {
+		this.interval = interval;
 	}
 }

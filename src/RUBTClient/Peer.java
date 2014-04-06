@@ -166,6 +166,7 @@ public class Peer extends Thread {
 		return true;
 	}
 	
+	
 	/** closes input/outputstreams and socket connections 
 	 */
 	public void closeConnections(){
