@@ -65,17 +65,24 @@ public class Peer extends Thread {
 		{
 			this.peer = peer;
 			Message message = new Message();
+			keep_alive = new byte[4];
 		}
 		public void run() {
 			// TODO Do something when the timer is up
 			System.out.println("send timer is up");
+			System.out.println(peer.connected);
+			if(peer.connected)
+			{
+			message.getKeep_alive();
 			keep_alive=message.getKeep_alive();
+			System.out.println(Arrays.toString(keep_alive));
 			try {
 				System.out.println("sending a keep alive");
 				peer.sendMessage(keep_alive);
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
+			}
 			}
 			
 		}
@@ -89,9 +96,9 @@ public class Peer extends Thread {
 		}
 		public void run() 
 		{
-			// TODO Do something when timer is up
+			
 			System.out.println("recieve timer is up,disconnecting peer");
-			peer.closeConnections();
+			peer.closeConnections();//disconnects from peer when timer is up.
 		}
 	}
 	
@@ -101,14 +108,14 @@ public class Peer extends Thread {
 			try {
 				Thread.sleep(1*100);
 				if(peerInputStream.available()==0){
-					//System.out.println("Nothing to read");
-					continue;
+					continue;     //means the peer hasn't written anything to the socket yet, I would like to find a better way to do this
 				}
 				
 				int length_prefix = peerInputStream.readInt();
-				if(length_prefix==0){
-					System.out.println("keep alive");
-					//TODO reset timers
+				if(length_prefix==0){ //means this is a keep alive from the peer
+					receive_timer.cancel();  //cancels the current timer for messages
+			        receive_timer = new Timer();
+			        receive_timer.schedule(new ReceiveTimerTask(this), 125*1000);  //resets it for 2 minutes and 5 seconds from last sent, extra 5 to be generous	
 					continue;
 				}
 				response = new byte[length_prefix];
@@ -124,20 +131,16 @@ public class Peer extends Thread {
 				{
 					first_sent = true;
 				}
-				receive_timer.cancel();  //cancels the current timer for messages
+				receive_timer.cancel();
 		        receive_timer = new Timer();
-		        receive_timer.schedule(new ReceiveTimerTask(this), 120*1000);  //resets it for 2 minutes from last sent				//TODO send message to RUBT client
+		        receive_timer.schedule(new ReceiveTimerTask(this), 125*1000);
 			}catch (EOFException e) {
-				// TODO Auto-generated catch block
-				//e.printStackTrace();
-				System.err.println("EOF");
-				//closeConnections();
+					continue;
 			}catch (Exception e){
 				e.printStackTrace();
 				System.err.println("Other Exception");
 			}
 		}
-		closeConnections();
 	}
 		
 	/**connectToPeer() sets socket connections and input/output streams to the peer
@@ -147,7 +150,7 @@ public class Peer extends Thread {
 		//open sockets and input/output streams
 		try{
 			this.peerSocket = new Socket(ip, port);
-			this.peerSocket.setSoTimeout(125*1000);
+			this.peerSocket.setSoTimeout(130*1000); //set the socket timeout for 2 minutes and 30 seconds
 			this.peerOutputStream = new DataOutputStream(peerSocket.getOutputStream());
 			this.peerInputStream = new DataInputStream(peerSocket.getInputStream());
 			connected = true;
@@ -158,8 +161,8 @@ public class Peer extends Thread {
 			System.err.println("IOException");
 			return false;
 		}
-		send_timer.schedule(new SendTimerTask(this),120*1000 );
-		receive_timer.schedule(new ReceiveTimerTask(this),120*1000);
+		send_timer.schedule(new SendTimerTask(this),115*1000 ); //set a new timer for sent messages, set for 1 minute 55 seconds.
+		receive_timer.schedule(new ReceiveTimerTask(this),125*1000);
 		return true;
 	}
 	
@@ -252,10 +255,9 @@ public class Peer extends Thread {
 		}else {
 			peerOutputStream.write(Message);
 		}
-		send_timer.cancel();  //cancels the current timer for sent messages
+		send_timer.cancel();  //cancels the current timer for sent messages, starts a new one
         send_timer = new Timer();
-        send_timer.schedule(new SendTimerTask(this), 120*1000);  //resets it for 2 minutes from last sent
-        //System.out.println("peer thread send message: " + Thread.currentThread());
+        send_timer.schedule(new SendTimerTask(this), 115*1000);
 		
 	}
 	
@@ -269,7 +271,7 @@ public class Peer extends Thread {
 		try{
 			peerInputStream.readFully(phandshake);
 		}catch (IOException e1){
-			System.err.println("Handshake Error");
+			System.err.println("Handshake Error");  //there was an error reading the handshake, disconnects from the peer.
 			e1.printStackTrace();
 			closeConnections();
 		}
@@ -293,7 +295,6 @@ public class Peer extends Thread {
 		return(this.ip == peer.getIp() && this.peer_id.equals(peer.getPeer_id()));
 	}
 	
-
 	/**handshakePeer() sends the handshake message and reads the peers handshake and bitfield
 	 * @param handshake
 	 * @return 1 if successful/0 if failed
