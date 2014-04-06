@@ -264,7 +264,14 @@ public class RUBTClient extends Thread{
 					public void run(){
 						byte[] msg = task.getMessage();
 						Peer peer = task.getPeer();
+						
+						if(peers.contains(peer)){
+							System.out.println("leftover task from a disconnected peer");
+							return;
+						}
 						switch(msg[0]){  
+
+							
 							case Message.CHOKE:
 								System.out.println("Peer " +peer.getPeer_id() + " sent choked");
 								peer.setChoked(true);
@@ -303,6 +310,7 @@ public class RUBTClient extends Thread{
 								System.out.println( peer.getPeer_id() + " bitfield: "+ Arrays.toString(peer.getBitfield()));
 								if (peer.getFirstSent()){   //if the peer already has a bitfield sent, and another is sent, we disconnect.
 									//peer.closeConnections();
+									removePeer(peer);
 								}
 								if (destfile.firstNewPiece(peer.getBitfield()) != -1){		//then we are interested in a piece
 									peer.setInterested(true);
