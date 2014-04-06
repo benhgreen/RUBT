@@ -133,10 +133,13 @@ public class Message
 	 * @param mybitfield the clients bitfield
 	 */
 	public void getBitFieldMessage(byte[] mybitfield) {
-		int length = mybitfield.length;
-		byte[] bitfield = new byte[5+length];
-		
-		//byte[] bitfield_consts ={something,5};
+		int field_length = mybitfield.length+1;
+		ByteBuffer buffer = ByteBuffer.allocate(4);
+		buffer.putInt(field_length);
+		byte[] bitfield = new byte[5+field_length-1];  //makes a bitfield message
+		System.arraycopy(buffer.array(), 0, bitfield, 0, 4);
+		bitfield[4]=BITFIELD;
+		System.arraycopy(mybitfield,0,bitfield,5,mybitfield.length);
 	}
 }
 
