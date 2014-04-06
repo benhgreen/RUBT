@@ -166,9 +166,16 @@ public class DestFile {
 		if(!initialized){
 			this.initializeRAF();
 		}
-		byte[] temp = new byte[torrentinfo.piece_length];
 		for(int i = 0; i < torrentinfo.piece_hashes.length; i++){
-			//check each piece here
+			byte temp[] = null;
+			
+			if(i == torrentinfo.piece_hashes.length - 1){
+				if(torrentinfo.file_length % torrentinfo.piece_length != 0){
+					temp = new byte[torrentinfo.file_length % torrentinfo.piece_length];
+				}
+			}else{
+				temp = new byte[torrentinfo.piece_length];
+			}
 			try {
 				this.dest.seek(i * torrentinfo.piece_length);
 				this.dest.read(temp);

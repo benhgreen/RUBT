@@ -112,7 +112,7 @@ public class Peer extends Thread {
 						continue;     //means the peer hasn't written anything to the socket yet, I would like to find a better way to do this
 					}
 				}catch(IOException e){
-					System.out.println("caught exception. exiting");
+					//System.out.println("caught exception. exiting");
 					return;
 				}
 				

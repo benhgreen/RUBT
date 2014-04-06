@@ -26,13 +26,9 @@ public class RUBTClient extends Thread{
 	
 	private final int port = 6881;
 	
-	private int downloaded;
-	
 	private int uploaded;
 	
 	private final TorrentInfo torrentinfo;
-	
-	private final String destinationFile;
 	
 	private boolean keepRunning = true;
 	
@@ -46,17 +42,13 @@ public class RUBTClient extends Thread{
 	
 	private final int max_request = 16384;
 	
-	//private ExecutorService workers = Executors.newFixedThreadPool(10);
 	public ExecutorService workers = Executors.newCachedThreadPool();
 	
 	private final Timer trackerTimer = new Timer();
-	
-	
 
 	public RUBTClient(DestFile destfile){
 		this.destfile = destfile;
 		this.torrentinfo = destfile.getTorrentinfo();
-		this.destinationFile = destfile.getFilename();
 		this.tracker = new Tracker(this.torrentinfo.file_length);
 	}
 	
@@ -120,7 +112,6 @@ public class RUBTClient extends Thread{
 		}
 		
 		public void run(){
-			//updateprogress, contruct url, request peer list with null args, addpeers
 			System.out.println("tracker announcement");
 			Response peer_list = this.client.contactTracker(null);
 			List<Peer> newPeers = peer_list.getValidPeers();
@@ -132,43 +123,9 @@ public class RUBTClient extends Thread{
 	
 	public void run(){
 		
-		//ShutdownHook sample = new ShutdownHook(this);
-		//sample.attachShutdownHook();
-		//sample.run();
-		
-		this.workers.execute(new Runnable(){
-			public void run(){
-				System.out.println("started quit thread");
-				Scanner scanner = new Scanner(System.in);
-				while(true){
-					if(scanner.nextLine().equals("quit")){
-						System.out.println("quitting caught. ending thread");
-						Message quit_message = new Message();
-						MessageTask quit_task = new MessageTask(null, quit_message.getQuitMessage());
-						System.out.println("sending quit message");
-						addMessageTask(quit_task);
-						break;
-					}else{
-						System.out.println("incorrect input. try typing \"quit\"");
-					}
-				}
-				
-			}
-		});
-		
-		/*
-		System.out.println("last instruction");
-		
-		try {
-			Thread.sleep(10*1000);
-		} catch (InterruptedException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-		System.out.println("Exiting");
-		System.exit(0);
-		*/
-		
+		ShutdownHook sample = new ShutdownHook(this);
+		sample.attachShutdownHook();
+		startInputListener();
 		
 		final Message message = new Message();
 		System.out.println("contacting tracker");
@@ -184,7 +141,6 @@ public class RUBTClient extends Thread{
 			this.tracker.setInterval(interval);
 			this.trackerTimer.schedule(new TrackerAnnounceTask(this), interval * 1000);
 		}
-		
 
 		while(keepRunning){
 
@@ -199,7 +155,7 @@ public class RUBTClient extends Thread{
 							return;
 						}
 						switch(msg[0]){  
-						
+
 							case Message.CHOKE:
 								System.out.println("Peer " +peer.getPeer_id() + " sent choked");
 								peer.setChoked(true);
@@ -283,8 +239,7 @@ public class RUBTClient extends Thread{
 								break;
 								
 							case Message.QUIT:
-								//keep
-								System.out.println("QUIT CASE");
+								//System.out.println("QUIT CASE");
 								quitClient();
 								break;
 						}
@@ -296,6 +251,7 @@ public class RUBTClient extends Thread{
 		}
 		
 		System.out.println("ending client");
+		
 		System.exit(0);
 	}
 	
@@ -306,22 +262,21 @@ public class RUBTClient extends Thread{
 		
 		byte[] bitfield;
 		byte[] handshake;
-		for(final Peer peer: newPeers){
+		for(Peer peer: newPeers){
+
 			System.out.println("checking peer: " + peer.getPeer_id());
 			if (alreadyConnected(peer.getPeer_id()) || !peer.connectToPeer()){
 				continue;
 			}
 			Message current_message = new Message();
 			try {
-				System.out.println("sending handshake");
 				peer.sendMessage(current_message.handShake(torrentinfo.info_hash.array(), tracker.getUser_id()));
-				System.out.println("recieving handshake");
 				
+
 				handshake = peer.handshake();
 				System.out.println("checking handshake");
 				if(!handshakeCheck(handshake,peer)){
 					peer.closeConnections();
-					System.err.println("Invalid info hash from peer:");
 					continue;
 				}
 			}catch (IOException e) {
@@ -341,7 +296,6 @@ public class RUBTClient extends Thread{
 			peer.start();
 			//return;
 		}
-		System.out.println("finished adding peers");
 	}
 	public boolean alreadyConnected(String peer_id){
 		
@@ -358,7 +312,6 @@ public class RUBTClient extends Thread{
 	 * @param phandshake peer handshake
 	 */
 	private boolean handshakeCheck(byte[] peer_handshake,Peer peer){	
-		//TODO check that the expected peer name is correct?
 		
 		byte[] peer_infohash = new byte [20];
 		System.arraycopy(peer_handshake, 28, peer_infohash, 0, 20); //copies the peer's infohash
@@ -449,16 +402,13 @@ public class RUBTClient extends Thread{
 				destfile.addPiece(piece);
 				chooseAndRequestPiece(peer);
 			}
-			else
-			{
+			else {
 				small_request = (torrentinfo.file_length%torrentinfo.piece_length) % max_request;
 				request = message.request(piece, offset + max_request, small_request);
 				if (peer.isChoked()){			//TODO i don't know how to handle starting up again if we get choked mid piece request
 	   				System.out.println("got choked out");
 	   				return;
-	   			}
-				else 
-				{
+	   			}else {
 					try {
 						peer.sendMessage(request);
 					}catch (IOException e) {
@@ -471,8 +421,7 @@ public class RUBTClient extends Thread{
 		else if (offset + max_request == torrentinfo.piece_length){ 	//checks if we got the last chunk of a piece{
 			destfile.addPiece(piece);
 			chooseAndRequestPiece(peer); 		//figures out the next piece to request
-		}
-		else {
+		}else {
 			if (peer.isChoked()){			//TODO i don't know how to handle starting up again if we get choked mid piece request
    				System.out.println("got choked out");
    				return;
@@ -529,8 +478,7 @@ public class RUBTClient extends Thread{
 	 * Check to see if we have been issued a valid request, if true composes and sends the piece data
 	 * @param message request message in question
 	 */
-	private boolean isValidRequest(byte[] message,Peer peer)
-	{
+	private boolean isValidRequest(byte[] message,Peer peer){
 		Message piece_message = new Message();
 		byte[]	index_bytes= new byte[4];
 		byte[]  begin_bytes = new byte[4];
@@ -542,8 +490,7 @@ public class RUBTClient extends Thread{
 		int index = ByteBuffer.wrap(index_bytes).getInt();  //wraps the offset bytes in a buffer and converts them into an int
 		int begin = ByteBuffer.wrap(begin_bytes).getInt();
 		int length = ByteBuffer.wrap(length_bytes).getInt();
-		if((length>max_request||length<=0)||(index>destfile.pieces.length||index<0)||(begin<0||begin>torrentinfo.piece_length))//checks if any of the fields in the request method are invalid
-		{
+		if((length>max_request||length<=0)||(index>destfile.pieces.length||index<0)||(begin<0||begin>torrentinfo.piece_length)){//checks if any of the fields in the request method are invalid
 				return false;
 		}
 		piece = piece_message.getPieceMessage(destfile, index_bytes, length, begin_bytes);  //gets a piece message
@@ -556,11 +503,38 @@ public class RUBTClient extends Thread{
 		return true;
 	}
 	
+	private void startInputListener(){
+		this.workers.execute(new Runnable(){
+			public void run(){
+				Scanner scanner = new Scanner(System.in);
+				while(true){
+					if(scanner.nextLine().equals("quit")){
+						Message quit_message = new Message();
+						MessageTask quit_task = new MessageTask(null, quit_message.getQuitMessage());
+						addMessageTask(quit_task);
+						//System.out.println("sending quit message");
+						break;
+					}else{
+						System.out.println("incorrect input. try typing \"quit\"");
+					}
+				}
+			}
+		});
+	}
+	
 	public byte[] getbitfield(){
 		return this.destfile.getMybitfield();
 	}
 	
-	public synchronized void quitClient(){
+	private synchronized void quitClient(){
 		this.keepRunning = false;
+	}
+	
+	public void closeAllConnections(){
+		for(Peer peer: this.peers){
+			peer.setConnected(false);
+			peer.closeConnections();
+		}
+		System.out.println("all connections closed");
 	}
 }
