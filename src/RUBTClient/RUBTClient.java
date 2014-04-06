@@ -99,7 +99,6 @@ public class RUBTClient extends Thread{
 		//checks if destination file exists. If so, user auth is required
 		File mp3 = new File(torrentinfo.file_name);
 		if(mp3.exists()){
-			//System.out.println("aaaaahhhh");
 			destfile.checkExistingFile();
 		}else{
 			//System.out.println("no files to see here");
@@ -256,7 +255,6 @@ public class RUBTClient extends Thread{
 			this.trackerTimer.schedule(new TrackerAnnounceTask(this), interval * 1000);
 		}
 		
-		//System.out.println(torrentinfo.file_length%torrentinfo.piece_length);
 
 		while(this.keepRunning){
 
@@ -265,9 +263,8 @@ public class RUBTClient extends Thread{
 				this.workers.execute(new Runnable() {
 					public void run(){
 						byte[] msg = task.getMessage();
-						//System.out.println("Message id: " + msg[0]);
 						Peer peer = task.getPeer();
-						switch(msg[0]){  // i will have peer deal with keep alive.
+						switch(msg[0]){  
 							case Message.CHOKE:
 								System.out.println("Peer " +peer.getPeer_id() + " sent choked");
 								peer.setChoked(true);
@@ -275,7 +272,6 @@ public class RUBTClient extends Thread{
 							case Message.UNCHOKE:
 								System.out.println("Peer " +peer.getPeer_id() + " sent unchoked");
 								peer.setChoked(false);
-								System.out.println("");
 								chooseAndRequestPiece(peer);
 								break;			
 							case Message.INTERESTED:
@@ -341,7 +337,6 @@ public class RUBTClient extends Thread{
 		
 		for(Peer peer: newPeers){
 			if (alreadyConnected(peer.getPeer_id()) || !peer.connectToPeer()){
-				//System.out.println("old peer: " + peer.getPeer_id());
 				continue;
 			}
 			Message current_message = new Message();
@@ -358,6 +353,7 @@ public class RUBTClient extends Thread{
 				System.err.println("random  IO ex");
 				continue;
 			}
+			current_message.getBitFieldMessage(destfile.getMybitfield());
 			peers.add(peer);
 			System.out.println("added new peer: " + peer.getPeer_id());
 			peer.setClient(this);
@@ -386,9 +382,10 @@ public class RUBTClient extends Thread{
 		byte[] peer_infohash = new byte [20];
 		System.arraycopy(peer_handshake, 28, peer_infohash, 0, 20); //copies the peer's infohash
 		byte[] peer_id = new byte[20];
-		System.arraycopy(peer_handshake,48,peer_id,0,19);//copies the peer id.
-		if(!Arrays.equals(peer.getPeer_id().getBytes(),peer_id))  //fails if the id in the hash doenst match the expected id.
+		System.arraycopy(peer_handshake,48,peer_id,0,20);//copies the peer id.
+		if(!(Arrays.equals(peer.getPeer_id().getBytes(),peer_id)))  //fails if the id in the hash doenst match the expected id.
 		{
+				System.out.println("Peer id didnt match");
 				return false;
 		}
 		System.out.println("Peer id in the handshake"+Arrays.toString(peer_id));

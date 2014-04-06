@@ -127,5 +127,16 @@ public class Message
 	{
 		return request_prefix;
 	}
+	
+	/**
+	 * 
+	 * @param mybitfield the clients bitfield
+	 */
+	public void getBitFieldMessage(byte[] mybitfield) {
+		int length = mybitfield.length;
+		byte[] bitfield = new byte[5+length];
+		
+		//byte[] bitfield_consts ={something,5};
+	}
 }
 
