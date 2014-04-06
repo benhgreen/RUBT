@@ -20,7 +20,7 @@ import java.io.InputStreamReader;
  */
 public class Tracker {
 
-	private int 			port_num; 			//port number of tracker
+	private int 			port; 			//port number of tracker
 	private int 			file_length;		//file length of target file held by peer
 	private int 			downloaded;			//number of bytes downloaded from peer
 	private int	 			uploaded;			//number of bytes uploaded to peer
@@ -54,19 +54,19 @@ public class Tracker {
 	 * @param port_num  port number extracted from torreninfo
 	 * @param file_length file length in bytes extracted from torrentinfo
 	 */
-	public void constructURL(String announce_url, ByteBuffer info_hash, int port_num){   //construct url key/value pairs
+	public void constructURL(String announce_url, ByteBuffer info_hash, int port){   //construct url key/value pairs
 		
-		setPort_num(port_num);
-		setFile_length(file_length);
+		this.port = port;
+		this.file_length = file_length;
 		String info_hash_encoded = "?info_hash=" + encodeHash(info_hash);
 		String peer_id = "&peer_id=" + usrid;
-		String port = "&port=" + port_num;
+		String port_field = "&port=" + port;
 		String download_field = "&downloaded=" + downloaded;
 		String upload_field = "&uploaded=" + uploaded;
 		String left =  "&left=" + (file_length - downloaded);
 	
 		//setUrl(announce_url + info_hash_encoded + peer_id + port + download_field + upload_field+ left);
-		this.url = (announce_url + info_hash_encoded + peer_id + port + download_field + upload_field+ left);
+		this.url = (announce_url + info_hash_encoded + peer_id + port_field + download_field + upload_field+ left);
 	}
 	
 	/**encodeHash() escapes the info hash for sending to the tracker 
@@ -112,10 +112,11 @@ public class Tracker {
 	public byte[] requestPeerList(String event) throws Exception{   
 		
 		URL obj;
-		if(event != null){
-			//obj = new URL(this.url); 
+		if(event == null){
+			obj = new URL(this.url); 
+		}else{
+			obj = new URL(this.url + "&event=" + event); 
 		}
-		obj = new URL(this.url);
 		URLConnection connection = obj.openConnection(); //sends request
 
 		//int contentLength = connection.getContentLength();
@@ -124,8 +125,7 @@ public class Tracker {
 		ByteArrayOutputStream encoded_response = new ByteArrayOutputStream();
 		int tracker_response = datastream.read();
 		//String bencoded_response = "";
-		while(tracker_response!=-1)
-		{
+		while(tracker_response!=-1){
 			encoded_response.write(tracker_response);
 			tracker_response=datastream.read();
 		}
@@ -149,7 +149,7 @@ public class Tracker {
 				randomChar = String.valueOf((char)(randomKey + 22));
 			id = id+randomChar;
 		}
-		this.usrid=id;
+		this.usrid = id;
 	}
 	
 	 /**@return GetRequest.userid
@@ -173,14 +173,14 @@ public class Tracker {
 
 	/**@return this.port_nuil
 	 */
-	public int getPort_num() {
-		return port_num;
+	public int getPort() {
+		return this.port;
 	}
 
 	/**@param port_num int port number to be set to this.port_num
 	 */
-	public void setPort_num(int port_num) {
-		this.port_num = port_num;
+	public void setPort_num(int port) {
+		this.port = port;
 	}
 
 	/**@return this.getEncodedHash

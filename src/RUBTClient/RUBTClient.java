@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Arrays;
+import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -22,9 +23,10 @@ import edu.rutgers.cs.cs352.bt.exceptions.BencodingException;
  */
 public class RUBTClient extends Thread{
 	
-	private final int portnum = 6881;
+	private final int port = 6881;
 	
 	private int downloaded;
+	
 	private int uploaded;
 	
 	private final TorrentInfo torrentinfo;
@@ -46,18 +48,9 @@ public class RUBTClient extends Thread{
 	//private ExecutorService workers = Executors.newFixedThreadPool(10);
 	private ExecutorService workers = Executors.newCachedThreadPool();
 	
-	private static class TrackerAnnounceTask extends TimerTask {
-		private final RUBTClient client;
-		
-		public TrackerAnnounceTask(final RUBTClient client){
-			this.client = client;
-		}
-		
-		public void run(){
-			List<Peer> newPeerList;
-		}
-		
-	}
+	private final Timer trackerTimer = new Timer();
+	
+	
 
 	public RUBTClient(DestFile destfile){
 		this.destfile = destfile;
@@ -100,7 +93,6 @@ public class RUBTClient extends Thread{
 			System.err.println("Beencoding Exception!");
 			e.printStackTrace();
 		}
-		
 		
 		DestFile destfile = new DestFile(torrentinfo);
 		
@@ -231,12 +223,26 @@ public class RUBTClient extends Thread{
 //		//close file stream
 //		resultFile.close();
 	}
-	//TODO maybe think about changing the message class
-	public void run(){
+	private static class TrackerAnnounceTask extends TimerTask {
+		private final RUBTClient client;
 		
-		this.tracker.constructURL(this.torrentinfo.announce_url.toString(), this.torrentinfo.info_hash, this.portnum);
-		byte[] response_string = null;
+		public TrackerAnnounceTask(final RUBTClient client){
+			this.client = client;
+		}
+		
+		public void run(){
+			//updateprogress, contruct url, request peer list with null args, addpeers
+			Response peer_list = this.client.contactTracker(null);
+		}
+		
+	}
+	
+	public void run(){
 		final Message message = new Message();
+		/*
+		this.tracker.updateProgress(this.torrentinfo.file_length - this.destfile.incomplete, this.uploaded);
+		this.tracker.constructURL(this.torrentinfo.announce_url.toString(), this.torrentinfo.info_hash, this.port);
+		byte[] response_string = null;
 		try{
 			response_string = this.tracker.requestPeerList("started");
 		}catch (Exception e){
@@ -244,15 +250,19 @@ public class RUBTClient extends Thread{
 			e.printStackTrace();
 			System.exit(0);
 		}
+		
 		if (response_string == null){
 			System.out.println("null response");
 			System.exit(0);
 		}
-		//0 is peer_id, 1 is ip, 2 is port
-		//checks the list of peers from tracker
 		Response peer_list = new Response(response_string);
-		//extracts array of peer info from valid peer
+		*/
+		Response peer_list = contactTracker("started");
 		addPeers(peer_list.getValidPeers());
+		{
+			int interval = peer_list.interval;
+			this.trackerTimer.schedule(new TrackerAnnounceTask(this), interval * 1000);
+		}
 		
 		while(this.keepRunning){
 
@@ -469,6 +479,30 @@ public class RUBTClient extends Thread{
 				}
 			}
 		}
+	}
+	
+	public Response contactTracker(String event){
+		this.tracker.updateProgress(this.torrentinfo.file_length - this.destfile.incomplete, this.uploaded);
+		this.tracker.constructURL(this.torrentinfo.announce_url.toString(), this.torrentinfo.info_hash, this.port);
+		byte[] response_string = null;
+		try{
+			response_string = this.tracker.requestPeerList(event);
+		}catch (Exception e){
+			System.out.println("exception thrown requesting peer list from tracker");
+			e.printStackTrace();
+
+			if(event == null){
+				System.out.println("already downloading. carry on");
+			}else{
+				System.exit(0);
+			}
+		}
+		
+		if (response_string == null){
+			System.out.println("null response");
+			System.exit(0);
+		}
+		return (new Response(response_string));
 	}
 	
 	
