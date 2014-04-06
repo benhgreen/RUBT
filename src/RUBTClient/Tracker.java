@@ -97,7 +97,7 @@ public class Tracker {
 	 * @return bencoded response of peer list
 	 * @throws Exception IOException when opening connection to tracker
 	 */
-	public byte[] requestPeerList() throws Exception{   
+	public byte[] requestPeerList(String event) throws Exception{   
 		
 		URL obj = new URL(getUrl());
 		URLConnection connection = obj.openConnection(); //sends request

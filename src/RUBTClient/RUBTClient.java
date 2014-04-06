@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Arrays;
+import java.util.TimerTask;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -22,6 +23,9 @@ import edu.rutgers.cs.cs352.bt.exceptions.BencodingException;
 public class RUBTClient extends Thread{
 	
 	private final int portnum = 6881;
+	
+	private int downloaded;
+	private int uploaded;
 	
 	private final TorrentInfo torrentinfo;
 	
@@ -41,6 +45,19 @@ public class RUBTClient extends Thread{
 	
 	//private ExecutorService workers = Executors.newFixedThreadPool(10);
 	private ExecutorService workers = Executors.newCachedThreadPool();
+	
+	private static class TrackerAnnounceTask extends TimerTask {
+		private final RUBTClient client;
+		
+		public TrackerAnnounceTask(final RUBTClient client){
+			this.client = client;
+		}
+		
+		public void run(){
+			List<Peer> newPeerList;
+		}
+		
+	}
 
 	public RUBTClient(DestFile destfile){
 		this.destfile = destfile;
@@ -221,7 +238,7 @@ public class RUBTClient extends Thread{
 		byte[] response_string = null;
 		final Message message = new Message();
 		try{
-			response_string = this.tracker.requestPeerList();
+			response_string = this.tracker.requestPeerList("started");
 		}catch (Exception e){
 			System.out.println("exception thrown requesting peer list from tracker");
 			e.printStackTrace();
@@ -325,9 +342,9 @@ public class RUBTClient extends Thread{
 	public void addPeers(List<Peer> newPeers){
 		
 		for(Peer peer: newPeers){
-			if(peer.getPeer_id().startsWith("-RU1101-BD#J")){
+			/*if(peer.getPeer_id().startsWith("-RU1101-BD#J")){
 				continue;
-			}
+			}*/
 			if (peer.getSocket() == null && !peer.connectToPeer()){
 				continue;
 			}
