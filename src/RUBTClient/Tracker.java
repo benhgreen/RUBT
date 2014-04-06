@@ -26,7 +26,7 @@ public class Tracker {
 	private int	 			uploaded;			//number of bytes uploaded to peer
 	private String 			url; 				//url contructed by contruct url class to for get request to tracker
 	private String			encodedInfoHash;	//escaped info hash of torrent info 
-	private static String 	usrid;				//identifying peer id for client
+	private String 			usrid;				//identifying peer id for client
 	
 	
 	/**GetRequest contructor
@@ -38,8 +38,14 @@ public class Tracker {
 		randomID();
 	}
 	
+	/**
+	 * Updates downloaded and uploaded fields for tracker
+	 * @param downloaded
+	 * @param uploaded
+	 */
 	public void updateProgress(int downloaded, int uploaded){
-		
+		this.downloaded = downloaded;
+		this.uploaded = uploaded;
 	}
 
 	/** constructURL() builds the initial url to contact the tracker
@@ -59,7 +65,8 @@ public class Tracker {
 		String upload_field = "&uploaded=" + uploaded;
 		String left =  "&left=" + (file_length - downloaded);
 	
-		setUrl(announce_url + info_hash_encoded + peer_id + port + download_field + upload_field+ left);
+		//setUrl(announce_url + info_hash_encoded + peer_id + port + download_field + upload_field+ left);
+		this.url = (announce_url + info_hash_encoded + peer_id + port + download_field + upload_field+ left);
 	}
 	
 	/**encodeHash() escapes the info hash for sending to the tracker 
@@ -142,7 +149,7 @@ public class Tracker {
 				randomChar = String.valueOf((char)(randomKey + 22));
 			id = id+randomChar;
 		}
-		usrid=id;
+		this.usrid=id;
 	}
 	
 	 /**@return GetRequest.userid
