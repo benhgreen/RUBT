@@ -22,19 +22,25 @@ public class DestFile {
 	int incomplete;
 	private String filename;
 	private byte[] mybitfield;
+	
+	//int array for pieces - 0 = not downloaded, 1 = in progress, 2 = downloaded and verified
 	private int[] mypieces;
+	
 	private boolean initialized;
 	public Piece[] pieces;
 	private int expectedbytes;
+	private RUBTClient client;
 	
-	public DestFile(TorrentInfo torrentinfo){
+	public DestFile(TorrentInfo torrentinfo, RUBTClient client){
+		
+		//intialize some variables and setup torrent info
 		this.initialized = false;
 		this.setTorrentinfo(torrentinfo);
 		this.totalsize = torrentinfo.file_length;
 		this.incomplete = torrentinfo.file_length;
+		this.client = client;
 		
-		//printHashes();
-		
+		//calculate sizes of arrays representing pieces, bitfields, etc
 		mypieces = new int[torrentinfo.piece_hashes.length];
 		pieces = new Piece[torrentinfo.piece_hashes.length];
 		int mod1;
@@ -58,19 +64,11 @@ public class DestFile {
 		}else{
 			pieces[torrentinfo.piece_hashes.length - 1] = new Piece(diff);
 		}
-
-		
-		System.out.println(mypieces.length + " pieces");
-		System.out.println(mybitfield.length + " bytes in bitfield");
-	}
-	
-	private void printHashes() {
-		for(int i = 0; i < torrentinfo.piece_hashes.length; i++){
-			System.out.println("HASH " + i + ": " + Response.asString(torrentinfo.piece_hashes[i]).getBytes().toString());
-		}
-		
 	}
 
+	/**
+	 * Set up RAF associated with this DestFile
+	 */
 	public void initializeRAF(){
 		try {
 			dest = new RandomAccessFile(torrentinfo.file_name,"rw");
@@ -94,8 +92,12 @@ public class DestFile {
 				long target = id*getTorrentinfo().piece_length;
 				dest.seek(target);
 				dest.write(this.pieces[id].getData());
+				
+				//set piece as 'verified' and refresh bitfield
 				this.mypieces[id] = 2;
 				this.renewBitfield();
+				
+				//update incomplete field
 				this.incomplete -= (this.pieces[id].getData().length);
 				if(this.incomplete < 0){
 					this.incomplete = 0;
@@ -144,6 +146,10 @@ public class DestFile {
 		return false;
 	}
 	
+	/**Alternate method for verifying, accepts a Piece object instead of the raw byte[]
+	 * @param piece - Piece to verify
+	 * @return Boolean representing success/fail of verification
+	 */
 	public boolean verify(Piece piece){
 		return verify(piece.getData());
 	}
@@ -169,9 +175,11 @@ public class DestFile {
 		if(!initialized){
 			this.initializeRAF();
 		}
+		
 		for(int i = 0; i < torrentinfo.piece_hashes.length; i++){
 			byte temp[] = null;
 			
+			//special case for last piece, calculate if a smaller byte array is needed
 			if(i == torrentinfo.piece_hashes.length - 1){
 				if(torrentinfo.file_length % torrentinfo.piece_length != 0){
 					temp = new byte[torrentinfo.file_length % torrentinfo.piece_length];
@@ -179,6 +187,7 @@ public class DestFile {
 			}else{
 				temp = new byte[torrentinfo.piece_length];
 			}
+			
 			try {
 				this.dest.seek(i * torrentinfo.piece_length);
 				this.dest.read(temp);
@@ -216,7 +225,7 @@ public class DestFile {
 		printBitfield();
 	}
 	/**
-	 * Initializes all bits to 0
+	 * Initializes all bits to 0 in local bitfield
 	 */
 	public void initializeBitfield(){
 		
@@ -228,6 +237,9 @@ public class DestFile {
 		}
 	}
 	
+	/**
+	 * @return Bitfield of this DestFile
+	 */
 	public byte[] getMybitfield(){
 		return mybitfield;
 	}
@@ -248,6 +260,12 @@ public class DestFile {
 		}
 	}
 	
+	/**
+	 * @param byte[] array - Bitfield to modify
+	 * @param int i - Position (in bytes) to modify
+	 * @param bool
+	 * @return
+	 */
 	public byte[] manualMod(byte[] array, int i, boolean bool){
 		
 		int mod = i%8;
@@ -261,9 +279,9 @@ public class DestFile {
 		return array;
 	}
 	
-	/**
-//	 * @param input Other bitfield
-	 * @return First bit where input is 1 and mybitfield is 0
+	/**Returns first piece that we don't have that a particular peer does have
+	 * @param input Other bitfield
+	 * @return First bit where input is 1 and mybitfield is 0 - aka first piece we are interested in downloading
 	 */
 	public synchronized int firstNewPiece(byte[] input){
 	
@@ -283,6 +301,13 @@ public class DestFile {
 		return -1;
 	}
 	
+	/**Returns a chunk of data from a piece, presumably for uploading
+	 * 
+	 * @param int piece - which piece to select
+	 * @param int start - the offset within the piece to begin the data chunk
+	 * @param int amount - in bytes, how much data to return
+	 * @return a byte[] with the data requested
+	 */
 	public byte[] getPieceData(int piece, int start, int amount){
 		byte[] ret  = new byte[amount];
 		try {
@@ -304,11 +329,15 @@ public class DestFile {
 		System.out.print("\n");
 	}
 	
+	/**Marks a piece as 'in progress' by setting its flag to 1
+	 * 
+	 * @param int pos - which piece to mark 'in progress'
+	 */
 	public void markInProgress(int pos){
 		mypieces[pos] = 1;
 	}
 		
-		
+	//various getters and setters	
 	public String getFilename() {
 		return filename;
 	}
