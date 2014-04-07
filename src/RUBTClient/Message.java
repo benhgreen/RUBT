@@ -2,7 +2,6 @@ package RUBTClient;
 
 import java.nio.ByteBuffer;
 import java.util.Arrays;
-//import java.util.Arrays;
 /**
  * @author Manuel Lopez
  * @author Ben Green
