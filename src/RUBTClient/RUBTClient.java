@@ -551,14 +551,13 @@ public class RUBTClient extends Thread{
 	}
 	
 	private void startIncomingConnections(){
-		//start this before starting shutdown hook
 		final RUBTClient client = this;
 		this.workers.execute(new Runnable(){
 			public void run(){
 				boolean validPort = false;
 				ServerSocket listenSocket = null;
 				
-				while(port <= 6889 && validPort){
+				while(port <= 6889 && !validPort){
 					try {
 						listenSocket = new ServerSocket(port);
 						validPort = true;
@@ -571,6 +570,7 @@ public class RUBTClient extends Thread{
 					System.out.println("all valid ports taken");
 					System.exit(0);
 				}
+				System.out.println("");
 				while (true){
 					try{
 						if(listenSocket == null){
