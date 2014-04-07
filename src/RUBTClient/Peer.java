@@ -109,10 +109,10 @@ public class Peer extends Thread {
 				Thread.sleep(1*100);
 				try{
 					if(peerInputStream.available()==0){
+						//System.out.println("nothing yet");
 						continue;     //means the peer hasn't written anything to the socket yet, I would like to find a better way to do this
 					}
 				}catch(IOException e){
-					//System.out.println("caught exception. exiting");
 					return;
 				}
 				
@@ -122,6 +122,10 @@ public class Peer extends Thread {
 			        receive_timer = new Timer();
 			        receive_timer.schedule(new ReceiveTimerTask(this), 125*1000);  //resets it for 2 minutes and 5 seconds from last sent, extra 5 to be generous	
 					continue;
+				}
+				if(length_prefix<0)
+				{
+					continue;     //oh what has happened here
 				}
 				response = new byte[length_prefix];
 				peerInputStream.read(response,0,length_prefix);
@@ -144,7 +148,6 @@ public class Peer extends Thread {
 			}catch (EOFException e) {
 					continue;
 			}catch (Exception e){
-				e.printStackTrace();
 				System.err.println("Other Exception");
 			}
 		}
