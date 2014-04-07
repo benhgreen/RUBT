@@ -177,6 +177,7 @@ public class RUBTClient extends Thread{
 							}
 								break;
 							case Message.HAVE:
+								System.out.println("have");
 								if (peer.isChoked()){
 									//System.out.println("first have message");
 									byte[] piece_bytes = new byte[4];
@@ -285,16 +286,16 @@ public class RUBTClient extends Thread{
 			}
 			peer.setClient(this);
 			bitfield = current_message.getBitFieldMessage(destfile.getMybitfield());
-			try {
-				peer.sendMessage(bitfield);
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+//			try {
+//				peer.sendMessage(bitfield);
+//			} catch (IOException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
 			peers.add(peer);
 			System.out.println("added new peer: " + peer.getPeer_id());
 			peer.start();
-			//return;
+			return;
 		}
 	}
 	public boolean alreadyConnected(String peer_id){
@@ -390,16 +391,33 @@ public class RUBTClient extends Thread{
 		System.arraycopy(block, 1, piece_bytes, 0, 4); //gets the piece number bytes from the piece message
 		int offset = ByteBuffer.wrap(offset_bytes).getInt();  //wraps the offset bytes in a buffer and converts them into an int
 		int piece = ByteBuffer.wrap(piece_bytes).getInt();
-		//checks if we got the last chunk of a piece
 		addChunk(piece,offset,block);  //places the chunk of data into a piece
-		// offset+max_request
-		//torrentinfo.file_length%torrentinfo.piece_length
 		if((piece==torrentinfo.file_length/torrentinfo.piece_length)&&(offset+2*max_request>torrentinfo.file_length%torrentinfo.piece_length))//checks if we are at the last chunk of the last piece
 		{
 			small_request = (torrentinfo.file_length%torrentinfo.piece_length)%max_request;
 			if(small_request+offset ==torrentinfo.file_length%torrentinfo.piece_length)//just got back the last chunk of the last piece
 			{
-				destfile.addPiece(piece);
+				System.out.println("the result from destfile"+destfile.addPiece(piece));
+				if(destfile.addPiece(piece)) //if our piece verifies, we send have messages to everyone
+				{
+					System.out.println("Sending to all peers");
+					//TODO send a have message to everybody?
+					for(Peer all_peer: this.peers){
+						try {
+							System.out.println("Sending a have");
+							all_peer.sendMessage(message.getHaveMessage(piece_bytes));
+						} catch (IOException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					}
+					
+				}
+				else
+				{
+					removePeer(peer);
+				}
+				
 				chooseAndRequestPiece(peer);
 			}
 			else {
