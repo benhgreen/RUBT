@@ -1,5 +1,7 @@
 package RUBTClient;
 
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -24,7 +26,7 @@ import edu.rutgers.cs.cs352.bt.exceptions.BencodingException;
  */
 public class RUBTClient extends Thread{
 	
-	private final int port = 6881;
+	private int port = 6881;
 	
 	private int uploaded;
 	
@@ -45,11 +47,14 @@ public class RUBTClient extends Thread{
 	public ExecutorService workers = Executors.newCachedThreadPool();
 	
 	private final Timer trackerTimer = new Timer();
+	
+	public Peer incoming;
 
 	public RUBTClient(DestFile destfile){
 		this.destfile = destfile;
 		this.torrentinfo = destfile.getTorrentinfo();
 		this.tracker = new Tracker(this.torrentinfo.file_length);
+		this.incoming = null;
 	}
 	
 	public static void main(String[] args){
@@ -291,7 +296,6 @@ public class RUBTClient extends Thread{
 			try {
 				peer.sendMessage(bitfield);
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			peers.add(peer);
@@ -332,6 +336,23 @@ public class RUBTClient extends Thread{
 			return false;
 		}
 	}
+	private byte[] handshakeCheck(byte[] peer_handshake){	
+		
+		byte[] peer_infohash = new byte [20];
+		System.arraycopy(peer_handshake, 28, peer_infohash, 0, 20); //copies the peer's infohash
+		byte[] peer_id = new byte[20];
+		System.arraycopy(peer_handshake,48,peer_id,0,20);//copies the peer id.
+		
+		if (Arrays.equals(peer_infohash, this.torrentinfo.info_hash.array())){  //returns true if the peer id matches and the info hash matches
+			return peer_id;
+		}else {
+			return null;
+		}
+	}
+	
+	
+	
+	
 	
 	public synchronized  void addMessageTask(MessageTask task){
 		tasks.add(task);
@@ -525,9 +546,79 @@ public class RUBTClient extends Thread{
 		});
 	}
 	
+	private void startIncomingConnections(){
+		//start this before starting shutdown hook
+		this.workers.execute(new Runnable(){
+			public void run(){
+				boolean validPort = false;
+				ServerSocket listenSocket = null;
+				
+				while(port <= 6889 && validPort){
+					try {
+						listenSocket = new ServerSocket(port);
+						validPort = true;
+					} catch (IOException e) {
+						System.out.println("port taken: " + port);
+						setPort(port+1);
+					}
+				}
+				if(port <= 6890){
+					System.out.println("all valid ports taken");
+					System.exit(0);
+				}
+				while (true){
+					try{
+						if(listenSocket == null){
+							System.out.println("null listenSocket");
+							System.exit(0);
+						}
+						Socket clientSocket = listenSocket.accept();
+						DataInputStream input = new DataInputStream(clientSocket.getInputStream());
+						DataOutputStream output = new DataOutputStream(clientSocket.getOutputStream());
+						
+						Peer peer = new Peer(clientSocket, input, output);
+						Message msg = new Message();
+						byte[] handshake;
+						byte[] peer_id;
+						try {
+							peer.sendMessage(msg.handShake(torrentinfo.info_hash.array(), tracker.getUser_id()));
+							handshake = peer.handshake();
+							if(handshake == null){
+								System.out.println("found tracker");
+								continue;
+							}
+							peer_id = handshakeCheck(handshake);
+							if(peer_id == null){
+								peer.closeConnections();
+								continue;
+							}
+							
+						}catch (IOException e) {
+							System.err.println("random  IO ex");
+							continue;
+						}
+						
+						
+					}catch(IOException ioe){
+						System.err.println("IOException while handling request");
+					}
+				}
+			}
+		});
+		
+	}
+	
+	
+	
 	public byte[] getbitfield(){
 		return this.destfile.getMybitfield();
 	}
+	
+	
+	public void setPort(int port){
+		this.port = port;
+	}
+	
 	
 	private synchronized void quitClient(){
 		this.keepRunning = false;

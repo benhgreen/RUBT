@@ -57,6 +57,30 @@ public class Peer extends Thread {
 		receive_timer = new Timer();
 	}
 	
+	public Peer(Socket peerSocket, DataInputStream peerInputStream, DataOutputStream peerOutputStream) {
+		this.peerSocket = peerSocket;
+		try {
+			this.peerSocket.setSoTimeout(130*1000);
+		} catch (SocketException e) {
+			System.out.println("peer socket exception");
+		}
+
+		this.peerInputStream = peerInputStream;
+		this.peerOutputStream = peerOutputStream;
+		this.first_sent = false;
+		this.choked = true;
+		this.choking = true;
+		this.connected = false;
+		this.interested = false;
+		
+		send_timer = new Timer();
+		receive_timer = new Timer();
+		
+		send_timer.schedule(new SendTimerTask(this),115*1000 ); //set a new timer for sent messages, set for 1 minute 55 seconds.
+		receive_timer.schedule(new ReceiveTimerTask(this),125*1000);
+	}
+	
+	
 	private static class SendTimerTask extends TimerTask{
 		private Peer peer;
 		private Message message;
@@ -284,6 +308,9 @@ public class Peer extends Thread {
 		try{
 			peerInputStream.readFully(phandshake);
 			System.out.println("handshake caught");
+		}catch (EOFException e){
+			System.out.println(("Tracker testing us....return null"));
+			return null;
 		}catch (IOException e1){
 			System.err.println("Handshake Error");  //there was an error reading the handshake, disconnects from the peer.
 			e1.printStackTrace();
