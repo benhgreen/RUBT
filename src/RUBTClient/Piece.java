@@ -9,7 +9,7 @@ package RUBTClient;
 
 public class Piece {
 	
-	private byte[] data;
+	public byte[] data;
 	private int offset;
 	
 	public Piece(int size)
