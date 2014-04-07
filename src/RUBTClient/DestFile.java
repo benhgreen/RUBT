@@ -31,13 +31,14 @@ public class DestFile {
 	private int expectedbytes;
 	private RUBTClient client;
 	
-	public DestFile(TorrentInfo torrentinfo){
+	public DestFile(TorrentInfo torrentinfo, String filename){
 		
 		//intialize some variables and setup torrent info
 		this.initialized = false;
 		this.setTorrentinfo(torrentinfo);
 		this.totalsize = torrentinfo.file_length;
 		this.incomplete = torrentinfo.file_length;
+		this.filename = filename;
 		
 		//calculate sizes of arrays representing pieces, bitfields, etc
 		mypieces = new int[torrentinfo.piece_hashes.length];
@@ -70,7 +71,7 @@ public class DestFile {
 	 */
 	public void initializeRAF(){
 		try {
-			dest = new RandomAccessFile(torrentinfo.file_name,"rw");
+			dest = new RandomAccessFile(filename,"rw");
 			dest.setLength(torrentinfo.file_length);
 			initialized = true;
 		} catch (FileNotFoundException e) {

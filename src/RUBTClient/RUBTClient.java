@@ -52,7 +52,7 @@ public class RUBTClient extends Thread{
 	
 	public static void main(String[] args){
 		
-		//verifies command line argumentss
+		//verifies command line arguments
 		if(args.length != 2){
 			System.err.println("Usage: java RUBT <torrent> <destination>");
 			System.exit(0);
@@ -85,9 +85,9 @@ public class RUBTClient extends Thread{
 			e.printStackTrace();
 		}
 		
-		DestFile destfile = new DestFile(torrentinfo);
+		DestFile destfile = new DestFile(torrentinfo, destination);
 		
-		File mp3 = new File(torrentinfo.file_name);
+		File mp3 = new File(destination);
 		if(mp3.exists()){
 			destfile.checkExistingFile();
 		}else{
