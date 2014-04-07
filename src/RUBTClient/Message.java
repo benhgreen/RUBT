@@ -8,6 +8,8 @@ import java.util.Arrays;
  * @author Ben Green
  * @author Christopher Rios
  *
+ *This method is responsible for all composing and identification of messages sent between peers
+ *
  */
 public class Message 
 
@@ -43,11 +45,6 @@ public class Message
 	private final byte[] interested = {0,0,0,1,2};
 	private final byte[] not_interested = {0,0,0,1,3};
 	private final byte[] keep_alive = {0,0,0,0};
-	 //Message object constructor
-	public Message()
-	{
-			
-	}
 	/**
 	 * This method constructs a byte array that contains the handshake message
 	 * @param info_hash takes the info hash given by the .torrent file
@@ -153,7 +150,7 @@ public class Message
 	 * @param req_index piece index requested
 	 * @param req_length requested length
 	 * @param offset index that we will start the piece at
-	 * @return constructed quit message
+	 * @return constructed piece message
 	 */
 	public byte[] getPieceMessage(DestFile file,byte[] req_index,int req_length,byte[] req_begin)
 	{
@@ -176,7 +173,7 @@ public class Message
 	}
 	
 	/**
-	 * Generates a quit message
+	 * Generates a quit message to signal our client
 	 * @return quit message
 	 */
 	public byte[] getQuitMessage()
@@ -184,9 +181,13 @@ public class Message
 		byte[] quit_message = {QUIT};
 		return quit_message;
 	}
+	/**
+	 * Generates a have message to send to our peers
+	 * @param index of the piece that we have
+	 * @return a constructed have message
+	 */
 	public byte[] getHaveMessage(byte[] index) 
 	{
-		//have: <len=0005><id=4><piece index> 
 		byte[] have = new byte[9]; 
 		System.arraycopy(have_consts, 0, have, 0, 5);
 		System.arraycopy(index,0,have,5,4);
