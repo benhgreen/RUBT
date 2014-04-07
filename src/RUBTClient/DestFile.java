@@ -31,14 +31,13 @@ public class DestFile {
 	private int expectedbytes;
 	private RUBTClient client;
 	
-	public DestFile(TorrentInfo torrentinfo, RUBTClient client){
+	public DestFile(TorrentInfo torrentinfo){
 		
 		//intialize some variables and setup torrent info
 		this.initialized = false;
 		this.setTorrentinfo(torrentinfo);
 		this.totalsize = torrentinfo.file_length;
 		this.incomplete = torrentinfo.file_length;
-		this.client = client;
 		
 		//calculate sizes of arrays representing pieces, bitfields, etc
 		mypieces = new int[torrentinfo.piece_hashes.length];
@@ -99,7 +98,8 @@ public class DestFile {
 				
 				//update incomplete field
 				this.incomplete -= (this.pieces[id].getData().length);
-				if(this.incomplete < 0){
+				if(this.incomplete <= 0){
+					this.client.contactTracker("completed");
 					this.incomplete = 0;
 				}
 				return true;
@@ -352,5 +352,9 @@ public class DestFile {
 
 	public void setTorrentinfo(TorrentInfo torrentinfo) {
 		this.torrentinfo = torrentinfo;
+	}
+
+	public void setClient(RUBTClient client) {
+		this.client = client;
 	}
 }

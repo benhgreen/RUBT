@@ -106,6 +106,8 @@ public class RUBTClient extends Thread{
 		destfile.renewBitfield();
 		//run thread
 		RUBTClient client = new RUBTClient(destfile);
+		destfile.setClient(client);
+		
 		client.start();
 	}
 	
