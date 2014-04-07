@@ -130,10 +130,13 @@ public class RUBTClient extends Thread{
 		final Message message = new Message();
 		System.out.println("contacting tracker");
 		Response peer_list = contactTracker("started");
+		System.out.println("interval: " + peer_list.min_interval);
+		System.out.println("min interval: " + peer_list.min_interval);
 		System.out.println("done contacting");
 		addPeers(peer_list.getValidPeers());
 		{
 			int interval = peer_list.interval;
+			int min_interval = peer_list.min_interval;
 			if(interval <= 0){
 				interval = 60;
 			}
