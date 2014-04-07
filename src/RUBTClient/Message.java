@@ -184,5 +184,14 @@ public class Message
 		byte[] quit_message = {QUIT};
 		return quit_message;
 	}
+	public byte[] getHaveMessage(byte[] index) 
+	{
+		//have: <len=0005><id=4><piece index> 
+		byte[] have = new byte[9]; 
+		System.arraycopy(have_consts, 0, have, 0, 5);
+		System.arraycopy(index,0,have,5,4);
+		System.out.println(Arrays.toString(have));
+		return have;
+	}
 }
 
