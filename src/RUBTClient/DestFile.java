@@ -25,6 +25,7 @@ public class DestFile {
 	private int[] mypieces;
 	private boolean initialized;
 	public Piece[] pieces;
+	private int expectedbytes;
 	
 	public DestFile(TorrentInfo torrentinfo){
 		this.initialized = false;
@@ -38,10 +39,12 @@ public class DestFile {
 		pieces = new Piece[torrentinfo.piece_hashes.length];
 		int mod1;
 		if((mod1 = torrentinfo.piece_hashes.length % 8) == 0){
-			mybitfield = new byte[mod1];
+			mybitfield = new byte[torrentinfo.piece_hashes.length / 8];
+			expectedbytes = torrentinfo.piece_hashes.length / 8;
 			
 		}else{
 			mybitfield = new byte[((torrentinfo.piece_hashes.length - mod1) / 8) + 1];
+			expectedbytes = ((torrentinfo.piece_hashes.length - mod1) / 8) + 1;
 		}
 		this.initializeBitfield();
 		for(int i = 0; i<mypieces.length - 1; i++){
@@ -203,12 +206,14 @@ public class DestFile {
 			int currentbyte = (i-(mod)) / 8;
 			
 			if(this.mypieces[i] == 2){
-				this.mybitfield[currentbyte] |= (1 << mod);
+				this.mybitfield[currentbyte] |= (1 << 7-mod);
 			}else{
-				this.mybitfield[currentbyte] &= ~(1 << mod);
+				this.mybitfield[currentbyte] &= ~(1 << 7-mod);
 			}
 			
 		}
+		
+		printBitfield();
 	}
 	/**
 	 * Initializes all bits to 0
@@ -218,7 +223,7 @@ public class DestFile {
 		for(int i = 0; i < mypieces.length; i++){
 			int mod = i%8;
 			int currentbyte = (i-(mod)) / 8;
-			mybitfield[currentbyte] &= ~(1 << mod);
+			mybitfield[currentbyte] &= ~(1 << 7-mod);
 			mypieces[i] = 0;
 		}
 	}
@@ -237,9 +242,9 @@ public class DestFile {
 		int mod = i%8;
 		int currentbyte = (i-(mod)) / 8;
 		if(bool){
-			mybitfield[currentbyte] |= (1 << mod);
+			mybitfield[currentbyte] |= (1 << 7-mod);
 		}else{
-			mybitfield[currentbyte] &= ~(1 << mod);
+			mybitfield[currentbyte] &= ~(1 << 7-mod);
 		}
 	}
 	
@@ -248,9 +253,9 @@ public class DestFile {
 		int mod = i%8;
 		int currentbyte = (i-(mod)) / 8;
 		if(bool){
-			array[currentbyte] |= (1 << mod);
+			array[currentbyte] |= (1 << 7-mod);
 		}else{
-			array[currentbyte] &= ~(1 << mod);
+			array[currentbyte] &= ~(1 << 7-mod);
 		}
 		
 		return array;
@@ -260,16 +265,18 @@ public class DestFile {
 //	 * @param input Other bitfield
 	 * @return First bit where input is 1 and mybitfield is 0
 	 */
-	public int firstNewPiece(byte[] input){
+	public synchronized int firstNewPiece(byte[] input){
 	
 		for(int i = 0; i < mypieces.length; i++){
 			
 			int mod = i%8;
 			int currentbyte = (i-(mod)) / 8;
 			
-			if((mybitfield[currentbyte] >> (mod) & 1) != 1){
-				if((input[currentbyte] >> (8-mod) & 1) == 1){
-					return i;
+			if((mybitfield[currentbyte] >> (7-mod) & 1) != 1){
+				if((input[currentbyte] >> (7-mod) & 1) == 1){
+					if(mypieces[i] == 0){
+						return i;
+					}
 				}
 			}
 		}
@@ -287,6 +294,18 @@ public class DestFile {
 			e.printStackTrace();
 		}
 		return null;
+	}
+	
+	private void printBitfield(){
+		System.out.print("Bitfield:");
+		for(int i = 0; i<expectedbytes; i++){
+			System.out.print(" " + String.format("%8s", Integer.toBinaryString(mybitfield[i] & 0xFF)).replace(' ', '0'));
+		}
+		System.out.print("\n");
+	}
+	
+	public void markInProgress(int pos){
+		mypieces[pos] = 1;
 	}
 		
 		
