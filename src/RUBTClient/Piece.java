@@ -33,6 +33,10 @@ public class Piece {
 		return data;
 	}
 	
+	/**
+	 * @param data  - fresh chunk of data
+	 * @param offset - where in the piece to begin writing the data
+	 */
 	public void assemble(byte[] data, int offset){
 		for(int i = 0; i < data.length; i++){
 			this.data[offset+i] = data[i];
