@@ -128,13 +128,13 @@ public class RUBTClient extends Thread{
 	
 	public void run(){
 		
-		startIncomingConnections();
+		//startIncomingConnections();
 		
 		ShutdownHook sample = new ShutdownHook(this);
 		sample.attachShutdownHook();
 		startInputListener();
 		
-		System.exit(0);
+		//System.exit(0);
 		
 		final Message message = new Message();
 		System.out.println("contacting tracker");
