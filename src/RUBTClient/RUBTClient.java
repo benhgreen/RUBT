@@ -343,6 +343,11 @@ public class RUBTClient extends Thread{
 			return false;
 		}
 	}
+	/**
+	 * This method checks the handshake check against the information that we know about the peer and the infohash
+	 * @param peer_handshake the remote peers handshake
+	 * @return returns the peer_id of this handshake
+	 */
 	private byte[] handshakeCheck(byte[] peer_handshake){	
 		
 		byte[] peer_infohash = new byte [20];
@@ -357,10 +362,18 @@ public class RUBTClient extends Thread{
 		}
 	}
 	
+	/**
+	 * This method is called by the peer to give messages to the client's queue
+	 * @param task to be sent to the clients queue
+	 */
 	public synchronized  void addMessageTask(MessageTask task){
 		tasks.add(task);
 	}
 	
+	/**
+	 * This method picks which piece to be requested from a remote peer
+	 * @param peer Peer who we are attempting to request a piece from
+	 */
 	public synchronized void chooseAndRequestPiece(final Peer peer){
 		int current_piece = 0;
 	   	int offset_counter = 0;
@@ -404,6 +417,11 @@ public class RUBTClient extends Thread{
 		System.arraycopy(data, 9, chunk, 0, data.length-9);
 		destfile.pieces[piece].assemble(chunk,offset);
 	}
+	/**
+	 * Gets the next block of a piece
+	 * @param block block of data received
+	 * @param peer peer received from 
+	 */
 	private void getNextBlock(byte[] block,Peer peer){
 		Message message = new Message();
 		byte[] request;
@@ -495,6 +513,11 @@ public class RUBTClient extends Thread{
 		}
 	}
 	
+	/**
+	 * This method sends contacts tracker and sends it events
+	 * @param event type of event to be sent to the tracker
+	 * @return Response to be sent
+	 */
 	public Response contactTracker(String event){
 		this.tracker.updateProgress(this.torrentinfo.file_length - this.destfile.incomplete, this.uploaded);
 		this.tracker.constructURL(this.torrentinfo.announce_url.toString(), this.torrentinfo.info_hash, this.port);
