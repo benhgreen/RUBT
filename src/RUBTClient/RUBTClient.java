@@ -128,9 +128,13 @@ public class RUBTClient extends Thread{
 	
 	public void run(){
 		
+		startIncomingConnections();
+		
 		ShutdownHook sample = new ShutdownHook(this);
 		sample.attachShutdownHook();
 		startInputListener();
+		
+		System.exit(0);
 		
 		final Message message = new Message();
 		System.out.println("contacting tracker");
@@ -548,6 +552,7 @@ public class RUBTClient extends Thread{
 	
 	private void startIncomingConnections(){
 		//start this before starting shutdown hook
+		final RUBTClient client = this;
 		this.workers.execute(new Runnable(){
 			public void run(){
 				boolean validPort = false;
@@ -562,7 +567,7 @@ public class RUBTClient extends Thread{
 						setPort(port+1);
 					}
 				}
-				if(port <= 6890){
+				if(port >= 6890){
 					System.out.println("all valid ports taken");
 					System.exit(0);
 				}
@@ -592,13 +597,20 @@ public class RUBTClient extends Thread{
 								peer.closeConnections();
 								continue;
 							}
-							
+							String peer_string = new String(peer_id);
+							System.out.println("incoming peer " + peer_string);
+							if(alreadyConnected(peer_string)){
+								peer.closeConnections();
+								continue;
+							}else{
+								peer.setClient(client);
+								peers.add(peer);
+								peer.start();
+							}
 						}catch (IOException e) {
 							System.err.println("random  IO ex");
 							continue;
 						}
-						
-						
 					}catch(IOException ioe){
 						System.err.println("IOException while handling request");
 					}
