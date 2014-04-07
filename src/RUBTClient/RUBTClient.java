@@ -514,9 +514,15 @@ public class RUBTClient extends Thread{
 	}
 	
 	/**
+<<<<<<< HEAD
 	 * This method sends contacts tracker and sends it events
 	 * @param event type of event to be sent to the tracker
 	 * @return Response to be sent
+=======
+	 * Contacts tracker with specific event
+	 * @param event that we want to announce to peer
+	 * @return list of valid peers from the tracker
+>>>>>>> 207944ff26bf242915bfa0fd79b3fc49cacfa26a
 	 */
 	public Response contactTracker(String event){
 		this.tracker.updateProgress(this.torrentinfo.file_length - this.destfile.incomplete, this.uploaded);
@@ -604,7 +610,10 @@ public class RUBTClient extends Thread{
 			}
 		});
 	}
-	
+	/**
+	 * Listens on a specific port for incoming connections and adds them to the list
+	 * of currently connected peers
+	 */
 	private void startIncomingConnections(){
 		final RUBTClient client = this;
 		this.workers.execute(new Runnable(){
@@ -617,18 +626,15 @@ public class RUBTClient extends Thread{
 						listenSocket = new ServerSocket(port);
 						validPort = true;
 					} catch (IOException e) {
-						//System.out.println("port taken: " + port);
 						setPort(port+1);
 					}
 				}
 				if(port >= 6890){
-					System.out.println("all valid ports taken");
 					System.exit(0);
 				}
 				while (true){
 					try{
 						if(listenSocket == null){
-							//System.out.println("null listenSocket");
 							System.exit(0);
 						}
 						Socket clientSocket = listenSocket.accept();
@@ -643,7 +649,6 @@ public class RUBTClient extends Thread{
 							peer.sendMessage(msg.handShake(torrentinfo.info_hash.array(), tracker.getUser_id()));
 							handshake = peer.handshake();
 							if(handshake == null){
-								//System.out.println("found tracker");
 								continue;
 							}
 							peer_id = handshakeCheck(handshake);
@@ -652,7 +657,6 @@ public class RUBTClient extends Thread{
 								continue;
 							}
 							String peer_string = new String(peer_id);
-							//System.out.println("incoming peer " + peer_string);
 							if(alreadyConnected(peer_string)){
 								peer.closeConnections();
 								continue;
@@ -686,10 +690,16 @@ public class RUBTClient extends Thread{
 	}
 	
 	
+	/**
+	 *sets flag so client thread can exit event loop 
+	 */
 	private synchronized void quitClient(){
 		this.keepRunning = false;
 	}
 	
+	/**
+	 *Disconnects all currently connected peers
+	 */
 	public void closeAllConnections(){
 		for(Peer peer: this.peers){
 			peer.setConnected(false);

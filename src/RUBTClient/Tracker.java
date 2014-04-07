@@ -16,21 +16,21 @@ import java.io.InputStreamReader;
  *
  */
 
-/**GetRequest object that manages the connection to tracker and the url
+/**Tracker object that manages the connection  and all communication to tracker
  */
 public class Tracker {
 
-	private int 			port; 			//port number of tracker
+	private int 			port; 				//port number of client is listening on
 	private int 			file_length;		//file length of target file held by peer
 	private int 			downloaded;			//number of bytes downloaded from peer
-	private int	 			uploaded;			//number of bytes uploaded to peer
-	private int 			interval;
-	private String 			url; 				//url contructed by contruct url class to for get request to tracker
+	private int	 			uploaded;			//number of bytes uploaded to peers
+	private int 			interval;			//milliseconds expected between tracker announcements
+	private String 			url; 				//url contructed for annoucning to the
 	private String			encodedInfoHash;	//escaped info hash of torrent info 
 	private String 			usrid;				//identifying peer id for client
 	
 	
-	/**GetRequest contructor
+	/**Tracker constructor generates out client peer_id
 	 */
 	public Tracker(int file_length){
 		this.downloaded = 0;
