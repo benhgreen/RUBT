@@ -471,9 +471,7 @@ public class RUBTClient extends Thread{
 						System.out.println("Sending a have");
 						all_peer.sendMessage(message.getHaveMessage(piece_bytes));
 					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						System.out.println("not he");
-						e.printStackTrace();
+						System.err.println("Peer disconnected");
 					}
 				}
 				

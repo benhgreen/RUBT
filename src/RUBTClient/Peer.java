@@ -97,15 +97,12 @@ public class Peer extends Thread {
 			System.out.println(peer.connected);
 			if(peer.connected)
 			{
-			message.getKeep_alive();
-			keep_alive = message.getKeep_alive();
-			System.out.println(Arrays.toString(keep_alive));
+			byte[] keep_alive = {0,0,0,0};
 			try {
-				System.out.println("sending a keep alive");
 				peer.sendMessage(keep_alive);
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
-				e.printStackTrace();
+				System.err.println("Socket already closed");
 			}
 			}
 			
@@ -130,7 +127,7 @@ public class Peer extends Thread {
 		
 		while(connected){
 			try {
-				Thread.sleep(1*100);
+				Thread.sleep(1*200);
 				try{
 					if(peerInputStream.available()==0){
 						//System.out.println("nothing yet");
@@ -209,6 +206,8 @@ public class Peer extends Thread {
 			peerOutputStream.close();
 			peerSocket.close();
 			connected = false;
+			send_timer.cancel();  
+			receive_timer.cancel();
 		}catch (IOException e){
 			return;
 		}
