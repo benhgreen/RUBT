@@ -86,7 +86,7 @@ public class DestFile {
 	 * @param Piece object containing data to add to the target file 
 	 */
 	public synchronized boolean addPiece(int id){
-		if(verify(this.pieces[id].getData())){
+		if(verify(this.pieces[id].getData()) == id){
 			try {
 				//calculate location to write data in the file using piece length and offset if applicable
 				long target = id*getTorrentinfo().piece_length;
@@ -126,7 +126,7 @@ public class DestFile {
 	 * @param Piece with data to verify
 	 * @return True if the piece's data hash was located in the TorrentInfo's data hash array, false if it was not found.
 	 */
-	public boolean verify(byte[] piece){
+	public int verify(byte[] piece){
 		
 		//get data hash
 		MessageDigest md = null;
@@ -140,18 +140,18 @@ public class DestFile {
 		for(int i = 0; i < this.getTorrentinfo().piece_hashes.length; i++){
 			if(Arrays.equals(hash, this.getTorrentinfo().piece_hashes[i].array())){
 				System.out.println("PASSED at piece " + i);
-				return true;
+				return i;
 			}
 		}
 		System.out.println("FAILED");
-		return false;
+		return -1;
 	}
 	
 	/**Alternate method for verifying, accepts a Piece object instead of the raw byte[]
 	 * @param piece - Piece to verify
 	 * @return Boolean representing success/fail of verification
 	 */
-	public boolean verify(Piece piece){
+	public int verify(Piece piece){
 		return verify(piece.getData());
 	}
 	
@@ -192,7 +192,7 @@ public class DestFile {
 			try {
 				this.dest.seek(i * torrentinfo.piece_length);
 				this.dest.read(temp);
-				if(this.verify(temp)){
+				if(this.verify(temp) == i){
 					mypieces[i] = 2;
 				}else{
 					System.out.println("Piece " + i + " is INvalid.");
