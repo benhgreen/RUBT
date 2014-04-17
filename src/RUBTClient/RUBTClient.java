@@ -96,7 +96,6 @@ public class RUBTClient extends Thread{
 		//builds bitfield based off of local mp3 file
 		destfile.renewBitfield(); 
 		RUBTClient client = new RUBTClient(destfile); 
-		
 		//set client field of destfile to current client for later tracker util
 		destfile.setClient(client);		
 		

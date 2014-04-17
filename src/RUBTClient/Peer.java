@@ -34,7 +34,6 @@ public class Peer extends Thread {
 	private byte[] 				response;
 	private byte[] 				bitfield;
 	private Timer 				send_timer; 		//timers for sends
-	private Timer 				receive_timer; 		//timers for receives
 	private RUBTClient 			client;
 	private MessageTask 		message;
 	private boolean				first_sent;  //flag check that the first message after the handshake was sent. is used to make sure bitfield isnt sent in the wrong order. 
@@ -60,7 +59,6 @@ public class Peer extends Thread {
 		this.interested = false;
 		
 		send_timer = new Timer();
-		receive_timer = new Timer();
 	}
 	
 	/**
@@ -72,7 +70,7 @@ public class Peer extends Thread {
 	public Peer(Socket peerSocket, DataInputStream peerInputStream, DataOutputStream peerOutputStream) {
 		this.peerSocket = peerSocket;
 		try {
-			this.peerSocket.setSoTimeout(130*1000);
+			this.peerSocket.setSoTimeout(125*1000);  // set a new timer for received message, 2 minutes 5 seconds
 		} catch (SocketException e) {
 			System.out.println("peer socket exception");
 		}
@@ -86,10 +84,8 @@ public class Peer extends Thread {
 		this.interested = false;
 		
 		send_timer = new Timer();
-		receive_timer = new Timer();
 		
 		send_timer.schedule(new SendTimerTask(this),115*1000 ); //set a new timer for sent messages, set for 1 minute 55 seconds.
-		receive_timer.schedule(new ReceiveTimerTask(this),125*1000);
 	}
 	
 	
@@ -102,12 +98,10 @@ public class Peer extends Thread {
 	 */
 	private static class SendTimerTask extends TimerTask{
 		private Peer peer;
-		private Message message;
 		private byte[] keep_alive;
 		public SendTimerTask(Peer peer)
 		{
 			this.peer = peer;
-			Message message = new Message();
 			keep_alive = new byte[4];
 		}
 		public void run() {
@@ -128,26 +122,6 @@ public class Peer extends Thread {
 		}
 	}
 	
-	/**
-	 * @author Manuel Lopez
-	 * @author Ben Green
-	 * @author Christopher Rios
-	 * Timer task for receiving info through a socket. If the timer runs out, we disconnect the peer
-	 * 
-	 */
-	private static class ReceiveTimerTask extends TimerTask{
-		private Peer peer;
-		public ReceiveTimerTask(Peer peer)
-		{
-			this.peer = peer;
-		}
-		public void run() 
-		{
-			
-			System.err.println("recieve timer is up,disconnecting peer");
-			peer.closeConnections();//disconnects from peer when timer is up.
-		}
-	}
 	
 	/* 
 	 * Overloaded run method for peer. Reads from the input stream until the connection is closed. Once it correctly reads
@@ -168,9 +142,6 @@ public class Peer extends Thread {
 				
 				int length_prefix = peerInputStream.readInt();
 				if(length_prefix==0){ //means this is a keep alive from the peer
-					receive_timer.cancel();  //cancels the current timer for messages
-			        receive_timer = new Timer();
-			        receive_timer.schedule(new ReceiveTimerTask(this), 125*1000);  //resets it for 2 minutes and 5 seconds from last sent, extra 5 to be generous	
 					continue;
 				}
 				if(length_prefix<0)  //bad error, sometimes we would read a large negative number.
@@ -187,9 +158,6 @@ public class Peer extends Thread {
 				}
 				message = new MessageTask(this, response);//makes the response into a  new message task, passes a peer as well
 				client.addMessageTask(message); //puts the message in its clients  task queue and resets timers
-				receive_timer.cancel();
-		        receive_timer = new Timer();
-		        receive_timer.schedule(new ReceiveTimerTask(this), 125*1000);
 			}catch (EOFException e) {
 					continue;
 			}catch (Exception e){
@@ -205,7 +173,7 @@ public class Peer extends Thread {
 		//open sockets and input/output streams
 		try{
 			this.peerSocket = new Socket(ip, port);
-			this.peerSocket.setSoTimeout(130*1000); //set the socket timeout for 2 minutes and 30 seconds
+			this.peerSocket.setSoTimeout(125*1000); //set the socket timeout for 2 minutes and 10 seconds
 			this.peerOutputStream = new DataOutputStream(peerSocket.getOutputStream());  
 			this.peerInputStream = new DataInputStream(peerSocket.getInputStream());
 			connected = true;
@@ -217,7 +185,6 @@ public class Peer extends Thread {
 			return false;
 		}
 		send_timer.schedule(new SendTimerTask(this),115*1000 ); //set a new timer for sent messages, set for 1 minute 55 seconds.
-		receive_timer.schedule(new ReceiveTimerTask(this),125*1000);
 		return true;
 	}
 	
@@ -232,7 +199,6 @@ public class Peer extends Thread {
 			peerSocket.close();
 			connected = false;
 			send_timer.cancel();  
-			receive_timer.cancel();
 		}catch (IOException e){
 			return;
 		}

@@ -1,5 +1,7 @@
 package RUBTClient;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 /**
@@ -114,8 +116,6 @@ public class Message
 	 */
 	public byte[] getKeep_alive() 
 	{
-		System.out.println("trying to get the keep alive huh?");
-		System.out.println(Arrays.toString(keep_alive));
 		return keep_alive;
 	}
 	/**
@@ -190,8 +190,26 @@ public class Message
 		byte[] have = new byte[9]; 
 		System.arraycopy(have_consts, 0, have, 0, 5);
 		System.arraycopy(index,0,have,5,4);
-		System.out.println(Arrays.toString(have));
 		return have;
+	}
+	
+	/**
+	 * Passes a Data Input Stream that the message object interprets and sets its fields to
+	 * @param in peer's data input stream
+	 * @return a new message object
+	 */
+	public static Message read(DataInputStream in)
+	{
+		return null;
+	}
+	
+	/**
+	 * Writes a message through an output Stream
+	 * @param out data output stream to write to
+	 */
+	public void write(DataOutputStream out)
+	{
+		
 	}
 }
 
