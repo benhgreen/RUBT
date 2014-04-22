@@ -122,7 +122,8 @@ public class RUBTClient extends Thread{
 			
 			//add peers to list of connected client peers and resets timer for next announcement 
 			this.client.addPeers(newPeers);  
-			this.client.trackerTimer.schedule(new TrackerAnnounceTask(this.client), this.client.tracker.getInterval() * 1000);
+			//System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    tracker timer     @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
+			//this.client.trackerTimer.schedule(this, this.client.tracker.getInterval() * 1000);
 		}
 	}
 	
@@ -149,7 +150,9 @@ public class RUBTClient extends Thread{
 			}
 			System.out.println("tracker announce interval: " + interval);
 			this.tracker.setInterval(interval);
-			this.trackerTimer.schedule(new TrackerAnnounceTask(this), interval * 1000);
+			//this.trackerTimer.schedule(new TrackerAnnounceTask(this), 5 * 1000);
+			this.trackerTimer.scheduleAtFixedRate(new TrackerAnnounceTask(this), 60 * 1000, 60 * 1000);
+
 		}
 		
 		/**
