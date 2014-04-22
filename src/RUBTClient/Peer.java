@@ -44,7 +44,7 @@ public class Peer extends Thread {
 	 * @param peer_id id of the peer
 	 * @param port port the peer is on
 	 */
-	public Peer(String ip, String peer_id, Integer port) {
+	public Peer(String ip, String peer_id, Integer port) {//TODO take out timers
 		super();
 		this.ip = ip;
 		this.peer_id = peer_id;
@@ -58,7 +58,7 @@ public class Peer extends Thread {
 		this.connected = false;
 		this.interested = false;
 		
-		send_timer = new Timer();
+		//send_timer = new Timer();
 	}
 	
 	/**
@@ -82,10 +82,10 @@ public class Peer extends Thread {
 		this.choking = true;
 		this.connected = false;
 		this.interested = false;
-		
-		send_timer = new Timer();
-		
-		send_timer.schedule(new SendTimerTask(this),115*1000 ); //set a new timer for sent messages, set for 1 minute 55 seconds.
+//		
+//		send_timer = new Timer();
+//		
+//		send_timer.schedule(new SendTimerTask(this),115*1000 ); //set a new timer for sent messages, set for 1 minute 55 seconds.
 	}
 	
 	
@@ -184,7 +184,7 @@ public class Peer extends Thread {
 			System.err.println("IOException");
 			return false;
 		}
-		send_timer.schedule(new SendTimerTask(this),115*1000 ); //set a new timer for sent messages, set for 1 minute 55 seconds.
+//		send_timer.schedule(new SendTimerTask(this),115*1000 ); //set a new timer for sent messages, set for 1 minute 55 seconds.
 		return true;
 	}
 	
@@ -198,7 +198,7 @@ public class Peer extends Thread {
 			peerOutputStream.close();
 			peerSocket.close();
 			connected = false;
-			send_timer.cancel();  
+//			send_timer.cancel();  
 		}catch (IOException e){
 			return;
 		}
@@ -289,9 +289,9 @@ public class Peer extends Thread {
 		}else {
 			peerOutputStream.write(Message);
 		}
-		send_timer.cancel();  //cancels the current timer for sent messages, starts a new one
-        send_timer = new Timer();
-        send_timer.schedule(new SendTimerTask(this), 115*1000);
+//		send_timer.cancel();  //cancels the current timer for sent messages, starts a new one
+//        send_timer = new Timer();
+//        send_timer.schedule(new SendTimerTask(this), 115*1000);
 		
 	}
 	
