@@ -4,6 +4,7 @@ import java.net.*;
 import java.nio.ByteBuffer;
 import java.io.*;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.TimerTask;
 import java.util.Timer;
 
@@ -37,7 +38,7 @@ public class Peer extends Thread {
 	private RUBTClient 			client;
 	private MessageTask 		message;
 	private boolean				first_sent;  //flag check that the first message after the handshake was sent. is used to make sure bitfield isnt sent in the wrong order. 
-	
+	private Date 				last_sent;
 	/**
 	 * Usual constructor of Peer, when we create and connect to a peer first
 	 * @param ip ip of the peer
@@ -57,8 +58,8 @@ public class Peer extends Thread {
 		this.choking = true;
 		this.connected = false;
 		this.interested = false;
-		
-		//send_timer = new Timer();
+		send_timer = new Timer();
+		last_sent = new Date();
 	}
 	
 	/**
@@ -82,10 +83,9 @@ public class Peer extends Thread {
 		this.choking = true;
 		this.connected = false;
 		this.interested = false;
-//		
-//		send_timer = new Timer();
-//		
-//		send_timer.schedule(new SendTimerTask(this),115*1000 ); //set a new timer for sent messages, set for 1 minute 55 seconds.
+		
+		send_timer = new Timer();
+		
 	}
 	
 	
@@ -107,9 +107,9 @@ public class Peer extends Thread {
 		public void run() {
 			// TODO Do something when the timer is up
 			System.out.println("send timer is up");
-			System.out.println(peer.connected);
-			if(peer.connected)
+			if(peer.connected&&(System.currentTimeMillis()-peer.getLastSent()>=(150*1000)))
 			{
+				System.out.println("Sending a keep alive");
 			byte[] keep_alive = {0,0,0,0};
 			try {
 				peer.sendMessage(keep_alive);
@@ -184,7 +184,8 @@ public class Peer extends Thread {
 			System.err.println("IOException");
 			return false;
 		}
-//		send_timer.schedule(new SendTimerTask(this),115*1000 ); //set a new timer for sent messages, set for 1 minute 55 seconds.
+		send_timer.scheduleAtFixedRate(new SendTimerTask(this), 0, 10*1000);
+		last_sent.setTime(System.currentTimeMillis());
 		return true;
 	}
 	
@@ -287,11 +288,11 @@ public class Peer extends Thread {
 		if(this.peerOutputStream == null){
 			System.out.println("stream is null");
 		}else {
+			System.out.println("sending a message");
 			peerOutputStream.write(Message);
 		}
-//		send_timer.cancel();  //cancels the current timer for sent messages, starts a new one
-//        send_timer = new Timer();
-//        send_timer.schedule(new SendTimerTask(this), 115*1000);
+		//TODO update out last sent field
+		last_sent.setTime(System.currentTimeMillis());
 		
 	}
 	
@@ -356,6 +357,10 @@ public class Peer extends Thread {
 		return(this.ip == peer.getIp() && this.peer_id.equals(peer.getPeer_id()));
 	}
 
+	public long getLastSent()
+	{
+		return last_sent.getTime();
+	}
 	/**
 	 * This method sets if we are choking the remote peer or not
 	 * @param b if we are choking the remote peer
