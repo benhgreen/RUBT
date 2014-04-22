@@ -332,10 +332,10 @@ public class RUBTClient extends Thread{
 		byte[] peer_id = new byte[20];
 		System.arraycopy(peer_handshake,48,peer_id,0,20);//copies the peer id.
 		
-		if(!(Arrays.equals(peer.getPeer_id().getBytes(),peer_id))){  //fails if the id in the hash doenst match the expected id.
-				System.err.println("Peer id didnt match");
-				return false;
-		}
+//		if(!(Arrays.equals(peer.getPeer_id().getBytes(),peer_id))){  //fails if the id in the hash doenst match the expected id.
+//				System.err.println("Peer id didnt match");
+//				return false;
+//		}
 		if (Arrays.equals(peer_infohash, this.torrentinfo.info_hash.array())){  //returns true if the peer id matches and the info hash matches
 			return true;
 		}else {
