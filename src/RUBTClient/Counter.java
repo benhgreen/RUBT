@@ -1,45 +1,43 @@
 package RUBTClient;
 
-public class Counter {
+public class Counter implements Comparable<Counter>{
 	
-	int identifier;
-	int count;
+	private int identifier;
+	private int count;
 	
+	/**Create a new Counter representing a piece and how many peers have this piece
+	 * @param identifier
+	 */
 	public Counter(int identifier){
 		this.identifier = identifier;
 		this.count = 0;
 	}
 	
+	/**
+	 * increment this Counter by 1
+	 */
 	public void increment(){
 		this.count++;
 	}
 
-	/**
-	 * @return the identifier
-	 */
-	public int getIdentifier() {
-		return identifier;
-	}
-
-	/**
-	 * @param identifier the identifier to set
-	 */
-	public void setIdentifier(int identifier) {
-		this.identifier = identifier;
-	}
-
-	/**
-	 * @return the count
-	 */
-	public int getCount() {
+	public int getCount(){
 		return count;
 	}
+	
+	public void setIdentifier(int identifier){
+		this.identifier = identifier;
+	}
+	
+	public int getIdentifier(){
+		return this.identifier;
+	}
 
-	/**
-	 * @param count the count to set
+	/* (non-Javadoc)
+	 * @see java.lang.Comparable#compareTo(java.lang.Object)
 	 */
-	public void setCount(int count) {
-		this.count = count;
+	@Override
+	public int compareTo(Counter o) {
+		return (this.count - o.getCount());
 	}
 
 }
