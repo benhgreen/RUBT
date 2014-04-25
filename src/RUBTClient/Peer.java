@@ -188,6 +188,41 @@ public class Peer extends Thread {
 		return true;
 	}
 	
+	/**
+	 * Sends a message to the peer
+	 * Source: Taken From Rob Moore's skeleton code in our Sakai Resources folder
+	 * @param Message message to be sent by the peer
+	 * @throws IOException 
+	 */
+	public synchronized void sendMessage(byte[] Message) throws IOException {
+		if(this.peerOutputStream == null){
+			System.out.println("stream is null");
+		}else {
+			//System.out.println("sending a message");
+			peerOutputStream.write(Message);
+		}
+		//TODO update out last sent field
+		last_sent.setTime(System.currentTimeMillis());
+		
+	}
+	
+	/**
+	 * This method Gets and passes on a remote peers handshake
+	 * @returns the remote peers handshake
+	 */
+	public byte[] handshake(){
+		
+		byte[] phandshake = new byte[68]; //Receives initial handshake
+		try{
+			peerInputStream.readFully(phandshake);
+		}catch (EOFException e){  //Usually happens when the tracker is probing us
+			return null;
+		}catch (IOException e1){
+			System.err.println("Handshake Error");  //there was an error reading the handshake, disconnects from the peer.
+			closeConnections();
+		}
+		return phandshake;
+	}
 	
 	/** closes input/outputstreams and socket connections 
 	 */
@@ -277,23 +312,7 @@ public class Peer extends Thread {
 	public void setRemoteInterested(boolean state){
 		this.remote_interested = state;
 	}
-	/**
-	 * Sends a message to the peer
-	 * Source: Taken From Rob Moore's skeleton code in our Sakai Resources folder
-	 * @param Message message to be sent by the peer
-	 * @throws IOException 
-	 */
-	public synchronized void sendMessage(byte[] Message) throws IOException {
-		if(this.peerOutputStream == null){
-			System.out.println("stream is null");
-		}else {
-			//System.out.println("sending a message");
-			peerOutputStream.write(Message);
-		}
-		//TODO update out last sent field
-		last_sent.setTime(System.currentTimeMillis());
-		
-	}
+	
 	
 	/**
 	 * @return the remote peers bitfield
@@ -302,23 +321,7 @@ public class Peer extends Thread {
 		return this.bitfield;
 	}
 	
-	/**
-	 * This method Gets and passes on a remote peers handshake
-	 * @returns the remote peers handshake
-	 */
-	public byte[] handshake(){
-		
-		byte[] phandshake = new byte[68]; //Receives initial handshake
-		try{
-			peerInputStream.readFully(phandshake);
-		}catch (EOFException e){  //Usually happens when the tracker is probing us
-			return null;
-		}catch (IOException e1){
-			System.err.println("Handshake Error");  //there was an error reading the handshake, disconnects from the peer.
-			closeConnections();
-		}
-		return phandshake;
-	}
+	
 	
 	/**
 	 * This method sets the peer's client, and also initializes its bitfield to the correct length
