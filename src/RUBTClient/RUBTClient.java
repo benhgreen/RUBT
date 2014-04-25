@@ -510,15 +510,9 @@ public class RUBTClient extends Thread{
 	}
 	
 	/**
-<<<<<<< HEAD
 	 * This method sends contacts tracker and sends it events
 	 * @param event type of event to be sent to the tracker
 	 * @return Response to be sent
-=======
-	 * Contacts tracker with specific event
-	 * @param event that we want to announce to peer
-	 * @return list of valid peers from the tracker
->>>>>>> 207944ff26bf242915bfa0fd79b3fc49cacfa26a
 	 */
 	public Response contactTracker(String event){
 		this.tracker.updateProgress(this.torrentinfo.file_length - this.destfile.incomplete, this.uploaded);
@@ -549,7 +543,6 @@ public class RUBTClient extends Thread{
 		}
 		return (new Response(response_string));
 	}
-	
 	
 	/**
 	 * Remove peer takes in a peer and removes/disconnects it from the list of active peers
@@ -678,7 +671,17 @@ public class RUBTClient extends Thread{
 		});
 		
 	}
-	
+
+	/**
+	 *Disconnects all currently connected peers
+	 */
+	public void closeAllConnections(){
+		for(Peer peer: this.peers){
+			peer.setConnected(false);
+			peer.closeConnections();
+		}
+		System.out.println("All connections closed");
+	}
 	
 	
 	public byte[] getbitfield(){
@@ -698,14 +701,5 @@ public class RUBTClient extends Thread{
 		this.keepRunning = false;
 	}
 	
-	/**
-	 *Disconnects all currently connected peers
-	 */
-	public void closeAllConnections(){
-		for(Peer peer: this.peers){
-			peer.setConnected(false);
-			peer.closeConnections();
-		}
-		System.out.println("All connections closed");
-	}
+	
 }
