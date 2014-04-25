@@ -1,6 +1,8 @@
 package RUBTClient;
 
+import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.Iterator;
 
 public class rarityMachine {
 	
@@ -51,7 +53,6 @@ public class rarityMachine {
 				}else{
 					ret[i] = false;
 				}
-				
 			}
 		}
 		return ret;
@@ -65,5 +66,31 @@ public class rarityMachine {
 		}else{
 			return (input/8)+1;
 		}
+	}
+	
+	private int[] enumerate(){
+		
+		int[] count = new int[piececount];
+		
+		Iterator<boolean[]> values = pieceset.values().iterator();
+		
+		while(values.hasNext()){
+			
+			boolean[] temp = values.next();
+			
+			for(int i = 0; i < piececount; i++){
+				if(temp[i]){
+					count[i]++;
+				}
+			}
+		}
+		return count;
+	}
+	
+	public int rarestPiece(){
+		
+		int[] values = enumerate();
+		
+		return 0;
 	}
 }
