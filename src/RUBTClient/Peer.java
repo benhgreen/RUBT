@@ -85,7 +85,6 @@ public class Peer extends Thread {
 		this.interested = false;
 		
 		send_timer = new Timer();
-		
 	}
 	
 	
@@ -106,7 +105,7 @@ public class Peer extends Thread {
 		}
 		public void run() {
 			// TODO Do something when the timer is up
-			System.out.println("send timer is up");
+			//System.out.println("send timer is up");
 			if(peer.connected&&(System.currentTimeMillis()-peer.getLastSent()>=(150*1000)))
 			{
 				System.out.println("Sending a keep alive");
@@ -288,7 +287,7 @@ public class Peer extends Thread {
 		if(this.peerOutputStream == null){
 			System.out.println("stream is null");
 		}else {
-			System.out.println("sending a message");
+			//System.out.println("sending a message");
 			peerOutputStream.write(Message);
 		}
 		//TODO update out last sent field

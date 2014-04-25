@@ -122,12 +122,19 @@ public class RUBTClient extends Thread{
 			
 			//add peers to list of connected client peers and resets timer for next announcement 
 			this.client.addPeers(newPeers);  
-			//System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    tracker timer     @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
-			//this.client.trackerTimer.schedule(this, this.client.tracker.getInterval() * 1000);
+			System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    tracker timer     @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
+			System.out.println("new interval: " + this.client.tracker.getInterval());
+			int interval = this.client.tracker.getInterval();
+			if(interval > 180  || interval < 60){
+				interval = 180;
+			}
+			this.client.trackerTimer.schedule(new TrackerAnnounceTask(this.client), interval * 1000);
 		}
 	}
 	
 	public void run(){
+		
+		System.out.println("incomplete: " + this.destfile.incomplete);
 		
 		//starts up listener for user quit input
 		//handles unexpected System.exit(0) by ending threads/sending stopped event to tracker
@@ -150,9 +157,7 @@ public class RUBTClient extends Thread{
 			}
 			System.out.println("tracker announce interval: " + interval);
 			this.tracker.setInterval(interval);
-			//this.trackerTimer.schedule(new TrackerAnnounceTask(this), 5 * 1000);
-			this.trackerTimer.scheduleAtFixedRate(new TrackerAnnounceTask(this), 60 * 1000, 60 * 1000);
-
+			this.trackerTimer.schedule(new TrackerAnnounceTask(this), 5 * 1000);
 		}
 		
 		/**
@@ -282,8 +287,6 @@ public class RUBTClient extends Thread{
 			Message current_message = new Message();
 			try {
 				peer.sendMessage(current_message.handShake(torrentinfo.info_hash.array(), tracker.getUser_id()));
-				
-
 				handshake = peer.handshake();
 				if(!handshakeCheck(handshake,peer)){
 					peer.closeConnections();
@@ -435,35 +438,28 @@ public class RUBTClient extends Thread{
 		int offset = ByteBuffer.wrap(offset_bytes).getInt();  //wraps the offset bytes in a buffer and converts them into an int
 		int piece = ByteBuffer.wrap(piece_bytes).getInt();
 		addChunk(piece,offset,block);  //places the chunk of data into a piece
-		if((piece==torrentinfo.file_length/torrentinfo.piece_length)&&(offset+2*max_request>torrentinfo.file_length%torrentinfo.piece_length))//checks if we are at the last chunk of the last piece
-		{
+		if ((piece == torrentinfo.file_length / torrentinfo.piece_length) && (offset + 2 * max_request > torrentinfo.file_length % torrentinfo.piece_length)){//checks if we are at the last chunk of the last piece
 			small_request = (torrentinfo.file_length%torrentinfo.piece_length)%max_request;
-			if(small_request+offset ==torrentinfo.file_length%torrentinfo.piece_length)//just got back the last chunk of the last piece
-			{
-				
-				if(destfile.addPiece(piece)) //if our piece verifies, we send have messages to everyone
-				{
+			
+			if (small_request + offset == torrentinfo.file_length % torrentinfo.piece_length){//just got back the last chunk of the last piece
+				if(destfile.addPiece(piece)){ //if our piece verifies, we send have messages to everyone
 					System.out.println("Sending to all peers");
 					this.uploaded += destfile.pieces[piece].data.length;
 					//TODO send a have message to everybody?
 					for(Peer all_peer: this.peers){
 						try {
-							System.out.println("Sending a have");
+							//System.out.println("Sending a have");
 							all_peer.sendMessage(message.getHaveMessage(piece_bytes));
 						} catch (IOException e) {
-							System.out.println("Oh boy");
-							// TODO Auto-generated catch block
+							//System.out.println("Oh boy");
 							e.printStackTrace();
 						}
 					}
 					chooseAndRequestPiece(peer);
 				}
-				else
-				{
+				else{
 					removePeer(peer);
 				}
-				
-				
 			}
 			else {
 				small_request = (torrentinfo.file_length%torrentinfo.piece_length) % max_request;
@@ -482,12 +478,11 @@ public class RUBTClient extends Thread{
 			
 		}
 		else if (offset + max_request == torrentinfo.piece_length){ 	//checks if we got the last chunk of a piece{
-			if(destfile.addPiece(piece))
-			{
+			if (destfile.addPiece(piece)){
 				this.uploaded += destfile.pieces[piece].data.length;
-				for(Peer all_peer: this.peers){
+				for (Peer all_peer: this.peers){
 					try {
-						System.out.println("Sending a have");
+						//System.out.println("Sending a have");
 						all_peer.sendMessage(message.getHaveMessage(piece_bytes));
 					} catch (IOException e) {
 						System.err.println("Peer disconnected");
@@ -495,8 +490,7 @@ public class RUBTClient extends Thread{
 				}
 				
 			}
-			else
-			{
+			else {
 				removePeer(peer);
 			}
 			chooseAndRequestPiece(peer); 		//figures out the next piece to request
@@ -536,10 +530,10 @@ public class RUBTClient extends Thread{
 			System.out.println("exception thrown requesting peer list from tracker");
 			e.printStackTrace();
 
-			if(event == null || event.equals("stopped")  || event.equals("completed") ){
-				System.out.println("already downloading. carry on");
-			}else if(event.equals("started")){
-				System.out.println("Havent start yet so just quit");
+			if (event == null || event.equals("stopped")  || event.equals("completed") ){
+				System.out.println("already downloading. Dont stop program");
+			}else if (event.equals("started")){
+				System.out.println("Havent started downloading yet so just quit");
 				System.exit(0);
 			}
 		}
@@ -547,6 +541,11 @@ public class RUBTClient extends Thread{
 		if (response_string == null){
 			System.out.println("null response");
 			System.exit(0);
+		}
+		
+		if(event != null && event.equals("completed")){
+			System.out.println("\n  \n  ***************completed*************  \n \n ");
+			System.out.println("incomplete: " + this.destfile.incomplete);
 		}
 		return (new Response(response_string));
 	}
@@ -558,7 +557,7 @@ public class RUBTClient extends Thread{
 	 */
 	private void removePeer(Peer peer){
 		if (peers.contains(peer)){
-			System.out.println("closing connections");
+			System.out.println("closing connections for peer " + peer.getId());
 			peer.closeConnections();
 			peers.remove(peer);
 		}
