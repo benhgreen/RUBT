@@ -68,9 +68,9 @@ public class rarityMachine {
 		}
 	}
 	
-	private int[] enumerate(){
+	private Counter[] enumerate(){
 		
-		int[] count = new int[piececount];
+		Counter[] count = new Counter[piececount];
 		
 		Iterator<boolean[]> values = pieceset.values().iterator();
 		
@@ -80,7 +80,7 @@ public class rarityMachine {
 			
 			for(int i = 0; i < piececount; i++){
 				if(temp[i]){
-					count[i]++;
+					Counter[i]
 				}
 			}
 		}
