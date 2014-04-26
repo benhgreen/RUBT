@@ -14,7 +14,7 @@ public class rarityMachine {
 	private int[] mybitfield;
 	
 	/**
-	 * @param mybitfield to update this bitfield with. Uses the same format as mybitfield in Destfile
+	 * @param mybitfield to update this bitfield with. Uses the same format as mypieces in Destfile
 	 */
 	public void setMybitfield(int[] mybitfield){
 		this.mybitfield = mybitfield;

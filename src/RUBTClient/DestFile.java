@@ -22,6 +22,7 @@ public class DestFile {
 	int incomplete;
 	private String filename;
 	private byte[] mybitfield;
+	public rarityMachine myRarityMachine;
 	
 	//int array for pieces - 0 = not downloaded, 1 = in progress, 2 = downloaded and verified
 	private int[] mypieces;
@@ -39,6 +40,8 @@ public class DestFile {
 		this.totalsize = torrentinfo.file_length;
 		this.incomplete = torrentinfo.file_length;
 		this.filename = filename;
+		
+		this.myRarityMachine = new rarityMachine(torrentinfo.piece_hashes.length);
 		
 		//calculate sizes of arrays representing pieces, bitfields, etc
 		mypieces = new int[torrentinfo.piece_hashes.length];
@@ -222,6 +225,8 @@ public class DestFile {
 			}
 			
 		}
+		
+		myRarityMachine.setMybitfield(this.mypieces);
 		
 		printBitfield();
 	}
