@@ -30,6 +30,7 @@ public class RUBTClient extends Thread{
 	
 	private int port = 6881;					//Port that the client will be listening for connections
 	public int uploaded;						//number of bytes written to other 
+	private int downloaded = 0;					//current sessions downloaded amount
 	private final TorrentInfo torrentinfo;		//torrent object extracted by destfile
 	private boolean keepRunning = true;			//event loop flag for main client thread
 	private Tracker tracker;					//tracker object that manages communication with tracker
@@ -100,7 +101,9 @@ public class RUBTClient extends Thread{
 		RUBTClient client = new RUBTClient(destfile); 
 		//set client field of destfile to current client for later tracker util
 		destfile.setClient(client);		
-		
+		System.out.println(torrentinfo.file_length);
+		System.out.println(torrentinfo.piece_length);
+		System.out.println(torrentinfo.file_length/torrentinfo.piece_length);
 		//spawns main client thread
 		client.start();			
 	}
@@ -146,13 +149,26 @@ public class RUBTClient extends Thread{
 			{
 				if(peer.isChoking()==false)
 				{
+					//TODO check if we are a seed
+					//TODO check each peers download rate
 					System.out.println("Peer:"+ peer.getPeer_id()+ " is unchoked");
+					
+					for(Peer choked_peer: client.peers)
+					{
+						if(peer.isChoking())
+						{
+							//TODO unchoke that guy
+							break;
+						}
+					}
+					//TODO send choke message to slowest peer
 				}
 				else
 				{
 					System.out.println("Peer:"+ peer.getPeer_id()+ " is choked");
 				}
 			}
+			System.out.println("downloaded"+client.downloaded);
 			System.out.println("@@@@@@done@@@@@@");
 		}
 	}
@@ -334,7 +350,7 @@ public class RUBTClient extends Thread{
 			peers.add(peer);
 			peer.start();
 		}
-		optimisticTimer.scheduleAtFixedRate(new OptimisticChokeTask(this), 1000, 10*1000);
+		optimisticTimer.scheduleAtFixedRate(new OptimisticChokeTask(this), 1000, 30*1000);
 	}
 	
 	
@@ -470,9 +486,10 @@ public class RUBTClient extends Thread{
 			
 			if (small_request + offset == torrentinfo.file_length % torrentinfo.piece_length){//just got back the last chunk of the last piece
 				if(destfile.addPiece(piece)){ //if our piece verifies, we send have messages to everyone
-					System.out.println("Sending to all peers");
-					this.uploaded += destfile.pieces[piece].data.length;
-					//TODO send a have message to everybody?
+					this.downloaded += destfile.pieces[piece].data.length;
+					System.out.println("Giving the last piece");
+					
+					System.out.println("Downloaded"+downloaded);
 					for(Peer all_peer: this.peers){
 						try {
 							//System.out.println("Sending a have");
@@ -506,10 +523,9 @@ public class RUBTClient extends Thread{
 		}
 		else if (offset + max_request == torrentinfo.piece_length){ 	//checks if we got the last chunk of a piece{
 			if (destfile.addPiece(piece)){
-				this.uploaded += destfile.pieces[piece].data.length;
+				this.downloaded += destfile.pieces[piece].data.length;
 				for (Peer all_peer: this.peers){
 					try {
-						//System.out.println("Sending a have");
 						all_peer.sendMessage(message.getHaveMessage(piece_bytes));
 					} catch (IOException e) {
 						System.err.println("Peer disconnected");
