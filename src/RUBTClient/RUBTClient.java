@@ -15,6 +15,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.io.*;
 
+
+
 import edu.rutgers.cs.cs352.bt.TorrentInfo;
 import edu.rutgers.cs.cs352.bt.exceptions.BencodingException;
 
@@ -33,13 +35,13 @@ public class RUBTClient extends Thread{
 	private Tracker tracker;					//tracker object that manages communication with tracker
 	private DestFile destfile;					//object in change of managing client bitfield and file I/O
 	private final int max_request = 16384;		//maximum number of bytes allowed to be requested of a peer
-	
+	private volatile int   peers_unchoked = 0;
 	private final LinkedBlockingQueue<MessageTask> tasks = new LinkedBlockingQueue<MessageTask>();   //MessageTask queue that client reads form in event loop
 	private final List<Peer> peers = Collections.synchronizedList(new LinkedList<Peer>());			 //List of peers currently connected to client
 	
 	public ExecutorService workers = Executors.newCachedThreadPool();	//thread pool of worker threads that spawn to manage MessageTasks
 	private final Timer trackerTimer = new Timer();						//timertask object that handles timed tracker announcements
-	
+	private final Timer optimisticTimer = new Timer();
 	/**
 	 * RUBTClient constructor
 	 * @param destfile object manages file I/O and bitfield manipulation 
@@ -131,7 +133,29 @@ public class RUBTClient extends Thread{
 			this.client.trackerTimer.schedule(new TrackerAnnounceTask(this.client), interval * 1000);
 		}
 	}
-	
+	private static class OptimisticChokeTask extends TimerTask
+	{
+		private final RUBTClient client;
+		public OptimisticChokeTask(final RUBTClient client)
+		{
+			this.client = client;
+		}
+		public void run()
+		{
+			for(Peer peer: client.peers)
+			{
+				if(peer.isChoking()==false)
+				{
+					System.out.println("Peer:"+ peer.getPeer_id()+ " is unchoked");
+				}
+				else
+				{
+					System.out.println("Peer:"+ peer.getPeer_id()+ " is choked");
+				}
+			}
+			System.out.println("@@@@@@done@@@@@@");
+		}
+	}
 	public void run(){
 		
 		System.out.println("incomplete: " + this.destfile.incomplete);
@@ -195,8 +219,12 @@ public class RUBTClient extends Thread{
 								System.out.println("Peer " + peer.getPeer_id() + " sent interested");
 								peer.setRemoteInterested(true);
 							try {
-								peer.sendMessage(message.getUnchoke());   //TODO update the unchoke for a peer?
+								if(peers_unchoked<3) //if we have less then 3 peers unchoked, we unchoke another peer
+								{
+								peer.sendMessage(message.getUnchoke());   
 								peer.setChoking(false);
+								incrementUnchoked();   //  increment the amount of peers we have unchoked
+								}
 							} catch (IOException e1) {
 								e1.printStackTrace();
 							}
@@ -220,8 +248,6 @@ public class RUBTClient extends Thread{
 								}
 								break;
 							case Message.BITFIELD:  //Peer sent bitfield. Update peers bitfield and disconnect if not sent at right time
-								System.out.println("Peer " + peer.getPeer_id() + " sent bitfield");
-								System.out.println( peer.getPeer_id() + " bitfield: "+ Arrays.toString(peer.getBitfield()));
 								if(!peer.getFirstSent()){
 									peer.setFirstSent(true);
 								}else{
@@ -304,10 +330,11 @@ public class RUBTClient extends Thread{
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-
+			
 			peers.add(peer);
 			peer.start();
 		}
+		optimisticTimer.scheduleAtFixedRate(new OptimisticChokeTask(this), 1000, 10*1000);
 	}
 	
 	
@@ -699,6 +726,11 @@ public class RUBTClient extends Thread{
 	 */
 	private synchronized void quitClient(){
 		this.keepRunning = false;
+	}
+	
+	private synchronized void incrementUnchoked()
+	{
+		peers_unchoked++;
 	}
 	
 	
