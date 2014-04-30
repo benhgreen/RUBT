@@ -339,7 +339,7 @@ public class DestFile {
 	 * 
 	 * @param int pos - which piece to mark 'in progress'
 	 */
-	public void markInProgress(int pos){
+	public synchronized void markInProgress(int pos){
 		mypieces[pos] = 1;
 	}
 		

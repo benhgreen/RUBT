@@ -259,6 +259,7 @@ public class RUBTClient extends Thread{
 											peer.sendMessage(message.getInterested());
 										}catch(IOException e){
 											System.out.println("peer send error");
+											e.printStackTrace();
 										}
 									}
 								}
@@ -349,6 +350,7 @@ public class RUBTClient extends Thread{
 			
 			peers.add(peer);
 			peer.start();
+			//return;
 		}
 		optimisticTimer.scheduleAtFixedRate(new OptimisticChokeTask(this), 1000, 30*1000);
 	}
@@ -436,7 +438,7 @@ public class RUBTClient extends Thread{
 				peer.setInterested(false);
 				return;
 			}
-			
+			destfile.markInProgress(current_piece);
 	 	   	offset_counter = destfile.pieces[current_piece].getOffset();
 			if(offset_counter != -1){
 				offset_counter += max_request;
@@ -447,6 +449,7 @@ public class RUBTClient extends Thread{
 	   		try {
 	   			System.out.println("requesting piece "+current_piece);
 				peer.sendMessage(request_message);
+				
 			}catch (IOException e) {
 				System.err.println("Error sending message to peer");
 				return;
@@ -529,6 +532,7 @@ public class RUBTClient extends Thread{
 						all_peer.sendMessage(message.getHaveMessage(piece_bytes));
 					} catch (IOException e) {
 						System.err.println("Peer disconnected");
+						e.printStackTrace();
 					}
 				}
 				

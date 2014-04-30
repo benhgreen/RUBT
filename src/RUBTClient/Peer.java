@@ -170,7 +170,9 @@ public class Peer extends Thread {
 		//open sockets and input/output streams
 		try{
 			this.peerSocket = new Socket(ip, port);
-			this.peerSocket.setSoTimeout(125*1000); //set the socket timeout for 2 minutes and 10 seconds
+			//this.peerSocket.setSoTimeout(125*1000); //set the socket timeout for 2 minutes and 10 seconds
+			this.peerSocket.setSoTimeout(10*1000); //set the socket timeout for 2 minutes and 10 seconds
+
 			this.peerOutputStream = new DataOutputStream(peerSocket.getOutputStream());  
 			this.peerInputStream = new DataInputStream(peerSocket.getInputStream());
 			connected = true;
