@@ -40,6 +40,7 @@ public class Peer extends Thread {
 	private boolean				first_sent;  //flag check that the first message after the handshake was sent. is used to make sure bitfield isnt sent in the wrong order. 
 	private Date 				last_sent;
 	
+	private float 				recieved_bytes;
 	private volatile float		recieved_bps;
 	private Timer				performanceTimer;
 	
@@ -124,7 +125,6 @@ public class Peer extends Thread {
 					System.err.println("Socket already closed");
 				}
 			}
-			
 		}
 	}
 	
@@ -156,18 +156,19 @@ public class Peer extends Thread {
 				}
 				response = new byte[length_prefix];
 				peerInputStream.read(response,0,length_prefix);
-				if(response[0] == Message.BITFIELD&&first_sent==false) //if the id is a bitfield, set this peers bitfield to this byte array, as long as it is sent at the right time.
-				{      
+				
+				if(response[0] == Message.BITFIELD&&first_sent==false){ //if the id is a bitfield, set this peers bitfield to this byte array, as long as it is sent at the right time.
 					System.out.println("setting the bitfield");
 					bitfield = new byte[length_prefix-1];
 					System.arraycopy(response,1,this.bitfield,0,bitfield.length);
 				}
 				message = new MessageTask(this, response);//makes the response into a  new message task, passes a peer as well
 				client.addMessageTask(message); //puts the message in its clients  task queue and resets timers
-			}catch (EOFException e) {
+			}catch (EOFException e) { 
 					continue;
 			}catch (Exception e){
-				System.err.println("Other Exception");
+				System.err.println("Peer.java run() : General Exception");
+				e.printStackTrace();
 			}
 		}
 	}
@@ -179,15 +180,17 @@ public class Peer extends Thread {
 		//open sockets and input/output streams
 		try{
 			this.peerSocket = new Socket(ip, port);
-			this.peerSocket.setSoTimeout(125*1000); //set the socket timeout for 2 minutes and 10 seconds
+			//this.peerSocket.setSoTimeout(125*1000); //set the socket timeout for 2 minutes and 10 seconds			
+			this.peerSocket.setSoTimeout(5*1000); //set the socket timeout for 2 minutes and 10 seconds
+
 			this.peerOutputStream = new DataOutputStream(peerSocket.getOutputStream());  
 			this.peerInputStream = new DataInputStream(peerSocket.getInputStream());
 			connected = true;
 		}catch (UnknownHostException e){
-			System.err.println("UnknownHostException");
+			System.err.println("Peer.java connectToPeer(): UnknownHostException");
 			return false;
 		}catch (IOException e){
-			System.err.println("IOException");
+			System.err.println("Peer.java connectToPeer(): IOException");
 			return false;
 		}
 		send_timer.scheduleAtFixedRate(new SendTimerTask(this), 0, 10*1000);
@@ -223,10 +226,12 @@ public class Peer extends Thread {
 		try{
 			peerInputStream.readFully(phandshake);
 		}catch (EOFException e){  //Usually happens when the tracker is probing us
+			closeConnections();
 			return null;
 		}catch (IOException e1){
-			System.err.println("Handshake Error");  //there was an error reading the handshake, disconnects from the peer.
+			System.err.println("Peer.java: Handshake Error. Disconnecting peer");  //there was an error reading the handshake, disconnects from the peer.
 			closeConnections();
+			return null;
 		}
 		return phandshake;
 	}
@@ -240,8 +245,10 @@ public class Peer extends Thread {
 			peerOutputStream.close();
 			peerSocket.close();
 			connected = false;
-//			send_timer.cancel();  
+			//send_timer.cancel();  
 		}catch (IOException e){
+			System.out.println("Peer.java: failed to close connections");
+			e.printStackTrace();
 			return;
 		}
 	}

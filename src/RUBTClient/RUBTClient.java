@@ -294,6 +294,7 @@ public class RUBTClient extends Thread{
 									peer.setConnected(false);
 									removePeer(peer);
 								}else {
+									//set recieved bytes
 									getNextBlock(msg,peer);
 								}
 								break;
@@ -331,7 +332,9 @@ public class RUBTClient extends Thread{
 			try {
 				peer.sendMessage(current_message.handShake(torrentinfo.info_hash.array(), tracker.getUser_id()));
 				handshake = peer.handshake();
-				if(!handshakeCheck(handshake,peer)){
+				if(handshake == null){
+					continue;
+				}else if(!handshakeCheck(handshake,peer)){
 					peer.closeConnections();
 					continue;
 				}
@@ -345,13 +348,15 @@ public class RUBTClient extends Thread{
 			try {
 				peer.sendMessage(bitfield);
 			} catch (IOException e) {
+				System.err.println("RUBTClient.java addPeers: failed to send message ");
 				e.printStackTrace();
 			}
 			
 			peers.add(peer);
-			peer.start();
+			peer.start();   
+			//return;
 		}
-		optimisticTimer.scheduleAtFixedRate(new OptimisticChokeTask(this), 1000, 30*1000);
+		//optimisticTimer.scheduleAtFixedRate(new OptimisticChokeTask(this), 1000, 30*1000);
 	}
 	
 	
