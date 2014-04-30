@@ -18,7 +18,9 @@ import java.util.Timer;
 /** Peer object handles all communication between client and peer
  */
 public class Peer extends Thread {
-
+	
+	
+	
 	private int 				port;				//port number to access the peer
 	private String  			ip;          		//ip address of peer
 	private String 				peer_id;			//identifying name of peer
@@ -37,6 +39,10 @@ public class Peer extends Thread {
 	private MessageTask 		message;
 	private boolean				first_sent;  //flag check that the first message after the handshake was sent. is used to make sure bitfield isnt sent in the wrong order. 
 	private Date 				last_sent;
+	
+	private volatile float		recieved_bps;
+	private Timer				performanceTimer;
+	
 	/**
 	 * Usual constructor of Peer, when we create and connect to a peer first
 	 * @param ip ip of the peer
@@ -58,6 +64,7 @@ public class Peer extends Thread {
 		this.interested = false;
 		send_timer = new Timer();
 		last_sent = new Date();
+		recieved_bps = 0;
 	}
 	
 	/**
@@ -66,6 +73,8 @@ public class Peer extends Thread {
 	 * @param peerInputStream Input stream for the socket
 	 * @param peerOutputStream Output stream for the socket
 	 */
+	
+	/*
 	public Peer(Socket peerSocket, DataInputStream peerInputStream, DataOutputStream peerOutputStream) {
 		this.peerSocket = peerSocket;
 		try {
@@ -84,7 +93,7 @@ public class Peer extends Thread {
 		
 		send_timer = new Timer();
 	}
-	
+	*/
 	
 	/**
 	 * @author Manuel Lopez
@@ -107,13 +116,13 @@ public class Peer extends Thread {
 			if(peer.connected&&(System.currentTimeMillis()-peer.getLastSent()>=(150*1000)))
 			{
 				System.out.println("Sending a keep alive");
-			byte[] keep_alive = {0,0,0,0};
-			try {
-				peer.sendMessage(keep_alive);
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				System.err.println("Socket already closed");
-			}
+				byte[] keep_alive = {0,0,0,0};
+				try {
+					peer.sendMessage(keep_alive);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					System.err.println("Socket already closed");
+				}
 			}
 			
 		}

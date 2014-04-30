@@ -42,6 +42,7 @@ public class RUBTClient extends Thread{
 	public ExecutorService workers = Executors.newCachedThreadPool();	//thread pool of worker threads that spawn to manage MessageTasks
 	private final Timer trackerTimer = new Timer();						//timertask object that handles timed tracker announcements
 	private final Timer optimisticTimer = new Timer();
+	
 	/**
 	 * RUBTClient constructor
 	 * @param destfile object manages file I/O and bitfield manipulation 
@@ -635,6 +636,7 @@ public class RUBTClient extends Thread{
 	 * Listens on a specific port for incoming connections and adds them to the list
 	 * of currently connected peers
 	 */
+	/*
 	private void startIncomingConnections(){
 		final RUBTClient client = this;
 		this.workers.execute(new Runnable(){
@@ -698,7 +700,7 @@ public class RUBTClient extends Thread{
 		});
 		
 	}
-
+	*/
 	/**
 	 *Disconnects all currently connected peers
 	 */
