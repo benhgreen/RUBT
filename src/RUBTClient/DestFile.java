@@ -103,7 +103,7 @@ public class DestFile {
 				//update incomplete field
 				this.incomplete -= (this.pieces[id].getData().length);
 				if(this.incomplete <= 0){
-					this.client.contactTracker("completed");
+					//this.client.contactTracker("completed");
 					this.incomplete = 0;
 				}
 				return true;
