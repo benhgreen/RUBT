@@ -155,7 +155,10 @@ public class Peer extends Thread {
 					continue;     
 				}
 				response = new byte[length_prefix];
-				peerInputStream.read(response,0,length_prefix);
+				//peerInputStream.read(response,0,length_prefix);
+				//peerInputStream.readFully(response, 0, length_prefix);
+				peerInputStream.readFully(response);
+
 				
 				if(response[0] == Message.BITFIELD&&first_sent==false){ //if the id is a bitfield, set this peers bitfield to this byte array, as long as it is sent at the right time.
 					System.out.println("setting the bitfield");

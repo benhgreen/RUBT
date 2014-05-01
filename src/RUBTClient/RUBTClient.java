@@ -198,7 +198,7 @@ public class RUBTClient extends Thread{
 			}
 			System.out.println("tracker announce interval: " + interval);
 			this.tracker.setInterval(interval);
-			this.trackerTimer.schedule(new TrackerAnnounceTask(this), 5 * 1000);
+			this.trackerTimer.schedule(new TrackerAnnounceTask(this), interval * 1000);
 		}
 		
 		/**
@@ -443,7 +443,7 @@ public class RUBTClient extends Thread{
 				peer.setInterested(false);
 				return;
 			}
-			destfile.markInProgress(current_piece);
+			//destfile.markInProgress(current_piece);
 	 	   	offset_counter = destfile.pieces[current_piece].getOffset();
 			if(offset_counter != -1){
 				offset_counter += max_request;
@@ -540,7 +540,6 @@ public class RUBTClient extends Thread{
 						e.printStackTrace();
 					}
 				}
-				
 			}
 			else {
 				removePeer(peer);
