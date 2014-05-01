@@ -2,6 +2,7 @@ package RUBTClient;
 
 import java.net.*;
 import java.io.*;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.TimerTask;
 import java.util.Timer;
@@ -24,7 +25,7 @@ public class Peer extends Thread {
 	private int 				port;				//port number to access the peer
 	private String  			ip;          		//ip address of peer
 	private String 				peer_id;			//identifying name of peer
-	private Socket 				peerSocket;			//socket connection to peer
+	Socket 						peerSocket;			//socket connection to peer
 	private DataOutputStream	peerOutputStream;	//OuputStream to peer for sending messages
 	private DataInputStream 	peerInputStream;	//InputStream to peer for reading responses
 	private boolean 			choked; 			//checks if we are being choked
@@ -135,6 +136,50 @@ public class Peer extends Thread {
 	 */
 	public void run(){
 		
+		
+		byte[] client_bitfield;
+		byte[] handshake;
+		
+		System.out.println("checking peer: " + this.getPeer_id());
+		if (this.client.alreadyConnected(this.peer_id)){
+			System.out.println("error at already connected");
+			//this.client.removePeer(this);
+			return;
+		}
+		if(!this.connectToPeer()){
+			System.out.println("error at connectToPeer");
+			//this.client.removePeer(this);
+			return;
+		}
+		Message current_message = new Message();
+		try {
+			this.sendMessage(current_message.handShake(this.client.torrentinfo.info_hash.array(), this.client.tracker.getUser_id()));
+			handshake = this.handshake();
+			if(handshake == null){
+				//this.client.removePeer(this);
+				return;
+			}else if(!handshakeCheck(handshake)){
+				this.closeConnections();
+				//this.client.removePeer(this);
+				return;
+			}
+		}catch (IOException e) {
+			System.err.println("random  IO ex");
+			//this.client.removePeer(this);
+			return;
+
+		}
+		client_bitfield = current_message.getBitFieldMessage(this.client.destfile.getMybitfield());
+
+		try {
+			this.sendMessage(client_bitfield);
+		} catch (IOException e) {
+			System.err.println("RUBTClient.java addPeers: failed to send message ");
+			e.printStackTrace();
+		}
+		
+		this.client.addPeerToList(this);
+		
 		while(connected){   //runs until we are no longer connected to the Peer
 			try {
 				Thread.sleep(1*200);
@@ -184,7 +229,7 @@ public class Peer extends Thread {
 		try{
 			this.peerSocket = new Socket(ip, port);
 			//this.peerSocket.setSoTimeout(125*1000); //set the socket timeout for 2 minutes and 10 seconds			
-			this.peerSocket.setSoTimeout(5*1000); //set the socket timeout for 2 minutes and 10 seconds
+			this.peerSocket.setSoTimeout(50*1000); //set the socket timeout for 2 minutes and 10 seconds
 			this.peerOutputStream = new DataOutputStream(peerSocket.getOutputStream());  
 			this.peerInputStream = new DataInputStream(peerSocket.getInputStream());
 			connected = true;
@@ -238,14 +283,42 @@ public class Peer extends Thread {
 		return phandshake;
 	}
 	
+	/**
+	 * handshake compares the remote peers handshake to our infohash  and peer_id that we expect
+	 * @param peer_handshake byte array of the peers handshake response
+	 * @param Peer whose id will be tested with the contents of the handshake
+	 */
+	private boolean handshakeCheck(byte[] peer_handshake){	
+		
+		byte[] peer_infohash = new byte [20];
+		System.arraycopy(peer_handshake, 28, peer_infohash, 0, 20); //copies the peer's infohash
+		byte[] peer_id = new byte[20];
+		System.arraycopy(peer_handshake,48,peer_id,0,20);//copies the peer id.
+		
+//		if(!(Arrays.equals(peer.getPeer_id().getBytes(),peer_id))){  //fails if the id in the hash doenst match the expected id.
+//				System.err.println("Peer id didnt match");
+//				return false;
+//		}
+		if (Arrays.equals(peer_infohash, this.client.torrentinfo.info_hash.array())){  //returns true if the peer id matches and the info hash matches
+			return true;
+		}else {
+			return false;
+		}
+	}
+	
+	
 	/** closes input/outputstreams and socket connections 
 	 */
 	public void closeConnections(){
 		//close all streams
 		try{
-			peerInputStream.close();
-			peerOutputStream.close();
-			peerSocket.close();
+			if(peerInputStream != null)
+				peerInputStream.close();
+			if(peerOutputStream != null)
+				peerOutputStream.close();
+			if(peerSocket != null)
+				peerSocket.close();
+			
 			connected = false;
 			//send_timer.cancel();  
 		}catch (IOException e){
@@ -375,8 +448,7 @@ public class Peer extends Thread {
 		return(this.ip == peer.getIp() && this.peer_id.equals(peer.getPeer_id()));
 	}
 
-	public long getLastSent()
-	{
+	public long getLastSent(){
 		return last_sent.getTime();
 	}
 	/**
