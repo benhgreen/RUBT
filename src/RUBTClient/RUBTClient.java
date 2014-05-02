@@ -126,6 +126,11 @@ public class RUBTClient extends Thread{
 			
 			//add peers to list of connected client peers and resets timer for next announcement 
 			this.client.addPeers(newPeers);  
+			
+			for(Peer peer: newPeers){
+				//System.out.println("adding peers: " + peer.getPeer_id());
+			}
+			
 			System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    tracker timer     @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
 			System.out.println("new interval: " + this.client.tracker.getInterval());
 			int interval = this.client.tracker.getInterval();
@@ -233,15 +238,16 @@ public class RUBTClient extends Thread{
 							case Message.INTERESTED: //Peer is interested in our data. Unchoke them
 								System.out.println("Peer " + peer.getPeer_id() + " sent interested");
 								peer.setRemoteInterested(true);
-							try {
-								if (peers_unchoked < 3){ //if we have less then 3 peers unchoked, we unchoke another peer
-									peer.sendMessage(message.getUnchoke());   
-									peer.setChoking(false);
-									incrementUnchoked();   //  increment the amount of peers we have unchoked
+								try {
+									//if (peers_unchoked < 3){ //if we have less then 3 peers unchoked, we unchoke another peer
+										peer.sendMessage(message.getUnchoke());   
+										peer.setChoking(false);
+										//incrementUnchoked();   //  increment the amount of peers we have unchoked
+									//}
 								}
-							}catch (IOException e1) {
+								catch (IOException e1) {
 								e1.printStackTrace();
-							}
+								}
 								break;
 							case Message.HAVE:  //Peer has new piece. Update their bitfield and check conditions for requesting their piece
 								if (peer.isChoked()){
@@ -293,7 +299,7 @@ public class RUBTClient extends Thread{
 									removePeer(peer);
 								}else {
 									//increment recieved bytes
-									//peer.recieved_bytes += msg.length;
+									peer.recieved_bytes += msg.length;
 									getNextBlock(msg,peer);
 								}
 								break;
@@ -321,13 +327,20 @@ public class RUBTClient extends Thread{
 		
 		int i = 1;
 		for (Peer peer: newPeers){
-
+			/*
+			if(i <= 2){
+				i++;
+				continue;
+			}
+			*/
 			peer.setClient(this);
 			peer.start();
-			if(i == 3) return;
-			i++;
+			/*
+			if(i == 4) return;
+				i++;
+			*/
 		}
-		//optimisticTimer.scheduleAtFixedRate(new OptimisticChokeTask(this), 1000, 30*1000);
+		optimisticTimer.scheduleAtFixedRate(new OptimisticChokeTask(this), 1000, 30*1000);
 	}
 	
 	/**
@@ -438,7 +451,7 @@ public class RUBTClient extends Thread{
 		int offset = ByteBuffer.wrap(offset_bytes).getInt();  //wraps the offset bytes in a buffer and converts them into an int
 		int piece = ByteBuffer.wrap(piece_bytes).getInt();
 		
-		peer.recieved_bytes += block.length;
+		//peer.recieved_bytes += block.length;
 
 		
 		addChunk(piece,offset,block);  //places the chunk of data into a piece
@@ -450,7 +463,7 @@ public class RUBTClient extends Thread{
 					this.downloaded += destfile.pieces[piece].data.length;
 					System.out.println("Giving the last piece");
 					
-					System.out.println("Downloaded"+downloaded);
+					System.out.println("Downloaded "+ downloaded);
 					for(Peer all_peer: this.peers){
 						try {
 							//System.out.println("Sending a have");

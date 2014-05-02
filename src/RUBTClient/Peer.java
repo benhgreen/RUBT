@@ -96,7 +96,7 @@ public class Peer extends Thread {
 		}
 
 		this.peerInputStream = peerInputStream;
-		this.peerOutputStream = peerOutputStream;
+		this.peerOutputStream = peerOutputStream;a
 		this.first_sent = false;
 		this.choked = true;
 		this.choking = true;
@@ -159,7 +159,7 @@ public class Peer extends Thread {
 				if(peer.sent_bps < 100) peer.sent_bps = 0;
 				peer.sent_bytes = 0;
 			}
-			System.out.println(peer.peer_id + " recieved bsp: " + peer.recieved_bps);
+			//System.out.println(peer.peer_id + " recieved bps: " + peer.recieved_bps);
 			//System.out.println(peer.peer_id + " sent bsp: " + peer.sent_bps);
 		}
 	}
@@ -207,11 +207,13 @@ public class Peer extends Thread {
 		}
 		
 		this.client.addPeerToList(this);
+		System.out.println("Peer added: " + this.peer_id);
+
 		this.performanceTimer.scheduleAtFixedRate(new PerformanceTimerTask(this), 2*1000 ,2 * 1000);
 		
 		while (connected){   //runs until we are no longer connected to the Peer
 			try {
-				Thread.sleep(1*200);
+				Thread.sleep(1*50);
 				try {
 					if(peerInputStream.available() == 0){
 						continue;     //means the peer hasn't written anything to the socket yet, I would like to find a better way to do this
