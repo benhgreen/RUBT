@@ -126,7 +126,7 @@ public class rarityMachine {
 	/**
 	 * @return identifier number of the rarest piece
 	 */
-	public int rarestPiece(){
+	public synchronized int rarestPiece(){
 		
 		Counter[] values = enumerate();
 		Arrays.sort(values);
