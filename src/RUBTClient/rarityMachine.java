@@ -103,9 +103,8 @@ public class rarityMachine {
 	private Counter[] enumerate(){
 		
 		Counter[] count = new Counter[piececount];
-		
 		for(int i = 0; i < piececount; i++){
-			count[i].setIdentifier(i);
+			count[i] = new Counter(i);
 		}
 		
 		Iterator<boolean[]> values = pieceset.values().iterator();
@@ -132,6 +131,12 @@ public class rarityMachine {
 		Arrays.sort(values);
 		
 		Counter rarest = identifyRarest(values);
+		
+//		System.out.println("PRINTING RARITIES");
+//		System.out.println("--------------------");
+//		for(int i = 0; i<piececount; i++){
+//			System.out.println("Piece " + values[i].getIdentifier() + ": " + values[i].getCount());
+//		}
 		
 		return rarest.getIdentifier();
 	}
