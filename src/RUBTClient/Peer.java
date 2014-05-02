@@ -41,7 +41,7 @@ public class Peer extends Thread {
 	private boolean				first_sent;  //flag check that the first message after the handshake was sent. is used to make sure bitfield isnt sent in the wrong order. 
 	private Date 				last_sent;
 	private Timer				performanceTimer;
-
+	private int 				last_requested_piece; 
 	protected double 			recieved_bytes;
 	protected double			recieved_bps;
 	
@@ -213,7 +213,7 @@ public class Peer extends Thread {
 		
 		while (connected){   //runs until we are no longer connected to the Peer
 			try {
-				Thread.sleep(1*50);
+				Thread.sleep(1*200);
 				try {
 					if(peerInputStream.available() == 0){
 						continue;     //means the peer hasn't written anything to the socket yet, I would like to find a better way to do this
@@ -486,5 +486,14 @@ public class Peer extends Thread {
 	 */
 	public void setChoking(boolean b) {
 		this.choking = b;
+	}
+	public int getLastRequestedPiece()
+	{
+		return last_requested_piece;
+	}
+	
+	public void setLastRequestedPiece(int last)
+	{
+		this.last_requested_piece = last;
 	}
 }

@@ -342,6 +342,16 @@ public class DestFile {
 	public synchronized void markInProgress(int pos){
 		mypieces[pos] = 1;
 	}
+	
+	/**Clears a piece's 'in progress' status by setting its flag to 0
+	 * 
+	 * @param int pos - which piece to mark 'in progress'
+	 */
+	public synchronized void clearProgress(int pos){
+		if(mypieces[pos] != 2){
+			mypieces[pos] = 0;
+		}
+	}
 		
 	//various getters and setters	
 	public String getFilename() {

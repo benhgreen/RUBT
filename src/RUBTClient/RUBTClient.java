@@ -230,6 +230,7 @@ public class RUBTClient extends Thread{
 
 							case Message.CHOKE:	//We were choked. Set peer status to choked
 								peer.setChoked(true);
+								clearProgress(peer);   //since we were choked, we clear all in progress downloads.
 								break;
 							case Message.UNCHOKE:  //We were unchoked. Set peer status to unchoked and find out what piece to request
 								peer.setChoked(false);
@@ -239,11 +240,11 @@ public class RUBTClient extends Thread{
 								System.out.println("Peer " + peer.getPeer_id() + " sent interested");
 								peer.setRemoteInterested(true);
 								try {
-									//if (peers_unchoked < 3){ //if we have less then 3 peers unchoked, we unchoke another peer
+									if (peers_unchoked < 3){ //if we have less then 3 peers unchoked, we unchoke another peer
 										peer.sendMessage(message.getUnchoke());   
 										peer.setChoking(false);
-										//incrementUnchoked();   //  increment the amount of peers we have unchoked
-									//}
+										incrementUnchoked();   //  increment the amount of peers we have unchoked
+									}
 								}
 								catch (IOException e1) {
 								e1.printStackTrace();
@@ -405,7 +406,7 @@ public class RUBTClient extends Thread{
 				peer.setInterested(false);
 				return;
 			}
-			destfile.markInProgress(current_piece);
+			destfile.markInProgress(current_piece);  //marks this piece as in progress
 	 	   	offset_counter = destfile.pieces[current_piece].getOffset();
 			if (offset_counter != -1){
 				offset_counter += max_request;
@@ -726,5 +727,10 @@ public class RUBTClient extends Thread{
 	
 	private synchronized void incrementUnchoked(){
 		peers_unchoked++;
+	}
+	
+	private void clearProgress(Peer peer)
+	{
+		destfile.clearProgress(peer.getLastRequestedPiece());
 	}
 }
