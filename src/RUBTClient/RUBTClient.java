@@ -328,7 +328,7 @@ public class RUBTClient extends Thread{
 			if(i == 3) break;
 			i++;
 		}
-		optimisticTimer.scheduleAtFixedRate(new OptimisticChokeTask(this), 1000, 2*1000);
+		optimisticTimer.scheduleAtFixedRate(new OptimisticChokeTask(this), 1000, 30*1000);
 
 	}
 	
