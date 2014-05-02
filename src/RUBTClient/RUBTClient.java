@@ -325,10 +325,11 @@ public class RUBTClient extends Thread{
 
 			peer.setClient(this);
 			peer.start();
-			if(i == 3) return;
+			if(i == 3) break;
 			i++;
 		}
-		//optimisticTimer.scheduleAtFixedRate(new OptimisticChokeTask(this), 1000, 30*1000);
+		optimisticTimer.scheduleAtFixedRate(new OptimisticChokeTask(this), 1000, 2*1000);
+
 	}
 	
 	/**
