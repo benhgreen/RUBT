@@ -41,7 +41,7 @@ public class Peer extends Thread {
 	private boolean				first_sent;  //flag check that the first message after the handshake was sent. is used to make sure bitfield isnt sent in the wrong order. 
 	private Date 				last_sent;
 	private Timer				performanceTimer;
-
+	private int 				last_requested_piece; 
 	protected double 			recieved_bytes;
 	protected double			recieved_bps;
 	
@@ -484,5 +484,14 @@ public class Peer extends Thread {
 	 */
 	public void setChoking(boolean b) {
 		this.choking = b;
+	}
+	public int getLastRequestedPiece()
+	{
+		return last_requested_piece;
+	}
+	
+	public void setLastRequestedPiece(int last)
+	{
+		this.last_requested_piece = last;
 	}
 }
