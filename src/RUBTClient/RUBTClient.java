@@ -133,49 +133,58 @@ public class RUBTClient extends Thread{
 			
 			System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    tracker timer     @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
 			System.out.println("new interval: " + this.client.tracker.getInterval());
+			
 			int interval = this.client.tracker.getInterval();
+			
 			if(interval > 180  || interval < 60){
 				interval = 180;
 			}
 			this.client.trackerTimer.schedule(new TrackerAnnounceTask(this.client), interval * 1000);
 		}
 	}
-	private static class OptimisticChokeTask extends TimerTask
-	{
+	private static class OptimisticChokeTask extends TimerTask{
+		
 		private final RUBTClient client;
-		public OptimisticChokeTask(final RUBTClient client)
-		{
+		
+		public OptimisticChokeTask(final RUBTClient client){
 			this.client = client;
 		}
-		public void run()
-		{
-			for(Peer peer: client.peers)
-			{
-				if(peer.isChoking()==false)
-				{
+		
+		public void run(){
+			
+			double bytes_per_second = 0;
+			
+			Peer lucky_dude, slacker;
+			
+			boolean seeding = false;  //replace this with an actual call the the client field
+			
+			for (Peer peer: client.peers){
+				if (!peer.isChoking()){
 					//TODO check if we are a seed
 					//TODO check each peers download rate
 					System.out.println("Peer:"+ peer.getPeer_id()+ " is unchoked");
 					
-					for(Peer choked_peer: client.peers)
-					{
-						if(peer.isChoking())
-						{
-							//TODO unchoke that guy
-							break;
-						}
-					}
 					//TODO send choke message to slowest peer
-				}
-				else
-				{
+					//send unchoke message
+					//set choked to false
+				}else {
 					System.out.println("Peer:"+ peer.getPeer_id()+ " is choked");
 				}
 			}
-			System.out.println("downloaded"+client.downloaded);
+
+			for (Peer peer: client.peers){
+				if (peer.isChoking()){
+					lucky_dude = peer;
+					break;
+				}
+			}
+			
+			
+			System.out.println("downloaded "+ client.downloaded);
 			System.out.println("@@@@@@done@@@@@@");
 		}
 	}
+	
 	public void run(){
 		
 		System.out.println("incomplete: " + this.destfile.incomplete);
