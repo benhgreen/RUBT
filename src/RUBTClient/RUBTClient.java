@@ -407,6 +407,7 @@ public class RUBTClient extends Thread{
 				return;
 			}
 			destfile.markInProgress(current_piece);  //marks this piece as in progress
+			peer.setLastRequestedPiece(current_piece);
 	 	   	offset_counter = destfile.pieces[current_piece].getOffset();
 			if (offset_counter != -1){
 				offset_counter += max_request;
@@ -414,6 +415,7 @@ public class RUBTClient extends Thread{
 				offset_counter = 0;
 			}
 	   		request_message = current_message.request(current_piece, offset_counter, max_request);
+	   		
 	   		try {
 	   			System.out.println("requesting piece "+current_piece);
 				peer.sendMessage(request_message);
