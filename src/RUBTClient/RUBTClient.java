@@ -42,6 +42,8 @@ public class RUBTClient extends Thread{
 	private final Timer trackerTimer = new Timer();						//timertask object that handles timed tracker announcements
 	private final Timer optimisticTimer = new Timer();
 	
+	private boolean seeding;
+	
 	/**
 	 * RUBTClient constructor
 	 * @param destfile object manages file I/O and bitfield manipulation 
@@ -142,6 +144,7 @@ public class RUBTClient extends Thread{
 			this.client.trackerTimer.schedule(new TrackerAnnounceTask(this.client), interval * 1000);
 		}
 	}
+	
 	private static class OptimisticChokeTask extends TimerTask{
 		
 		private final RUBTClient client;
@@ -153,35 +156,55 @@ public class RUBTClient extends Thread{
 		public void run(){
 			
 			double bytes_per_second = 0;
+			double lowest_bps = Integer.MAX_VALUE;
+
+			Peer dropped_peer = client.peers.get(0);
+			Message message = new Message();
 			
-			Peer lucky_dude, slacker;
-			
-			boolean seeding = false;  //replace this with an actual call the the client field
-			
+			boolean seeding = client.getSeeding();  //replace this with an actual call the the client field
+			System.out.println("@@@@@@@@@@@@@@@@@@ Optomizely unchoking    @@@@@@@@@@@@@@@@@@@@@@@");
+			System.out.println("seeding: " + seeding);
 			for (Peer peer: client.peers){
 				if (!peer.isChoking()){
-					//TODO check if we are a seed
-					//TODO check each peers download rate
-					System.out.println("Peer:"+ peer.getPeer_id()+ " is unchoked");
+					if(seeding){
+						bytes_per_second = peer.sent_bps;
+					}else{
+						bytes_per_second = peer.recieved_bps;
+					}
 					
-					//TODO send choke message to slowest peer
-					//send unchoke message
-					//set choked to false
-				}else {
-					System.out.println("Peer:"+ peer.getPeer_id()+ " is choked");
+					System.out.println(peer.getPeer_id() + " performance: " + bytes_per_second + "bps");
+					
+					if(bytes_per_second <  lowest_bps){
+						lowest_bps = bytes_per_second;
+						dropped_peer = peer;
+					}
 				}
 			}
-
+			//replace this with a random way of getting the peer
 			for (Peer peer: client.peers){
 				if (peer.isChoking()){
-					lucky_dude = peer;
+					try {
+						peer.sendMessage(message.getUnchoke());
+					} catch (IOException e) {
+						System.out.println("RUBTClient.java: Optimistic Unchoke send unchoked error");
+						e.printStackTrace();
+					}   
+					peer.setChoking(false);
+					System.out.println("Peer: " + peer.getPeer_id() + " has been unchoked");
 					break;
 				}
 			}
 			
+			try {
+				dropped_peer.sendMessage(message.getChoke());
+			} catch(IOException e){
+				System.out.println("RUBTClient.java: Optimistic Unchoke send choke error");
+			}
+			dropped_peer.setChoking(true);
+			System.out.println("Peer: " + dropped_peer.getPeer_id() + " has been choked");
 			
 			System.out.println("downloaded "+ client.downloaded);
-			System.out.println("@@@@@@done@@@@@@");
+			System.out.println("@@@@@@@@@@@@@  Optimizely Time done  @@@@@@@@@@@@");
 		}
 	}
 	
@@ -300,6 +323,7 @@ public class RUBTClient extends Thread{
 								if(!isValidRequest(msg,peer)||peer.isChoking())  //if the request is not valid or we are currently choking the peer, we disconnect the peer
 								{
 									peer.setConnected(false);
+									System.out.println("REQUEST CLOSING CONNECTION");
 									removePeer(peer);
 								}
 								break;
@@ -350,7 +374,7 @@ public class RUBTClient extends Thread{
 				i++;
 			*/
 		}
-		optimisticTimer.scheduleAtFixedRate(new OptimisticChokeTask(this), 1000, 30*1000);
+		optimisticTimer.scheduleAtFixedRate(new OptimisticChokeTask(this), 10 * 1000, 10 * 1000);
 	}
 	
 	/**
@@ -516,14 +540,13 @@ public class RUBTClient extends Thread{
 						e.printStackTrace();
 					}
 				}
-				
+				chooseAndRequestPiece(peer); 		//figures out the next piece to request
 			}
 			else {
 				removePeer(peer);
 			}
-			chooseAndRequestPiece(peer); 		//figures out the next piece to request
 		}else {
-			if (peer.isChoked()){			//TODO i don't know how to handle starting up again if we get choked mid piece request
+			if (peer.isChoked()){			
    				System.out.println("got choked out");
    				return;
    			}else {
@@ -583,6 +606,7 @@ public class RUBTClient extends Thread{
 	public void removePeer(Peer peer){
 		if (peers.contains(peer)){
 			System.out.println("closing connections for peer " + peer.getPeer_id());
+			clearProgress(peer);
 			peer.closeConnections();
 			peers.remove(peer);
 		}
@@ -728,6 +752,14 @@ public class RUBTClient extends Thread{
 		this.port = port;
 	}
 	
+	public boolean getSeeding(){
+		return this.seeding;
+	}
+	
+	public void setSeeding(){
+		this.seeding = true;
+	}
+	
 	
 	/**
 	 *sets flag so client thread can exit event loop 
@@ -740,8 +772,7 @@ public class RUBTClient extends Thread{
 		peers_unchoked++;
 	}
 	
-	private void clearProgress(Peer peer)
-	{
+	private void clearProgress(Peer peer){
 		destfile.clearProgress(peer.getLastRequestedPiece());
 	}
 }

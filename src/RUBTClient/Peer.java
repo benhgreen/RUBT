@@ -409,7 +409,7 @@ public class Peer extends Thread {
 	}
 
 	/**
-	 * @return if our peer is choking the remote peer
+	 * @return if our client is choking the remote peer
 	 */
 	public boolean isChoking() {
 		return choking;
