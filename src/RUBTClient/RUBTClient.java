@@ -27,7 +27,7 @@ import edu.rutgers.cs.cs352.bt.exceptions.BencodingException;
  */
 public class RUBTClient extends Thread{
 	
-	private int port = 6881;					//Port that the client will be listening for connections
+	private int port = 0;					//Port that the client will be listening for connections
 	/**
 	 * @field uploaded number of bytes written to other peers
 	 */
@@ -225,6 +225,8 @@ public class RUBTClient extends Thread{
 		final Message message = new Message();
 		//sends started event and then takes the list of valid peers
 		//to add them to the current list of running peers
+		while(this.port == 0){
+		}
 		Response peer_list = contactTracker("started");
 		//takes care of handshake verification and populates queue with initial tasks
 		addPeers(peer_list.getValidPeers());
@@ -643,6 +645,7 @@ public class RUBTClient extends Thread{
 		final RUBTClient client = this;
 		this.workers.execute(new Runnable(){
 			public void run(){
+				client.setPort(6881);
 				boolean validPort = false;
 				ServerSocket listenSocket = null;
 				
