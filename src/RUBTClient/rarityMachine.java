@@ -8,7 +8,7 @@ import java.util.Random;
 
 public class rarityMachine {
 	
-	private Hashtable<byte[], boolean[]> pieceset;
+	private Hashtable<String, boolean[]> pieceset;
 	private final int piececount;
 	private final int expected;
 	private int[] mybitfield;
@@ -21,7 +21,7 @@ public class rarityMachine {
 	}
 	
 	public rarityMachine(int capacity){
-		this.pieceset = new Hashtable<byte[], boolean[]>(capacity);
+		this.pieceset = new Hashtable<String, boolean[]>(capacity);
 		this.piececount = capacity;
 		this.expected = calcExpected(capacity);
 	}
@@ -30,7 +30,7 @@ public class rarityMachine {
 	 * @param peerid of peer
 	 * @param bitfield of peer
 	 */
-	public void addPeer(byte[] peerid, byte[] bitfield){
+	public void addPeer(String peerid, byte[] bitfield){
 		
 		pieceset.put(peerid, boolfield(bitfield));
 	}
@@ -38,7 +38,7 @@ public class rarityMachine {
 	/**
 	 * @param peerid peer to remove from table
 	 */
-	public void deletePeer(byte[] peerid){
+	public void deletePeer(String peerid){
 		
 		if(pieceset.containsKey(peerid)){
 			pieceset.remove(peerid);
@@ -49,7 +49,7 @@ public class rarityMachine {
 	 * @param peerid to update
 	 * @param piece that should be updated
 	 */
-	public void updatePeer(byte[] peerid, int piece){
+	public void updatePeer(String peerid, int piece){
 		
 		if(pieceset.contains(peerid)){
 			pieceset.get(peerid)[piece] = true;
@@ -103,9 +103,8 @@ public class rarityMachine {
 	private Counter[] enumerate(){
 		
 		Counter[] count = new Counter[piececount];
-		
 		for(int i = 0; i < piececount; i++){
-			count[i].setIdentifier(i);
+			count[i] = new Counter(i);
 		}
 		
 		Iterator<boolean[]> values = pieceset.values().iterator();
@@ -132,6 +131,12 @@ public class rarityMachine {
 		Arrays.sort(values);
 		
 		Counter rarest = identifyRarest(values);
+		
+//		System.out.println("PRINTING RARITIES");
+//		System.out.println("--------------------");
+//		for(int i = 0; i<piececount; i++){
+//			System.out.println("Piece " + values[i].getIdentifier() + ": " + values[i].getCount());
+//		}
 		
 		return rarest.getIdentifier();
 	}

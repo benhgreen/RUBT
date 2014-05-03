@@ -18,23 +18,39 @@ public class Message
 	
 	private final int request_prefix = 0xD;
 	//message identifiers
+	
 	/**
 	 * @field CHOKE Value of the choke identifier
-	 * @field UNCHOKE Value of the unchoke identifier
-	 * @field INTERESTED Value of the interested identifier 
-	 * @field HAVE Value of the have identifier
-	 * @field BITFIELD Value of the bitfield identifier
-	 * @field REQUEST Value of the request identifier
-	 * @field PIECE Value of the piece identifier
-	 * @field QUIT Value of the quit identifier
 	 */
 	public static final  byte CHOKE = 0;
+	//
+	/**
+	 * @field UNCHOKE Value of the unchoke identifier
+	 */
 	public static final byte UNCHOKE = 1;
+	/**
+	 * @field INTERESTED Value of the interested identifier 
+	 */
 	public static final byte INTERESTED = 2;
+	/**
+	 * @field HAVE Value of the have identifier
+	 */
 	public static final byte HAVE = 4;
+	/**
+	 *  @field BITFIELD Value of the bitfield identifier
+	 */
 	public static final byte BITFIELD = 5;
+	/**
+	 * @field REQUEST Value of the request identifier
+	 */
 	public static final byte REQUEST = 6;
+	/**
+	 * @field PIECE Value of the piece identifier
+	 */
 	public static final byte PIECE = 7;
+	/**
+	 * @field QUIT Value of the quit identifier
+	 */
 	public static final byte QUIT = 25;
 	 //message headers
 	private final byte[] handshake_consts = {0x13,'B','i','t','T','o','r','r','e','n','t',' ','p','r','o','t','o','c','o','l',0,0,0,0,0,0,0,0};
@@ -49,6 +65,7 @@ public class Message
 	/**
 	 * This method constructs a byte array that contains the handshake message
 	 * @param info_hash takes the info hash given by the .torrent file
+	 * @param userid our user id
 	 * @return returns a handshake message in the form of a byte array  
 	 */
 	public byte[] handShake( byte[] info_hash, String userid)
@@ -130,6 +147,7 @@ public class Message
 	/**
 	 * Generates a bitfield array to send to a newly connected peer
 	 * @param mybitfield the clients bitfield
+	 * @return returns our bitfield
 	 */
 	public byte[] getBitFieldMessage(byte[] mybitfield) 
 	{
@@ -148,6 +166,7 @@ public class Message
 	 * @param file file the data will come from
 	 * @param req_index piece index requested
 	 * @param req_length requested length
+	 * @param req_begin offset of the request
 	 * @param offset index that we will start the piece at
 	 * @return constructed piece message
 	 */
