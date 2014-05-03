@@ -14,7 +14,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.io.*;
 
 
-
 import edu.rutgers.cs.cs352.bt.TorrentInfo;
 import edu.rutgers.cs.cs352.bt.exceptions.BencodingException;
 
@@ -163,6 +162,8 @@ public class RUBTClient extends Thread{
 		
 		public void run(){
 			
+			List<Peer> choked_peers = new LinkedList<Peer>();
+			
 			double bytes_per_second = 0;
 			double lowest_bps = Integer.MAX_VALUE;
 
@@ -191,6 +192,7 @@ public class RUBTClient extends Thread{
 			//replace this with a random way of getting the peer
 			for (Peer peer: client.peers){
 				if (peer.isChoking()){
+					choked_peers.add(peer);
 					try {
 						peer.sendMessage(message.getUnchoke());
 					} catch (IOException e) {
