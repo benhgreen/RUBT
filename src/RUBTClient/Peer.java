@@ -86,7 +86,7 @@ public class Peer extends Thread {
 	 * @param peerOutputStream Output stream for the socket
 	 */
 	
-	/*
+	
 	public Peer(Socket peerSocket, DataInputStream peerInputStream, DataOutputStream peerOutputStream) {
 		this.peerSocket = peerSocket;
 		try {
@@ -96,7 +96,7 @@ public class Peer extends Thread {
 		}
 
 		this.peerInputStream = peerInputStream;
-		this.peerOutputStream = peerOutputStream;a
+		this.peerOutputStream = peerOutputStream;
 		this.first_sent = false;
 		this.choked = true;
 		this.choking = true;
@@ -105,7 +105,7 @@ public class Peer extends Thread {
 		
 		send_timer = new Timer();
 	}
-	*/
+	
 	
 	/**
 	 * @author Manuel Lopez

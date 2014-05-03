@@ -1,5 +1,7 @@
 package RUBTClient;
 
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -204,6 +206,10 @@ public class RUBTClient extends Thread{
 					break;
 				}
 			}
+			
+			
+			
+			
 			
 			try {
 				dropped_peer.sendMessage(message.getChoke());
@@ -688,7 +694,6 @@ public class RUBTClient extends Thread{
 	 * Listens on a specific port for incoming connections and adds them to the list
 	 * of currently connected peers
 	 */
-	/*
 	private void startIncomingConnections(){
 		final RUBTClient client = this;
 		this.workers.execute(new Runnable(){
@@ -701,11 +706,13 @@ public class RUBTClient extends Thread{
 						listenSocket = new ServerSocket(port);
 						validPort = true;
 					} catch (IOException e) {
-						setPort(port+1);
+						setPort(port + 1);
+						validPort = false;
 					}
 				}
 				if(port >= 6890){
 					System.exit(0);
+					//replace with gracefull exit method
 				}
 				while (true){
 					try{
@@ -752,7 +759,6 @@ public class RUBTClient extends Thread{
 		});
 		
 	}
-	*/
 	/**
 	 *Disconnects all currently connected peers
 	 */
