@@ -168,8 +168,9 @@ public class RUBTClient extends Thread{
 			
 			double bytes_per_second = 0;
 			double lowest_bps = Integer.MAX_VALUE;
-
+			if(client.peers.size() < 1) return;
 			Peer dropped_peer = client.peers.get(0);
+
 			Message message = new Message();
 			
 			boolean seeding = client.getSeeding();  //replace this with an actual call the the client field
@@ -215,7 +216,7 @@ public class RUBTClient extends Thread{
 		
 		//System.out.println("incomplete: " + this.destfile.incomplete);
 		
-		//startIncomingConnections();
+		startIncomingConnections();
 		
 		//starts up listener for user quit input
 		//handles unexpected System.exit(0) by ending threads/sending stopped event to tracker
@@ -227,6 +228,10 @@ public class RUBTClient extends Thread{
 		final Message message = new Message();
 		//sends started event and then takes the list of valid peers
 		//to add them to the current list of running peers
+		
+			
+		//block until port is set by connection listener thread
+		//this.port = 6881;
 		while(this.port == 0){
 		}
 		Response peer_list = contactTracker("started");
@@ -248,7 +253,7 @@ public class RUBTClient extends Thread{
 		 * inputting "quit". Client reads from a queue of Message tasks and spawns
 		 * threads to deal with each task based on the message id
 		 */
-		
+		System.out.println("starting loop");
 		while(keepRunning){
 
 			try{
@@ -362,21 +367,11 @@ public class RUBTClient extends Thread{
 	 */
 	public void addPeers(List<Peer> newPeers){
 		
-		int i = 1;
+		//int i = 1;
 		for (Peer peer: newPeers){
-			/*
-			if(i <= 2){
-				i++;
-				continue;
-			}
-			*/
 			peer.setClient(this);
 			peer.start();
-			return;
-			/*
-			if(i == 4) return;
-				i++;
-			*/
+			//return;
 		}
 		optimisticTimer.scheduleAtFixedRate(new OptimisticChokeTask(this), 10 * 1000, 10 * 1000);
 	}
@@ -559,6 +554,7 @@ public class RUBTClient extends Thread{
 				System.out.println("already downloading. Dont stop program");
 			}else if (event.equals("started")){
 				System.out.println("Havent started downloading yet so just quit");
+				//replace with gracefull shut down
 				System.exit(0);
 			}
 		}
@@ -579,6 +575,13 @@ public class RUBTClient extends Thread{
 	 * Adds a peer to the client's peer list.
 	 * @param peer peer to be added to our peer list
 	 */
+	
+	public void printPeers(){
+		System.out.println("Printing peers");
+		for(Peer peer: this.peers){
+			System.out.println("####  " + peer.getPeer_id() + " ###");
+		}
+	}
 	public synchronized void addPeerToList(Peer peer){
 		peers.add(peer);
 	}
@@ -646,10 +649,11 @@ public class RUBTClient extends Thread{
 	 */
 	private void startIncomingConnections(){
 		final RUBTClient client = this;
+		
 		this.workers.execute(new Runnable(){
 			public void run(){
-				client.setPort(6881);
 				boolean validPort = false;
+				client.setPort(6881);
 				ServerSocket listenSocket = null;
 				
 				while(port <= 6889 && !validPort){
@@ -657,17 +661,16 @@ public class RUBTClient extends Thread{
 						listenSocket = new ServerSocket(port);
 						validPort = true;
 					} catch (IOException e) {
-						setPort(port + 1);
-						validPort = false;
+						client.setPort(port + 1);
 					}
 				}
 				if(port >= 6890){
 					System.exit(0);
 					//replace with gracefull exit methodtra 
 				}
-				while (true){
+				while (keepRunning){
 					try{
-						System.out.println("starting listen loop");
+						System.out.println("### listen loop ###");
 						if(listenSocket == null){
 							System.exit(0);
 						}
@@ -691,23 +694,23 @@ public class RUBTClient extends Thread{
 						}
 						String peer_string = Response.asString((ByteBuffer.wrap(peer_id)));
 						peer.setPeer_id(peer_string);
-						if(alreadyConnected(peer_string)){
-							peer.closeConnections();
-							continue;
-						}else{
-							System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@   incoming peer id " +  peer_string);
-							peer.setClient(client);
-							peers.add(peer);
-							peer.start();
-						}
+						System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@   incoming peer id " +  peer_string);
+						peer.setClient(client);
+						peer.setConnected(true);
+						peer.start();
 					}catch(EOFException e){
 						System.err.println("tracker contacted us. just ignore him");
 					}catch(IOException ioe){
 						System.err.println("IOException while handling request");
+					}catch(Exception e){
+						System.err.println("generic exception");
 					}
 				}
+				System.out.println("ending listener thread;");
+				return;
 			}
 		});
+		
 		
 	}
 	/**

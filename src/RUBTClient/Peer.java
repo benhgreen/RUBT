@@ -32,6 +32,7 @@ public class Peer extends Thread {
 	private boolean			 	connected;			//checks if peer is disconnected
 	private boolean 			interested;
 	private boolean 			remote_interested;
+	private boolean 			incoming;
 	
 	private byte[] 				response;
 	private byte[] 				bitfield;
@@ -68,6 +69,8 @@ public class Peer extends Thread {
 		this.connected = false;
 		this.interested = false;
 		
+		this.incoming = false;
+		
 		send_timer = new Timer();
 		performanceTimer = new Timer();
 		last_sent = new Date();
@@ -102,6 +105,9 @@ public class Peer extends Thread {
 		this.choking = true;
 		this.connected = false;
 		this.interested = false;
+		
+		this.incoming = true;
+		
 		send_timer = new Timer();
 		performanceTimer = new Timer();
 		last_sent = new Date();
@@ -175,20 +181,24 @@ public class Peer extends Thread {
 		System.out.println("checking peer: " + this.getPeer_id());
 		if (this.client.alreadyConnected(this.peer_id)){
 			System.out.println("Peer.java: error at already connected");
+			this.client.printPeers();
 			return;
 		}
-		if(!this.connectToPeer()){
+		if(this.peerSocket == null  && !this.connectToPeer()){
 			System.out.println("Peer.java error at connectToPeer");
 			return;
 		}
 		Message current_message = new Message();
-		this.sendMessage(current_message.handShake(this.client.torrentinfo.info_hash.array(), this.client.tracker.getUser_id()));
-		handshake = this.handshake();
-		if(handshake == null){
-			return;
-		}else if(!handshakeCheck(handshake)){
-			this.closeConnections();
-			return;
+
+		if(!incoming){
+			this.sendMessage(current_message.handShake(this.client.torrentinfo.info_hash.array(), this.client.tracker.getUser_id()));
+			handshake = this.handshake();
+			if(handshake == null){
+				return;
+			}else if(!handshakeCheck(handshake)){
+				this.closeConnections();
+				return;
+			}
 		}
 		client_bitfield = current_message.getBitFieldMessage(this.client.destfile.getMybitfield());
 
@@ -201,7 +211,7 @@ public class Peer extends Thread {
 		
 		while (connected){   //runs until we are no longer connected to the Peer
 			try {
-				Thread.sleep(1*200);
+				Thread.sleep(1*50);
 				try {
 					if(peerInputStream.available() == 0){
 						continue;     //means the peer hasn't written anything to the socket yet, I would like to find a better way to do this
@@ -214,11 +224,11 @@ public class Peer extends Thread {
 				if(length_prefix==0){ //means this is a keep alive from the peer
 					continue;
 				}
-				/*
+				
 				if(length_prefix<0){  //bad error, sometimes we would read a large negative number.
 					continue;     
 				}
-				*/
+				//System.out.println("length prefix " + length_prefix);
 				response = new byte[length_prefix];
 				peerInputStream.readFully(response);
 				
@@ -462,7 +472,7 @@ public class Peer extends Thread {
 	public boolean getFirstSent(){
 		return first_sent;
 	}
-	
+	boolean validPort = false;
 	/**
 	 * This method helps keep track of if a peer is sending a bitfield out of order
 	 * @param first_sent if first message after handshake has been received yet
