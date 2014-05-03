@@ -178,7 +178,7 @@ public class Tracker {
 		return this.port;
 	}
 
-	/**@param port_num int port number to be set to this.port_num
+	/**@param port int port number to be set to this.port_num
 	 */
 	public void setPort_num(int port) {
 		this.port = port;

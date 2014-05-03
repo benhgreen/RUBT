@@ -23,7 +23,8 @@ public class Response {
 	Integer interval;
 	
 	/**
-	 * @param String containing a properly formatted, bencoded tracker response to a GET request.
+	 *  
+	 * @param getrequest String containing a properly formatted, bencoded tracker response to a GET request.
 	 */
 	@SuppressWarnings("rawtypes")
 	public Response(byte[] getrequest) {
@@ -96,7 +97,12 @@ public class Response {
             }
         }
 	}
-	//shamelessly stolen from the forums, original author Prof. Moore
+	//
+	/**
+	 *  Converts a bytebuffer to a String.Shamelessly stolen from the forums, original author Prof. Moore
+	 * @param buff byte buffer to be converted
+	 * @return String conversion of the given bytebuffer
+	 */
 	public static String asString(ByteBuffer buff){
 		  StringBuilder sb = new StringBuilder();
 		  byte[] b = buff.array();

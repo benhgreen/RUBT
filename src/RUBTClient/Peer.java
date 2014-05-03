@@ -116,11 +116,9 @@ public class Peer extends Thread {
 	 */
 	private static class SendTimerTask extends TimerTask{
 		private Peer peer;
-		private byte[] keep_alive;
 		public SendTimerTask(Peer peer)
 		{
 			this.peer = peer;
-			keep_alive = new byte[4];
 		}
 		public void run() {
 			// TODO Do something when the timer is up
@@ -292,7 +290,7 @@ public class Peer extends Thread {
 	
 	/**
 	 * This method Gets and passes on a remote peers handshake
-	 * @returns the remote peers handshake
+	 * @return the remote peers handshake
 	 */
 	public byte[] handshake(){
 		
@@ -471,10 +469,20 @@ public class Peer extends Thread {
 		this.first_sent = first_sent;
 	}
 	
+	/**
+	 * Compares one peer to another by IP and ID
+	 * @param peer peer to compare
+	 * @return true if they are equal, false otherwise
+	 */
 	public boolean equals(Peer peer){
 		return(this.ip == peer.getIp() && this.peer_id.equals(peer.getPeer_id()));
 	}
 
+	/**
+	 * This method keeps track of the last time a message was sent
+	 * by our peer.
+	 * @return the time of the last sent message
+	 */
 	public long getLastSent(){
 		return last_sent.getTime();
 	}
@@ -485,11 +493,19 @@ public class Peer extends Thread {
 	public void setChoking(boolean b) {
 		this.choking = b;
 	}
+	/**
+	 * Records the last piece requested of the remote peer.
+	 * @return piece index of the last requested piece
+	 */
 	public int getLastRequestedPiece()
 	{
 		return last_requested_piece;
 	}
 	
+	/**
+	 * Sets the last requested piece to a provided index.
+	 * @param last last requested piece index
+	 */
 	public void setLastRequestedPiece(int last)
 	{
 		this.last_requested_piece = last;

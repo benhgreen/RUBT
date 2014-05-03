@@ -27,7 +27,10 @@ import edu.rutgers.cs.cs352.bt.exceptions.BencodingException;
 public class RUBTClient extends Thread{
 	
 	private int port = 6881;					//Port that the client will be listening for connections
-	public int uploaded;						//number of bytes written to other 
+	/**
+	 * @field uploaded number of bytes written to other peers
+	 */
+	public int uploaded;					
 	private int downloaded = 0;					//current sessions downloaded amount
 	final TorrentInfo torrentinfo;		//torrent object extracted by destfile
 	private boolean keepRunning = true;			//event loop flag for main client thread
@@ -37,6 +40,7 @@ public class RUBTClient extends Thread{
 	private volatile int   peers_unchoked = 0;
 	private final LinkedBlockingQueue<MessageTask> tasks = new LinkedBlockingQueue<MessageTask>();   //MessageTask queue that client reads form in event loop
 	final List<Peer> peers = Collections.synchronizedList(new LinkedList<Peer>());			 //List of peers currently connected to client
+	
 	
 	public ExecutorService workers = Executors.newCachedThreadPool();	//thread pool of worker threads that spawn to manage MessageTasks
 	private final Timer trackerTimer = new Timer();						//timertask object that handles timed tracker announcements
@@ -52,6 +56,10 @@ public class RUBTClient extends Thread{
 		this.tracker = new Tracker(this.torrentinfo.file_length);
 	}
 	
+	/**
+	 * @param args string array containing torrent file and name of the file we 
+	 * download.
+	 */
 	public static void main(String[] args){
 		
 		//verifies command line arguments
@@ -557,6 +565,10 @@ public class RUBTClient extends Thread{
 		return (new Response(response_string));
 	}
 	
+	/**
+	 * Adds a peer to the client's peer list.
+	 * @param peer peer to be added to our peer list
+	 */
 	public synchronized void addPeerToList(Peer peer){
 		peers.add(peer);
 	}
