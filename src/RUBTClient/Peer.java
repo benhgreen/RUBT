@@ -127,12 +127,7 @@ public class Peer extends Thread {
 			{
 				System.out.println("Sending a keep alive");
 				byte[] keep_alive = {0,0,0,0};
-				try {
-					peer.sendMessage(keep_alive);
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					System.err.println("Socket already closed");
-				}
+				peer.sendMessage(keep_alive);
 			}
 		}
 	}
@@ -182,27 +177,17 @@ public class Peer extends Thread {
 			return;
 		}
 		Message current_message = new Message();
-		try {
-			this.sendMessage(current_message.handShake(this.client.torrentinfo.info_hash.array(), this.client.tracker.getUser_id()));
-			handshake = this.handshake();
-			if(handshake == null){
-				return;
-			}else if(!handshakeCheck(handshake)){
-				this.closeConnections();
-				return;
-			}
-		}catch (IOException e) {
-			System.err.println("Peer.java random  IO ex");
+		this.sendMessage(current_message.handShake(this.client.torrentinfo.info_hash.array(), this.client.tracker.getUser_id()));
+		handshake = this.handshake();
+		if(handshake == null){
+			return;
+		}else if(!handshakeCheck(handshake)){
+			this.closeConnections();
 			return;
 		}
 		client_bitfield = current_message.getBitFieldMessage(this.client.destfile.getMybitfield());
 
-		try {
-			this.sendMessage(client_bitfield);
-		} catch (IOException e) {
-			System.err.println("RUBTClient.java addPeers: failed to send message ");
-			e.printStackTrace();
-		}
+		this.sendMessage(client_bitfield);
 		
 		this.client.addPeerToList(this);
 		System.out.println("Peer added: " + this.peer_id);
@@ -278,12 +263,17 @@ public class Peer extends Thread {
 	 * @param Message message to be sent by the peer
 	 * @throws IOException 
 	 */
-	public synchronized void sendMessage(byte[] Message) throws IOException {
+	public synchronized void sendMessage(byte[] Message){
 		if (this.peerOutputStream == null){
 			System.out.println("stream is null");
 		}else {
 			//System.out.println("sending a message");
-			peerOutputStream.write(Message);
+			try {
+				peerOutputStream.write(Message);
+			} catch (IOException e) {
+				System.err.println("Broken pipe, removing peer");
+				client.removePeer(this);
+			}
 		}
 		//TODO update out last sent field
 		last_sent.setTime(System.currentTimeMillis());
