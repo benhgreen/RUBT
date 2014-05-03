@@ -213,7 +213,9 @@ public class RUBTClient extends Thread{
 	
 	public void run(){
 		
-		System.out.println("incomplete: " + this.destfile.incomplete);
+		//System.out.println("incomplete: " + this.destfile.incomplete);
+		
+		//startIncomingConnections();
 		
 		//starts up listener for user quit input
 		//handles unexpected System.exit(0) by ending threads/sending stopped event to tracker
@@ -370,6 +372,7 @@ public class RUBTClient extends Thread{
 			*/
 			peer.setClient(this);
 			peer.start();
+			return;
 			/*
 			if(i == 4) return;
 				i++;
@@ -660,17 +663,17 @@ public class RUBTClient extends Thread{
 				}
 				if(port >= 6890){
 					System.exit(0);
-					//replace with gracefull exit method
+					//replace with gracefull exit methodtra 
 				}
 				while (true){
 					try{
+						System.out.println("starting listen loop");
 						if(listenSocket == null){
 							System.exit(0);
 						}
 						Socket clientSocket = listenSocket.accept();
 						DataInputStream input = new DataInputStream(clientSocket.getInputStream());
 						DataOutputStream output = new DataOutputStream(clientSocket.getOutputStream());
-						
 						Peer peer = new Peer(clientSocket, input, output);
 						Message msg = new Message();
 						byte[] handshake;
@@ -682,18 +685,23 @@ public class RUBTClient extends Thread{
 						}
 						peer_id = handshakeCheck(handshake);
 						if(peer_id == null){
+							System.out.println("no peer id returned from handshake");
 							peer.closeConnections();
 							continue;
 						}
-						String peer_string = new String(peer_id);
+						String peer_string = Response.asString((ByteBuffer.wrap(peer_id)));
+						peer.setPeer_id(peer_string);
 						if(alreadyConnected(peer_string)){
 							peer.closeConnections();
 							continue;
 						}else{
+							System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@   incoming peer id " +  peer_string);
 							peer.setClient(client);
 							peers.add(peer);
 							peer.start();
 						}
+					}catch(EOFException e){
+						System.err.println("tracker contacted us. just ignore him");
 					}catch(IOException ioe){
 						System.err.println("IOException while handling request");
 					}

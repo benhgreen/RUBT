@@ -102,8 +102,13 @@ public class Peer extends Thread {
 		this.choking = true;
 		this.connected = false;
 		this.interested = false;
-		
 		send_timer = new Timer();
+		performanceTimer = new Timer();
+		last_sent = new Date();
+		recieved_bytes = 0;
+		recieved_bps = 0;
+		sent_bytes = 0;
+		sent_bytes = 0;
 	}
 	
 	
@@ -445,6 +450,11 @@ public class Peer extends Thread {
 	public void setInterested(boolean state){
 		interested = state;
 	}
+	
+	public void setPeer_id(String peer_id){
+		this.peer_id = peer_id;
+	}
+	
 	
 	/**
 	 * @return if the remote peer has sent its first message after a handshake
