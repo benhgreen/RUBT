@@ -638,6 +638,7 @@ public class RUBTClient extends Thread{
 		}
 		piece = piece_message.getPieceMessage(destfile, index_bytes, length, begin_bytes);  //gets a piece message
 		peer.sent_bytes += piece.length;
+		uploaded+=piece.length;
 		peer.sendMessage(piece);  //sends it off to peer to be uploaded through the socket
 		return true;
 	}
