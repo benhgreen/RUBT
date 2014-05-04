@@ -151,6 +151,25 @@ public class Tracker {
 			id = id+randomChar;
 		}
 		this.usrid = id;
+		/*
+		byte[] idHeader = {'G','R','O', 'U','P','0','4'};
+		byte[] idTail = new byte[13];
+		int randomKey;
+		Random r = new Random();
+		 
+		for(int i = 0; i < 13; i++){
+			randomKey = r.nextInt(36);
+			if(randomKey < 26)
+				idTail[i] = (byte)((char)(randomKey + 65));
+			else
+				idTail[i] = (byte)((char)(randomKey + 22));
+		}
+		byte id[] = new byte[20];
+		System.arraycopy(idHeader, 0, id, 0, 7);
+		System.arraycopy(idTail, 0, id, 7, 13);
+		System.out.println(asString(ByteBuffer.wrap(id)));
+		this.usrid = id;
+		*/
 	}
 	
 	 /**@return GetRequest.userid

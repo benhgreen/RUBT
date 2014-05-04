@@ -207,6 +207,7 @@ public class Peer extends Thread {
 		this.client.addPeerToList(this);
 		System.out.println("Peer added: " + this.peer_id);
 
+		//PerformanceTimerTask performanceTimerTask = new PerformanceTimerTask()
 		this.performanceTimer.scheduleAtFixedRate(new PerformanceTimerTask(this), 2*1000 ,2 * 1000);
 		
 		while (connected){   //runs until we are no longer connected to the Peer
@@ -246,6 +247,10 @@ public class Peer extends Thread {
 				e.printStackTrace();
 			}
 		}
+		performanceTimer.cancel();
+		send_timer.cancel();
+		System.out.println("ending peer: " + peer_id);
+		return;
 	}
 		
 	/**connectToPeer() sets socket connections and input/output streams to the peer
@@ -256,7 +261,7 @@ public class Peer extends Thread {
 		try {
 			this.peerSocket = new Socket(ip, port);
 			//this.peerSocket.setSoTimeout(125*1000); //set the socket timeout for 2 minutes and 10 seconds			
-			this.peerSocket.setSoTimeout(50*1000); //set the socket timeout for 2 minutes and 10 seconds
+			this.peerSocket.setSoTimeout(10*1000); //set the socket timeout for 2 minutes and 10 seconds
 			this.peerOutputStream = new DataOutputStream(peerSocket.getOutputStream());  
 			this.peerInputStream = new DataInputStream(peerSocket.getInputStream());
 			connected = true;
@@ -308,7 +313,7 @@ public class Peer extends Thread {
 			closeConnections();
 			return null;
 		}catch (IOException e1){
-			System.err.println("Peer.java: Handshake Error. Disconnecting peer");  //there was an error reading the handshake, disconnects from the peer.
+			System.err.println("Peer.java Handshake Error. Disconnecting peer");  //there was an error reading the handshake, disconnects from the peer.
 			closeConnections();
 			return null;
 		}
