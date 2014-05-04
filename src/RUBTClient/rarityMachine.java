@@ -8,7 +8,7 @@ import java.util.Random;
 
 public class rarityMachine {
 	
-	private Hashtable<String, boolean[]> pieceset;
+	private Hashtable<byte[], boolean[]> pieceset;
 	private final int piececount;
 	private final int expected;
 	private int[] mybitfield;
@@ -21,7 +21,7 @@ public class rarityMachine {
 	}
 	
 	public rarityMachine(int capacity){
-		this.pieceset = new Hashtable<String, boolean[]>(capacity);
+		this.pieceset = new Hashtable<byte[], boolean[]>(capacity);
 		this.piececount = capacity;
 		this.expected = calcExpected(capacity);
 	}
@@ -30,7 +30,7 @@ public class rarityMachine {
 	 * @param peerid of peer
 	 * @param bitfield of peer
 	 */
-	public void addPeer(String peerid, byte[] bitfield){
+	public void addPeer(byte[] peerid, byte[] bitfield){
 		
 		pieceset.put(peerid, boolfield(bitfield));
 	}
@@ -38,7 +38,7 @@ public class rarityMachine {
 	/**
 	 * @param peerid peer to remove from table
 	 */
-	public void deletePeer(String peerid){
+	public void deletePeer(byte[] peerid){
 		
 		if(pieceset.containsKey(peerid)){
 			pieceset.remove(peerid);
@@ -49,7 +49,7 @@ public class rarityMachine {
 	 * @param peerid to update
 	 * @param piece that should be updated
 	 */
-	public void updatePeer(String peerid, int piece){
+	public void updatePeer(byte[] peerid, int piece){
 		
 		if(pieceset.contains(peerid)){
 			pieceset.get(peerid)[piece] = true;
