@@ -34,22 +34,28 @@ public class RUBTClient extends Thread{
 	public int uploaded;					
 	private int downloaded = 0;					//current sessions downloaded amount
 	final TorrentInfo torrentinfo;		//torrent object extracted by destfile
-	private boolean keepRunning = true;			//event loop flag for main client thread
+	public boolean keepRunning = true;			//event loop flag for main client thread
 	Tracker tracker;					//tracker object that manages communication with tracker
 	DestFile destfile;					//object in change of managing client bitfield and file I/O
 	private final int max_request = 16384;		//maximum number of bytes allowed to be requested of a peer
 	private volatile int   peers_unchoked = 0;
 	private final LinkedBlockingQueue<MessageTask> tasks = new LinkedBlockingQueue<MessageTask>();   //MessageTask queue that client reads form in event loop
 	final List<Peer> peers = Collections.synchronizedList(new LinkedList<Peer>());			 //List of peers currently connected to client
+	final List<Peer> blocking_peers = Collections.synchronizedList(new LinkedList<Peer>());
 	
 	
 	public ExecutorService workers = Executors.newCachedThreadPool();	//thread pool of worker threads that spawn to manage MessageTasks
-	private final Timer trackerTimer = new Timer();						//timertask object that handles timed tracker announcements
-	private final Timer optimisticTimer = new Timer();
+	private final Timer trackerTimer = new Timer("trackerTimer",true);						//timertask object that handles timed tracker announcements
+	private TrackerAnnounceTask trackerTask;
+
+	private final Timer optimisticTimer = new Timer("optimisticTimer",true);
+	private OptimisticChokeTask optimisticTask;
 	
-	private Socket listenSocket;
-	private DataInputStream listenInput;
-	private DataOutputStream listenOutput;
+	public ServerSocket serverSocket;
+	public Socket incomingSocket;
+	public DataInputStream listenInput;
+	public DataOutputStream listenOutput;
+	public ConnectionListener listener;
 	
 	private boolean seeding;
 	
@@ -126,6 +132,8 @@ public class RUBTClient extends Thread{
 	/**
 	 * TimerTask that handles the periodic tracker announcements on set intervals
 	 */
+	
+	
 	private static class TrackerAnnounceTask extends TimerTask {
 		
 		private final RUBTClient client; //client that the TimerTask belongs to which is used for access to tracker
@@ -218,26 +226,14 @@ public class RUBTClient extends Thread{
 	
 	public void run(){
 		
-		//startIncomingConnections();
+		listener = new ConnectionListener(this);
+		listener.start();
 		
 		//starts up listener for user quit input
 		//handles unexpected quitting by ending threads,closing connections, sending stopped event to tracker
 
-		ShutdownHook sample = new ShutdownHook(this);
-		//final Thread mainThread = Thread.currentThread();
-		/*Runtime.getRuntime().addShutdownHook(new Thread(){
-				public void run(){
-					System.out.println("0000000000000000000 in shutdown hook  00000000000000000000000");
-					quitClientLoop();
-					try {
-						mainThread.join();
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					}
-				}
-		});
-		*/
-		sample.attachShutdownHook();
+		ShutdownHook hook = new ShutdownHook(this);
+		hook.attachShutdownHook();
 		startInputListener();
 		
 		final Message message = new Message();
@@ -246,7 +242,7 @@ public class RUBTClient extends Thread{
 		
 			
 		//block until port is set by connection listener thread
-		this.port = 6881;
+		//this.port = 6881;
 		while(this.port == 0){
 		}
 		Response peer_list = contactTracker("started");
@@ -260,7 +256,8 @@ public class RUBTClient extends Thread{
 			}
 			System.out.println("tracker announce interval: " + interval);
 			this.tracker.setInterval(interval);
-			this.trackerTimer.schedule(new TrackerAnnounceTask(this), interval * 1000);
+			trackerTask = new TrackerAnnounceTask(this);
+			this.trackerTimer.schedule(trackerTask, interval * 1000);
 		}
 		
 		/**
@@ -372,9 +369,7 @@ public class RUBTClient extends Thread{
 			}
 			///System.out.println(".");
 		}
-		//Shutdown hook catches exit and cleans up threads/connecitons
 		cleanUp();
-		System.out.println("@@@@@@@@@@@@@@@@@@@@@");
 		return;
 	}
 	
@@ -391,7 +386,8 @@ public class RUBTClient extends Thread{
 			peer.start();
 			//return;
 		}
-		optimisticTimer.scheduleAtFixedRate(new OptimisticChokeTask(this), 10 * 1000, 10 * 1000);
+		optimisticTask = new OptimisticChokeTask(this);
+		optimisticTimer.scheduleAtFixedRate(optimisticTask, 30 * 1000, 30 * 1000);
 	}
 	
 	/**
@@ -409,14 +405,12 @@ public class RUBTClient extends Thread{
 		return false;
 	}
 	
-	
-	
 	/**
 	 * This method checks the handshake check against the information that we know about the peer and the infohash
 	 * @param peer_handshake the remote peers handshake
 	 * @return returns the peer_id of this handshake
 	 */
-	private byte[] handshakeCheck(byte[] peer_handshake){	
+	public byte[] handshakeCheck(byte[] peer_handshake){	
 		
 		byte[] peer_infohash = new byte [20];
 		System.arraycopy(peer_handshake, 28, peer_infohash, 0, 20); //copies the peer's infohash
@@ -645,11 +639,10 @@ public class RUBTClient extends Thread{
 	private void startInputListener(){
 		this.workers.execute(new Runnable(){
 			public void run(){
+				System.out.println("Input listener " +  Thread.currentThread().getName() + " " + Thread.currentThread().getId());
 				Scanner scanner = new Scanner(System.in);
 				while(true){
 					if(scanner.nextLine().equals("quit")){
-						System.out.println("entering shutdown hook");
-						//System.exit(0);
 						quitClientLoop();
 						break;
 					}else{
@@ -659,91 +652,22 @@ public class RUBTClient extends Thread{
 			}
 		});
 	}
-	/**
-	 * Listens on a specific port for incoming connections and adds them to the list
-	 * of currently connected peers
-	 */
-	private void startIncomingConnections(){
-		final RUBTClient client = this;
-		
-		this.workers.execute(new Runnable(){
-			public void run(){
-				boolean validPort = false;
-				client.setPort(6881);
-				ServerSocket listenSocket = null;
-				
-				while(port <= 6889 && !validPort){
-					try {
-						listenSocket = new ServerSocket(port);
-						validPort = true;
-					} catch (IOException e) {
-						client.setPort(port + 1);
-					}
-				}
-				if(port >= 6890){
-					System.err.println("RUBTClient startIncomingConnections(): all valid ports taken. quitting....");
-					quitClientLoop();
-					//replace with gracefull exit methodtra 
-				}
-				while (keepRunning){
-					try{
-						System.out.println("### listen loop ###");
-						if(listenSocket == null){
-							System.err.println("RUBTClient startIncomingConnections: null listener Socket. quitting...");
-							quitClientLoop();
-						}
-						Socket clientSocket = listenSocket.accept();
-						DataInputStream input = new DataInputStream(clientSocket.getInputStream());
-						DataOutputStream output = new DataOutputStream(clientSocket.getOutputStream());
-						Peer peer = new Peer(clientSocket, input, output);
-						Message msg = new Message();
-						byte[] handshake;
-						byte[] peer_id;
-						peer.sendMessage(msg.handShake(torrentinfo.info_hash.array(), tracker.getUser_id()));
-						handshake = peer.handshake();
-						if(handshake == null){
-							continue;
-						}
-						peer_id = handshakeCheck(handshake);
-						if(peer_id == null){
-							System.out.println("no peer id returned from handshake");
-							peer.closeConnections();
-							continue;
-						}
-						String peer_string = Response.asString((ByteBuffer.wrap(peer_id)));
-						peer.setPeer_id(peer_string);
-						System.out.println("@@@@@@@@@@@@@@@@@@  incoming peer id " +  peer_string);
-						peer.setClient(client);
-						peer.setConnected(true);
-						peer.start();
-					}catch(EOFException e){
-						System.err.println("RUBTClient startIncomingConnections: tracker contacted us. just ignore him");
-					}catch(IOException ioe){
-						System.err.println("RUBTClient startIncomingConnections: IOException while handling request");
-					}catch(Exception e){
-						System.err.println("RUBTClient startIncomingConnections: generic exception");
-					}
-				}
-				System.out.println("Ending connection listener thread");
-				return;
-			}
-		});
-		
-		
-	}
+	
 	/**
 	 *Disconnects all currently connected peers and listener socket
 	 */
 	@SuppressWarnings("deprecation")
 	public void closeAllConnections(){
 		for(Peer peer: this.peers){
-			peer.setConnected(false);
 			peer.closeConnections();
-			//peer.stop();
+		}
+		for(Peer peer: this.blocking_peers){
+			peer.closeConnections();
 		}
 		
 		try {
-			if(listenSocket != null) listenSocket.close();
+			if(serverSocket != null) serverSocket.close();
+			if(incomingSocket != null) incomingSocket.close();
 			if(listenOutput != null) listenOutput.close();
 			if(listenInput  != null) listenInput.close();
 			
@@ -754,7 +678,7 @@ public class RUBTClient extends Thread{
 	}
 	
 	public void quitClientLoop(){
-		keepRunning = false;
+		endEventLoop();
 		Message quit_message = new Message();
 		MessageTask quit_task = new MessageTask(null, quit_message.getQuitMessage());
 		addMessageTask(quit_task);
@@ -764,13 +688,18 @@ public class RUBTClient extends Thread{
 		//keepRunning = false;
 		closeAllConnections();
 		contactTracker("stopped");
-		optimisticTimer.cancel();
-		trackerTimer.cancel();
 		
-		workers.shutdownNow();
-		while(!workers.isTerminated()){
-			System.out.println("terminating workers");
-		}
+		optimisticTimer.cancel();
+		optimisticTask.cancel();
+		trackerTimer.cancel();
+		trackerTask.cancel();
+		
+		this.workers.shutdownNow();
+		//this.workers.
+		//this.listener.interrupt();
+		//while(!workers.isTerminated()){
+			//System.out.println("terminating workers");
+		//}
 		System.out.println("Ending Client Program");
 	}
 	
@@ -778,6 +707,9 @@ public class RUBTClient extends Thread{
 		return this.destfile.getMybitfield();
 	}
 	
+	public int getPort(){
+		return this.port;
+	}
 	
 	public void setPort(int port){
 		this.port = port;
@@ -790,7 +722,6 @@ public class RUBTClient extends Thread{
 	public void setSeeding(){
 		this.seeding = true;
 	}
-	
 	
 	/**
 	 *sets flag so client thread can exit event loop 

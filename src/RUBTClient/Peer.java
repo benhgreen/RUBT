@@ -36,12 +36,16 @@ public class Peer extends Thread {
 	
 	private byte[] 				response;
 	private byte[] 				bitfield;
-	private Timer 				send_timer; 		//timers for sends
+	private Timer 				sendTimer; 		//timers for sends
+	private SendTimerTask		sendTask;
 	private RUBTClient 			client;
 	private MessageTask 		message;
 	private boolean				first_sent;  //flag check that the first message after the handshake was sent. is used to make sure bitfield isnt sent in the wrong order. 
 	private Date 				last_sent;
+	
 	private Timer				performanceTimer;
+	private PerformanceTimerTask			performanceTask;
+	
 	private int 				last_requested_piece; 
 	protected double 			recieved_bytes;
 	protected double			recieved_bps;
@@ -71,8 +75,8 @@ public class Peer extends Thread {
 		
 		this.incoming = false;
 		
-		send_timer = new Timer();
-		performanceTimer = new Timer();
+		sendTimer = new Timer("SEND2",true);
+		performanceTimer = new Timer("PERF2",true);
 		last_sent = new Date();
 		
 		
@@ -108,19 +112,20 @@ public class Peer extends Thread {
 		
 		this.incoming = true;
 		
-		send_timer = new Timer();
-		performanceTimer = new Timer();
+		sendTimer = new Timer("SEND TIMER",true);
+		performanceTimer = new Timer("PERF TIMER",true);
 		last_sent = new Date();
+		
 		recieved_bytes = 0;
 		recieved_bps = 0;
 		sent_bytes = 0;
-		sent_bytes = 0;
+		sent_bps = 0;
 	}
 	
 	
 	/**
 	 * @author Manuel Lopez
-	 * @author Ben Greencrystal castles baptism lyrics
+	 * @author Ben Green
 	 * @author Christopher Rios
 	 * Timer task for sending info through a socket. If the timer runs out, the Peer sends a keep alive.
 	 * 
@@ -174,7 +179,7 @@ public class Peer extends Thread {
 	 */
 	public void run(){
 		
-		
+		System.out.println("peer id: " + peer_id + " Thread: "+ Thread.currentThread().getName());
 		byte[] client_bitfield;
 		byte[] handshake;
 		
@@ -182,6 +187,7 @@ public class Peer extends Thread {
 		if (this.client.alreadyConnected(this.peer_id)){
 			System.out.println("Peer.java: error at already connected");
 			this.client.printPeers();
+			if(incoming) this.closeConnections();
 			return;
 		}
 		if(this.peerSocket == null  && !this.connectToPeer()){
@@ -191,6 +197,7 @@ public class Peer extends Thread {
 		Message current_message = new Message();
 
 		if(!incoming){
+			this.client.blocking_peers.add(this);
 			this.sendMessage(current_message.handShake(this.client.torrentinfo.info_hash.array(), this.client.tracker.getUser_id()));
 			handshake = this.handshake();
 			if(handshake == null){
@@ -199,6 +206,7 @@ public class Peer extends Thread {
 				this.closeConnections();
 				return;
 			}
+			this.client.blocking_peers.remove(this);
 		}
 		client_bitfield = current_message.getBitFieldMessage(this.client.destfile.getMybitfield());
 
@@ -207,8 +215,8 @@ public class Peer extends Thread {
 		this.client.addPeerToList(this);
 		System.out.println("Peer added: " + this.peer_id);
 
-		//PerformanceTimerTask performanceTimerTask = new PerformanceTimerTask()
-		this.performanceTimer.scheduleAtFixedRate(new PerformanceTimerTask(this), 2*1000 ,2 * 1000);
+		performanceTask = new PerformanceTimerTask(this);
+		this.performanceTimer.scheduleAtFixedRate(performanceTask, 2*1000 ,2 * 1000);
 		
 		while (connected){   //runs until we are no longer connected to the Peer
 			try {
@@ -247,9 +255,6 @@ public class Peer extends Thread {
 				e.printStackTrace();
 			}
 		}
-		performanceTimer.cancel();
-		send_timer.cancel();
-		System.out.println("ending peer: " + peer_id);
 		return;
 	}
 		
@@ -261,7 +266,7 @@ public class Peer extends Thread {
 		try {
 			this.peerSocket = new Socket(ip, port);
 			//this.peerSocket.setSoTimeout(125*1000); //set the socket timeout for 2 minutes and 10 seconds			
-			this.peerSocket.setSoTimeout(10*1000); //set the socket timeout for 2 minutes and 10 seconds
+			this.peerSocket.setSoTimeout(55*1000); //set the socket timeout for 2 minutes and 10 seconds
 			this.peerOutputStream = new DataOutputStream(peerSocket.getOutputStream());  
 			this.peerInputStream = new DataInputStream(peerSocket.getInputStream());
 			connected = true;
@@ -272,8 +277,10 @@ public class Peer extends Thread {
 			System.err.println("Peer.java connectToPeer(): IOException");
 			return false;
 		}
-		send_timer.scheduleAtFixedRate(new SendTimerTask(this), 0, 10*1000);
+		sendTask = new SendTimerTask(this);
+		sendTimer.scheduleAtFixedRate(sendTask, 0, 10*1000);
 		last_sent.setTime(System.currentTimeMillis());
+		
 		return true;
 	}
 	
@@ -314,6 +321,7 @@ public class Peer extends Thread {
 			return null;
 		}catch (IOException e1){
 			System.err.println("Peer.java Handshake Error. Disconnecting peer");  //there was an error reading the handshake, disconnects from the peer.
+			this.client.blocking_peers.remove(this);
 			closeConnections();
 			return null;
 		}
@@ -346,6 +354,7 @@ public class Peer extends Thread {
 	
 	/** closes input/outputstreams and socket connections 
 	 */
+	@SuppressWarnings("deprecation")
 	public void closeConnections(){
 		//close all streams
 		try {
@@ -357,12 +366,21 @@ public class Peer extends Thread {
 				peerSocket.close();
 			
 			connected = false;
+			this.stop();
+			cleanUp();
 			//send_timer.cancel();  
 		}catch (IOException e){
 			System.out.println("Peer.java: failed to close connections");
 			e.printStackTrace();
 			return;
 		}
+	}
+	private void cleanUp(){
+
+		if(performanceTimer != null) performanceTimer.cancel();
+		if(performanceTask != null ) performanceTask.cancel();
+		if(sendTimer != null) sendTimer.cancel();
+		if(sendTask != null) sendTask.cancel();
 	}
 	
 	/**wait() uses Thread.sleep to allow time for peer to respond to requests
