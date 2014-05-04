@@ -69,7 +69,7 @@ public class Response {
             		HashMap peer = (HashMap) peer_iter.next();
             		Iterator peerinfo_iter = peer.keySet().iterator();
             		
-            		String temp_peer_id = null;
+            		byte[] temp_peer_id = null;
         			String temp_ip = null;
         			Integer temp_port = null;
             		
@@ -79,7 +79,7 @@ public class Response {
             			String temp_info = asString((ByteBuffer) next);
             			
             			if(temp_info.equals("peer id")){
-            				temp_peer_id = asString((ByteBuffer) peer.get(next));
+            				temp_peer_id = ((ByteBuffer) peer.get(next)).array();
             			}else if(temp_info.equals("port")){
             				temp_port = (Integer) peer.get(next);
             			}else if(temp_info.equals("ip")){

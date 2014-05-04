@@ -68,13 +68,13 @@ public class Message
 	 * @param userid our user id
 	 * @return returns a handshake message in the form of a byte array  
 	 */
-	public byte[] handShake( byte[] info_hash, String userid)
+	public byte[] handShake( byte[] info_hash, byte[] userid)
 	{
 		byte[] handshake = new byte[68];
 		
 		System.arraycopy(handshake_consts,0,handshake,0,28);// copies handshake constants
 		System.arraycopy(info_hash, 0, handshake,28 , 20);
-		System.arraycopy(userid.getBytes(), 0, handshake,48 , 20);
+		System.arraycopy(userid, 0, handshake,48 , 20);
 		
 		return handshake;
 	}

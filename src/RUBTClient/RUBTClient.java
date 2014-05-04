@@ -399,10 +399,10 @@ public class RUBTClient extends Thread{
 	 * @param peer_id that will be looked for in list of currently connected peers
 	 * @return true if already connected, false if not
 	 */
-	public synchronized boolean alreadyConnected(String peer_id){
+	public synchronized boolean alreadyConnected(byte[] peer_id){
 		
 		for (Peer peer: this.peers){
-			if (peer.getPeer_id().equals(peer_id)){
+			if (Arrays.equals(peer.getPeer_id(),peer_id)){
 				return true;
 			}
 		}
@@ -710,9 +710,8 @@ public class RUBTClient extends Thread{
 							peer.closeConnections();
 							continue;
 						}
-						String peer_string = Response.asString((ByteBuffer.wrap(peer_id)));
-						peer.setPeer_id(peer_string);
-						System.out.println("@@@@@@@@@@@@@@@@@@  incoming peer id " +  peer_string);
+						peer.setPeer_id(peer_id);
+						System.out.println("@@@@@@@@@@@@@@@@@@  incoming peer id " +  Arrays.toString(peer_id));
 						peer.setClient(client);
 						peer.setConnected(true);
 						peer.start();

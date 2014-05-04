@@ -23,7 +23,7 @@ public class Peer extends Thread {
 	
 	private int 				port;				//port number to access the peer
 	private String  			ip;          		//ip address of peer
-	private String 				peer_id;			//identifying name of peer
+	private byte[] 				peer_id;			//identifying name of peer
 	Socket 						peerSocket;			//socket connection to peer
 	private DataOutputStream	peerOutputStream;	//OuputStream to peer for sending messages
 	private DataInputStream 	peerInputStream;	//InputStream to peer for reading responses
@@ -55,7 +55,7 @@ public class Peer extends Thread {
 	 * @param peer_id id of the peer
 	 * @param port port the peer is on
 	 */
-	public Peer(String ip, String peer_id, Integer port) {//TODO take out timers
+	public Peer(String ip, byte[] peer_id, Integer port) {//TODO take out timers
 		super();
 		this.ip = ip;
 		this.peer_id = peer_id;
@@ -261,7 +261,7 @@ public class Peer extends Thread {
 		try {
 			this.peerSocket = new Socket(ip, port);
 			//this.peerSocket.setSoTimeout(125*1000); //set the socket timeout for 2 minutes and 10 seconds			
-			this.peerSocket.setSoTimeout(10*1000); //set the socket timeout for 2 minutes and 10 seconds
+			this.peerSocket.setSoTimeout(20*1000); //set the socket timeout for 2 minutes and 10 seconds
 			this.peerOutputStream = new DataOutputStream(peerSocket.getOutputStream());  
 			this.peerInputStream = new DataInputStream(peerSocket.getInputStream());
 			connected = true;
@@ -388,7 +388,7 @@ public class Peer extends Thread {
 	/**
 	 * @return the peer's peer_id
 	 */
-	public String getPeer_id() {
+	public byte[] getPeer_id() {
 		return peer_id;
 	}
 
@@ -466,7 +466,11 @@ public class Peer extends Thread {
 		interested = state;
 	}
 	
-	public void setPeer_id(String peer_id){
+	/**
+	 * Sets a peers id
+	 * @param peer_id peer_id of this peer
+	 */
+	public void setPeer_id(byte[] peer_id){
 		this.peer_id = peer_id;
 	}
 	
