@@ -176,7 +176,9 @@ public class DestFile {
 	/**
 	 *  Checks through a (presumed to exist) file for valid pieces and updates mypieces accordingly.
 	 */
-	public void checkExistingFile(){
+	public boolean checkExistingFile(){
+		
+		boolean ret = true;
 		
 		if(!initialized){
 			this.initializeRAF();
@@ -200,6 +202,7 @@ public class DestFile {
 				if(this.verify(temp) == i){
 					mypieces[i] = 2;
 				}else{
+					ret = false;
 					System.out.println("Piece " + i + " is INvalid.");
 					mypieces[i] = 0;
 				}
@@ -207,6 +210,8 @@ public class DestFile {
 				e.printStackTrace();
 			}
 		}
+		
+		return ret;
 		
 	}
 	

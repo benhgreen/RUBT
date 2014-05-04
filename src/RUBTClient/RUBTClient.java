@@ -105,8 +105,9 @@ public class RUBTClient extends Thread{
 		DestFile destfile = new DestFile(torrentinfo, destination);
 		
 		File mp3 = new File(destination);
+		boolean file_complete;
 		if(mp3.exists()){
-			destfile.checkExistingFile();
+			file_complete = destfile.checkExistingFile();
 		}else{
 			destfile.initializeRAF();
 		}
@@ -319,7 +320,7 @@ public class RUBTClient extends Thread{
 									}
 									else
 									{
-										//destfile.myRarityMachine.updatePeer(peer.getPeer_id(),piece);
+										destfile.myRarityMachine.updatePeer(peer.getPeer_id(),piece);
 
 									}
 								}
@@ -327,7 +328,7 @@ public class RUBTClient extends Thread{
 							case Message.BITFIELD:  //Peer sent bitfield. Update peers bitfield and disconnect if not sent at right time
 								if (!peer.getFirstSent()){
 									peer.setFirstSent(true);
-									//destfile.myRarityMachine.addPeer(peer.getPeer_id(),peer.getBitfield());
+									destfile.myRarityMachine.addPeer(peer.getPeer_id(),peer.getBitfield());
 								}else {
 									peer.setConnected(false);
 									removePeer(peer);
@@ -451,7 +452,8 @@ public class RUBTClient extends Thread{
 		if (!peer.isChoked() && peer.isInterested()){ //if our peer is unchoked and we are interested
 			
 			//returns -1 when peer has no piece that we need
-			current_piece = destfile.firstNewPiece(peer.getBitfield());
+			//current_piece = destfile.firstNewPiece(peer.getBitfield());
+			current_piece = destfile.myRarityMachine.rarestPiece();
 			if (current_piece == -1){
 				peer.setInterested(false);
 				return;
