@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Arrays;
+import java.util.Random;
 import java.util.Scanner;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -35,8 +36,8 @@ public class RUBTClient extends Thread{
 	private int downloaded = 0;					//current sessions downloaded amount
 	final TorrentInfo torrentinfo;		//torrent object extracted by destfile
 	public boolean keepRunning = true;			//event loop flag for main client thread
-	Tracker tracker;					//tracker object that manages communication with tracker
-	DestFile destfile;					//object in change of managing client bitfield and file I/O
+	public Tracker tracker;					//tracker object that manages communication with tracker
+	public DestFile destfile;					//object in change of managing client bitfield and file I/O
 	private final int max_request = 16384;		//maximum number of bytes allowed to be requested of a peer
 	private volatile int   peers_unchoked = 0;
 	private final LinkedBlockingQueue<MessageTask> tasks = new LinkedBlockingQueue<MessageTask>();   //MessageTask queue that client reads form in event loop
@@ -51,11 +52,11 @@ public class RUBTClient extends Thread{
 	private final Timer optimisticTimer = new Timer("optimisticTimer",true);
 	private OptimisticChokeTask optimisticTask;
 	
-	public ServerSocket serverSocket;
-	public Socket incomingSocket;
-	public DataInputStream listenInput;
-	public DataOutputStream listenOutput;
-	public ConnectionListener listener;
+	protected ServerSocket serverSocket;
+	protected Socket incomingSocket;
+	protected DataInputStream listenInput;
+	protected DataOutputStream listenOutput;
+	protected ConnectionListener listener;
 	
 	private boolean seeding;
 	
@@ -180,9 +181,11 @@ public class RUBTClient extends Thread{
 			
 			double bytes_per_second = 0;
 			double lowest_bps = Integer.MAX_VALUE;
+			
 			if(client.peers.size() < 1) return;
+			
 			Peer dropped_peer = client.peers.get(0);
-
+			Peer picked_up_peer = null;
 			Message message = new Message();
 			
 			boolean seeding = client.getSeeding();  //replace this with an actual call the the client field
@@ -207,11 +210,13 @@ public class RUBTClient extends Thread{
 			//replace this with a random way of getting the peer
 			for (Peer peer: client.peers){
 				if (peer.isChoking()){
+					choked_peers.add(peer);
+					/*
 					peer.sendMessage(message.getUnchoke());  
 					choked_peers.add(peer);
 					peer.setChoking(false);
 					System.out.println("Peer: " + peer.getPeer_id() + " has been unchoked");
-					break;
+					*/
 				}
 			}
 			
@@ -219,6 +224,14 @@ public class RUBTClient extends Thread{
 			dropped_peer.setChoking(true);
 			System.out.println("Peer: " + dropped_peer.getPeer_id() + " has been choked");
 			
+			Random randomGenerator = new Random();
+			
+			if(choked_peers.size() > 0){ 
+				picked_up_peer = choked_peers.get(randomGenerator.nextInt(choked_peers.size()));
+				picked_up_peer.sendMessage(message.getUnchoke());
+				picked_up_peer.setChoked(false);
+				System.out.println("Peer: " + picked_up_peer.getPeer_id() + " has been unchoked");
+			}
 			System.out.println("downloaded "+ client.downloaded);
 			System.out.println("@@@@@@@@@@@@@  Optimizely Time done  @@@@@@@@@@@@");
 		}
@@ -251,8 +264,8 @@ public class RUBTClient extends Thread{
 		{	
 			//set tracer interval based on initial tracker response and set timer
 			int interval = peer_list.interval;
-			if(interval <= 0){
-				interval = 60;
+			if(interval <= 0 || interval >= 180){
+				interval = 120;
 			}
 			System.out.println("tracker announce interval: " + interval);
 			this.tracker.setInterval(interval);
@@ -295,11 +308,11 @@ public class RUBTClient extends Thread{
 							case Message.INTERESTED: //Peer is interested in our data. Unchoke them
 								System.out.println("Peer " + peer.getPeer_id() + " sent interested");
 								peer.setRemoteInterested(true);
-							if (peers_unchoked < 3){ //if we have less then 3 peers unchoked, we unchoke another peer
-								peer.sendMessage(message.getUnchoke());   
-								peer.setChoking(false);
-								incrementUnchoked();   //  increment the amount of peers we have unchoked
-							}
+								if (peers_unchoked < 3){ //if we have less then 3 peers unchoked, we unchoke another peer
+									peer.sendMessage(message.getUnchoke());   
+									peer.setChoking(false);
+									incrementUnchoked();   //  increment the amount of peers we have unchoked
+								}
 								break;
 							case Message.HAVE:  //Peer has new piece. Update their bitfield and check conditions for requesting their piece
 								if (peer.isChoked()){
@@ -314,10 +327,8 @@ public class RUBTClient extends Thread{
 										peer.setFirstSent(true);
 										peer.sendMessage(message.getInterested());
 									}
-									else
-									{
+									else{
 										//destfile.myRarityMachine.updatePeer(peer.getPeer_id(),piece);
-
 									}
 								}
 								break;
@@ -337,10 +348,8 @@ public class RUBTClient extends Thread{
 								}
 								break;
 							case Message.REQUEST:	//Peer wants our piece. Check choked state and send chunk
-								if(!isValidRequest(msg,peer))  //if the request is not valid or we are currently choking the peer, we disconnect the peer
-								{
-									if(!peer.isChoking())
-									{
+								if(!isValidRequest(msg,peer)){  //if the request is not valid or we are currently choking the peer, we disconnect the peer
+									if(!peer.isChoking()){
 									peer.setConnected(false);
 									System.out.println("REQUEST CLOSING CONNECTION");
 									removePeer(peer);
@@ -357,7 +366,6 @@ public class RUBTClient extends Thread{
 									getNextBlock(msg,peer);
 								}
 								break;
-								
 							case Message.QUIT:	 	//User has input quit command. Disconnect from all peers and set loop flag to false to exit
 								endEventLoop();
 								break;
@@ -380,11 +388,9 @@ public class RUBTClient extends Thread{
 	 */
 	public void addPeers(List<Peer> newPeers){
 		
-		//int i = 1;
 		for (Peer peer: newPeers){
 			peer.setClient(this);
 			peer.start();
-			//return;
 		}
 		optimisticTask = new OptimisticChokeTask(this);
 		optimisticTimer.scheduleAtFixedRate(optimisticTask, 30 * 1000, 30 * 1000);

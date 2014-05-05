@@ -186,7 +186,7 @@ public class Peer extends Thread {
 		System.out.println("checking peer: " + this.getPeer_id());
 		if (this.client.alreadyConnected(this.peer_id)){
 			System.out.println("Peer.java: error at already connected");
-			this.client.printPeers();
+			//this.client.printPeers();
 			if(incoming) this.closeConnections();
 			return;
 		}
