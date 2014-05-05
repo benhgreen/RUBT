@@ -86,7 +86,8 @@ public class DestFile {
 
 	
 	/**Takes in a Piece object and writes its data to the location specified by the piece length and offset.
-	 * @param Piece object containing data to add to the target file 
+	 * @param id Piece object containing data to add to the target file 
+	 * @return true if piece verifies
 	 */
 	public synchronized boolean addPiece(int id){
 		if(verify(this.pieces[id].getData()) == id){
@@ -127,7 +128,7 @@ public class DestFile {
 	}
 	
 	/**
-	 * @param Piece with data to verify
+	 * @param piece with data to verify
 	 * @return True if the piece's data hash was located in the TorrentInfo's data hash array, false if it was not found.
 	 */
 	public int verify(byte[] piece){
@@ -175,7 +176,9 @@ public class DestFile {
 	/**
 	 *  Checks through a (presumed to exist) file for valid pieces and updates mypieces accordingly.
 	 */
-	public void checkExistingFile(){
+	public boolean checkExistingFile(){
+		
+		boolean ret = true;
 		
 		if(!initialized){
 			this.initializeRAF();
@@ -199,6 +202,7 @@ public class DestFile {
 				if(this.verify(temp) == i){
 					mypieces[i] = 2;
 				}else{
+					ret = false;
 					System.out.println("Piece " + i + " is INvalid.");
 					mypieces[i] = 0;
 				}
@@ -206,6 +210,8 @@ public class DestFile {
 				e.printStackTrace();
 			}
 		}
+		
+		return ret;
 		
 	}
 	
@@ -268,10 +274,10 @@ public class DestFile {
 	}
 	
 	/**
-	 * @param byte[] array - Bitfield to modify
-	 * @param int i - Position (in bytes) to modify
+	 * @param array - Bitfield to modify
+	 * @param i - Position (in bytes) to modify
 	 * @param bool
-	 * @return
+	 * @return modified byte array
 	 */
 	public byte[] manualMod(byte[] array, int i, boolean bool){
 		
@@ -310,9 +316,9 @@ public class DestFile {
 	
 	/**Returns a chunk of data from a piece, presumably for uploading
 	 * 
-	 * @param int piece - which piece to select
-	 * @param int start - the offset within the piece to begin the data chunk
-	 * @param int amount - in bytes, how much data to return
+	 * @param piece - which piece to select
+	 * @param start - the offset within the piece to begin the data chunk
+	 * @param amount - in bytes, how much data to return
 	 * @return a byte[] with the data requested
 	 */
 	public byte[] getPieceData(int piece, int start, int amount){
@@ -338,7 +344,7 @@ public class DestFile {
 	
 	/**Marks a piece as 'in progress' by setting its flag to 1
 	 * 
-	 * @param int pos - which piece to mark 'in progress'
+	 * @param pos - which piece to mark 'in progress'
 	 */
 	public synchronized void markInProgress(int pos){
 		mypieces[pos] = 1;
@@ -346,7 +352,7 @@ public class DestFile {
 	
 	/**Clears a piece's 'in progress' status by setting its flag to 0
 	 * 
-	 * @param int pos - which piece to mark 'in progress'
+	 * @param pos - which piece to mark 'in progress'
 	 */
 	public synchronized void clearProgress(int pos){
 		if(mypieces[pos] != 2){
@@ -355,22 +361,42 @@ public class DestFile {
 	}
 		
 	//various getters and setters	
+	/**
+	 * Gets the name of the file
+	 * @return name of the file
+	 */
 	public String getFilename() {
 		return filename;
 	}
 
+	/**
+	 * Sets the name of the file to be downloaded
+	 * @param filename name of the file to be downloaded 
+	 */
 	public void setFilename(String filename) {
 		this.filename = filename;
 	}
 
+	/**
+	 * Gets torrent info
+	 * @return TorrentInfo object 
+	 */
 	public TorrentInfo getTorrentinfo() {
 		return torrentinfo;
 	}
 
+	/**
+	 * Sets the torrent info
+	 * @param torrentinfo info of the torrent
+	 */
 	public void setTorrentinfo(TorrentInfo torrentinfo) {
 		this.torrentinfo = torrentinfo;
 	}
 
+	/**
+	 * Sets the client for a given file.
+	 * @param client client that is downloading the file
+	 */
 	public void setClient(RUBTClient client) {
 		this.client = client;
 	}

@@ -17,6 +17,7 @@ public class Counter implements Comparable<Counter>{
 	 * increment this Counter by 1
 	 */
 	public void increment(){
+		//System.out.println("INCREMENTING PIECE " + identifier + " TO " + count+1);
 		this.count++;
 	}
 

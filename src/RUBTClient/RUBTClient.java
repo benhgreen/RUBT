@@ -58,7 +58,7 @@ public class RUBTClient extends Thread{
 	protected DataOutputStream listenOutput;
 	protected ConnectionListener listener;
 	
-	private boolean seeding;
+	private static boolean seeding;
 	
 	/**
 	 * RUBTClient constructor
@@ -112,12 +112,18 @@ public class RUBTClient extends Thread{
 		DestFile destfile = new DestFile(torrentinfo, destination);
 		
 		File mp3 = new File(destination);
+		boolean file_complete=false;
 		if(mp3.exists()){
-			destfile.checkExistingFile();
+			file_complete = destfile.checkExistingFile();
 		}else{
 			destfile.initializeRAF();
 		}
+		if(file_complete)
+		{
+			seeding=true;
+		}
 		//builds bitfield based off of local mp3 file
+		
 		destfile.renewBitfield(); 
 		RUBTClient client = new RUBTClient(destfile); 
 		//set client field of destfile to current client for later tracker util
@@ -401,10 +407,10 @@ public class RUBTClient extends Thread{
 	 * @param peer_id that will be looked for in list of currently connected peers
 	 * @return true if already connected, false if not
 	 */
-	public synchronized boolean alreadyConnected(String peer_id){
+	public synchronized boolean alreadyConnected(byte[] peer_id){
 		
 		for (Peer peer: this.peers){
-			if (peer.getPeer_id().equals(peer_id)){
+			if (Arrays.equals(peer.getPeer_id(),peer_id)){
 				return true;
 			}
 		}
@@ -452,6 +458,7 @@ public class RUBTClient extends Thread{
 			
 			//returns -1 when peer has no piece that we need
 			current_piece = destfile.firstNewPiece(peer.getBitfield());
+			//current_piece = destfile.myRarityMachine.rarestPiece();
 			if (current_piece == -1){
 				peer.setInterested(false);
 				return;
@@ -638,6 +645,7 @@ public class RUBTClient extends Thread{
 		}
 		piece = piece_message.getPieceMessage(destfile, index_bytes, length, begin_bytes);  //gets a piece message
 		peer.sent_bytes += piece.length;
+		uploaded+=piece.length;
 		peer.sendMessage(piece);  //sends it off to peer to be uploaded through the socket
 		return true;
 	}
@@ -658,7 +666,6 @@ public class RUBTClient extends Thread{
 			}
 		});
 	}
-	
 	/**
 	 *Disconnects all currently connected peers and listener socket
 	 */

@@ -27,7 +27,7 @@ public class Tracker {
 	private int 			interval;			//milliseconds expected between tracker announcements
 	private String 			url; 				//url contructed for annoucning to the
 	private String			encodedInfoHash;	//escaped info hash of torrent info 
-	private String 			usrid;				//identifying peer id for client
+	private byte[] 			usrid;				//identifying peer id for client
 	
 	
 	/**Tracker constructor generates out client peer_id
@@ -137,21 +137,6 @@ public class Tracker {
 	/**RandomID generates random alphanumeric peer_id for client and assigns to peer_id field
 	 */
 	public void randomID(){
-		String id = "GROUP4";
-		String randomChar;
-		int randomKey;
-		Random r = new Random();
-		
-		while(id.length()<20){
-			randomKey = r.nextInt(36);
-			if(randomKey < 26)
-				randomChar = String.valueOf((char)(randomKey + 65));
-			else
-				randomChar = String.valueOf((char)(randomKey + 22));
-			id = id + randomChar;
-		}
-		this.usrid = id;
-		/*
 		byte[] idHeader = {'G','R','O', 'U','P','0','4'};
 		byte[] idTail = new byte[13];
 		int randomKey;
@@ -167,14 +152,14 @@ public class Tracker {
 		byte id[] = new byte[20];
 		System.arraycopy(idHeader, 0, id, 0, 7);
 		System.arraycopy(idTail, 0, id, 7, 13);
-		System.out.println(asString(ByteBuffer.wrap(id)));
+		System.out.println(Response.asString(ByteBuffer.wrap(id)));
 		this.usrid = id;
-		*/
+		
 	}
 	
 	 /**@return GetRequest.userid
 	 */
-	public String getUser_id()
+	public byte[] getUser_id()
 	{
 		return usrid;
 	}

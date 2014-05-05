@@ -6,6 +6,7 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 public class ConnectionListener extends Thread{
 	private final RUBTClient client;
@@ -63,9 +64,9 @@ public class ConnectionListener extends Thread{
 					peer.closeConnections();
 					continue;
 				}
-				String peer_string = Response.asString((ByteBuffer.wrap(peer_id)));
-				peer.setPeer_id(peer_string);
-				System.out.println("@@@@@@@@@@@@@@@@@@  incoming peer id " +  peer_string);
+				//byte[] peer_byte_array = ByteBuffer.wrap(peer_id);
+				peer.setPeer_id(peer_id);
+				System.out.println("@@@@@@@@@@@@@@@@@@  incoming peer id " +  Arrays.toString(peer_id));
 				peer.setClient(client);
 				peer.setConnected(true);
 				peer.start();
