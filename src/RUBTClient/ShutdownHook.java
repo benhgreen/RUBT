@@ -18,8 +18,8 @@ public class ShutdownHook{
 			//cleans up at end of program by closing all connections and all spawned threads
 			//also sends stopped tracker event
 			public void run(){
-				System.out.println("000000000000 in shutdown hook   000000000000000");
-				client.cleanUp();
+				if(client.isAlive()) 
+					client.cleanUp();
 			}
 		});
 	}

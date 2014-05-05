@@ -70,8 +70,7 @@ public class ConnectionListener extends Thread{
 			}catch(EOFException e){
 				System.err.println("RUBTClient startIncomingConnections: tracker contacted us. just ignore him");
 			}catch(IOException ioe){
-				System.out.println("");
-				System.err.println("RUBTClient startIncomingConnections: IOException while handling request");
+				System.out.println('\n' + "RUBTClient startIncomingConnections: IOException while handling request" + '\n');
 			}catch(Exception e){
 				System.err.println("RUBTClient startIncomingConnections: generic exception");
 			}
