@@ -16,7 +16,6 @@ public class ConnectionListener extends Thread{
 	}
 	
 	public void run(){
-		System.out.println("incoming connections listener " + Thread.currentThread().getName() + " " + Thread.currentThread().getId());
 		boolean validPort = false;
 		client.setPort(6881);
 		client.serverSocket = null;
@@ -33,11 +32,9 @@ public class ConnectionListener extends Thread{
 			System.err.println("RUBTClient startIncomingConnections(): all valid ports taken. quitting....");
 			client.quitClientLoop();
 			return;
-			//replace with gracefull exit methodtra 
 		}
 		while (client.keepRunning){
 			try{
-				System.out.println( "### listen loop ###");
 				if(client.serverSocket == null){
 					System.err.println("RUBTClient startIncomingConnections: null listener Socket. quitting...");
 					client.quitClientLoop();
@@ -49,6 +46,7 @@ public class ConnectionListener extends Thread{
 				client.incomingSocket = client.serverSocket.accept();
 				client.listenInput = new DataInputStream(client.incomingSocket.getInputStream());
 				client.listenOutput = new DataOutputStream(client.incomingSocket.getOutputStream());
+				
 				Peer peer = new Peer(client.incomingSocket, client.listenInput, client.listenOutput);
 				Message msg = new Message();
 				byte[] handshake;
@@ -64,9 +62,8 @@ public class ConnectionListener extends Thread{
 					peer.closeConnections();
 					continue;
 				}
-				//byte[] peer_byte_array = ByteBuffer.wrap(peer_id);
 				peer.setPeer_id(peer_id);
-				System.out.println("@@@@@@@@@@@@@@@@@@  incoming peer id " +  Arrays.toString(peer_id));
+				System.out.println("incoming peer id " +  peer_id);
 				peer.setClient(client);
 				peer.setConnected(true);
 				peer.start();

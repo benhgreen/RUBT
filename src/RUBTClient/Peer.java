@@ -19,8 +19,6 @@ import java.util.Timer;
  */
 public class Peer extends Thread {
 	
-	
-	
 	private int 				port;				//port number to access the peer
 	private String  			ip;          		//ip address of peer
 	private byte[] 				peer_id;			//identifying name of peer
@@ -179,7 +177,7 @@ public class Peer extends Thread {
 	 */
 	public void run(){
 		
-		System.out.println("peer id: " + peer_id + " Thread: "+ Thread.currentThread().getName());
+		//System.out.println("peer id: " + peer_id + " Thread: "+ Thread.currentThread().getName());
 		byte[] client_bitfield;
 		byte[] handshake;
 		

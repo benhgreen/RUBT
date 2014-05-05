@@ -34,6 +34,8 @@ public class RUBTClient extends Thread{
 	 */
 	public int uploaded;					
 	private int downloaded = 0;					//current sessions downloaded amount
+	
+	private int unchokeLimit = 3;
 	final TorrentInfo torrentinfo;		//torrent object extracted by destfile
 	public boolean keepRunning = true;			//event loop flag for main client thread
 	public Tracker tracker;					//tracker object that manages communication with tracker
@@ -135,12 +137,9 @@ public class RUBTClient extends Thread{
 		client.start();			
 	}
 	
-	
 	/**
 	 * TimerTask that handles the periodic tracker announcements on set intervals
 	 */
-	
-	
 	private static class TrackerAnnounceTask extends TimerTask {
 		
 		private final RUBTClient client; //client that the TimerTask belongs to which is used for access to tracker
@@ -156,10 +155,6 @@ public class RUBTClient extends Thread{
 			
 			//add peers to list of connected client peers and resets timer for next announcement 
 			this.client.addPeers(newPeers);  
-			
-			for(Peer peer: newPeers){
-				//System.out.println("adding peers: " + peer.getPeer_id());
-			}
 			
 			System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    tracker timer     @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
 			System.out.println("new interval: " + this.client.tracker.getInterval());
@@ -213,21 +208,17 @@ public class RUBTClient extends Thread{
 					}
 				}
 			}
-			//replace this with a random way of getting the peer
+			
 			for (Peer peer: client.peers){
 				if (peer.isChoking()){
 					choked_peers.add(peer);
-					/*
-					peer.sendMessage(message.getUnchoke());  
-					choked_peers.add(peer);
-					peer.setChoking(false);
-					System.out.println("Peer: " + peer.getPeer_id() + " has been unchoked");
-					*/
 				}
 			}
 			
 			dropped_peer.sendMessage(message.getChoke());
 			dropped_peer.setChoking(true);
+			client.decrementUnchoked();
+			
 			System.out.println("Peer: " + dropped_peer.getPeer_id() + " has been choked");
 			
 			Random randomGenerator = new Random();
@@ -235,7 +226,8 @@ public class RUBTClient extends Thread{
 			if(choked_peers.size() > 0){ 
 				picked_up_peer = choked_peers.get(randomGenerator.nextInt(choked_peers.size()));
 				picked_up_peer.sendMessage(message.getUnchoke());
-				picked_up_peer.setChoked(false);
+				picked_up_peer.setChoking(false);
+				client.incrementUnchoked();
 				System.out.println("Peer: " + picked_up_peer.getPeer_id() + " has been unchoked");
 			}
 			System.out.println("downloaded "+ client.downloaded);
@@ -261,7 +253,6 @@ public class RUBTClient extends Thread{
 		
 			
 		//block until port is set by connection listener thread
-		//this.port = 6881;
 		while(this.port == 0){
 		}
 		Response peer_list = contactTracker("started");
@@ -284,7 +275,6 @@ public class RUBTClient extends Thread{
 		 * inputting "quit". Client reads from a queue of Message tasks and spawns
 		 * threads to deal with each task based on the message id
 		 */
-		System.out.println("starting loop");
 		while(keepRunning){
 
 			try{
@@ -381,7 +371,6 @@ public class RUBTClient extends Thread{
 			}catch (InterruptedException ie){
 				System.err.println("caught interrupt. continuing anyway");
 			}
-			///System.out.println(".");
 		}
 		cleanUp();
 		return;
@@ -669,7 +658,6 @@ public class RUBTClient extends Thread{
 	/**
 	 *Disconnects all currently connected peers and listener socket
 	 */
-	@SuppressWarnings("deprecation")
 	public void closeAllConnections(){
 		for(Peer peer: this.peers){
 			peer.closeConnections();
@@ -708,11 +696,6 @@ public class RUBTClient extends Thread{
 		trackerTask.cancel();
 		
 		this.workers.shutdownNow();
-		//this.workers.
-		//this.listener.interrupt();
-		//while(!workers.isTerminated()){
-			//System.out.println("terminating workers");
-		//}
 		System.out.println("Ending Client Program");
 	}
 	
@@ -733,7 +716,7 @@ public class RUBTClient extends Thread{
 	}
 	
 	public void setSeeding(){
-		this.seeding = true;
+		seeding = true;
 	}
 	
 	/**
@@ -745,6 +728,10 @@ public class RUBTClient extends Thread{
 	
 	private synchronized void incrementUnchoked(){
 		peers_unchoked++;
+	}
+	
+	private synchronized void decrementUnchoked(){
+		peers_unchoked--;
 	}
 	
 	private void clearProgress(Peer peer){
