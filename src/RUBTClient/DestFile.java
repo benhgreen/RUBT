@@ -201,6 +201,7 @@ public class DestFile {
 				this.dest.read(temp);
 				if(this.verify(temp) == i){
 					mypieces[i] = 2;
+					this.incomplete -= (this.pieces[i].getData().length);
 				}else{
 					ret = false;
 					System.out.println("Piece " + i + " is INvalid.");
