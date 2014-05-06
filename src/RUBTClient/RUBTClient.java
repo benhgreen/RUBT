@@ -324,14 +324,14 @@ public class RUBTClient extends Thread{
 										peer.sendMessage(message.getInterested());
 									}
 									else{
-										//destfile.myRarityMachine.updatePeer(peer.getPeer_id(),piece);
+										destfile.myRarityMachine.updatePeer(peer.getPeer_id(),piece);
 									}
 								}
 								break;
 							case Message.BITFIELD:  //Peer sent bitfield. Update peers bitfield and disconnect if not sent at right time
 								if (!peer.getFirstSent()){
 									peer.setFirstSent(true);
-									//destfile.myRarityMachine.addPeer(peer.getPeer_id(),peer.getBitfield());
+									destfile.myRarityMachine.addPeer(peer.getPeer_id(),peer.getBitfield());
 								}else {
 									peer.setConnected(false);
 									removePeer(peer);
@@ -446,8 +446,10 @@ public class RUBTClient extends Thread{
 		if (!peer.isChoked() && peer.isInterested()){ //if our peer is unchoked and we are interested
 			
 			//returns -1 when peer has no piece that we need
-			current_piece = destfile.firstNewPiece(peer.getBitfield());
-			//current_piece = destfile.myRarityMachine.rarestPiece();
+			//current_piece = destfile.firstNewPiece(peer.getBitfield());
+			//System.out.println("Printing remote peer bitfield");
+			//DestFile.printBitfield(peer.getBitfield(), this.destfile.expectedbytes);
+			current_piece = destfile.myRarityMachine.rarestPiece(peer.getBitfield());
 			if (current_piece == -1){
 				peer.setInterested(false);
 				return;

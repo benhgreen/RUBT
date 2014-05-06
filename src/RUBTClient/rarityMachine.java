@@ -13,6 +13,8 @@ public class rarityMachine {
 	private final int expected;
 	private int[] mybitfield;
 	
+	private boolean[] requested;
+	
 	/**
 	 * @param mybitfield to update this bitfield with. Uses the same format as mypieces in Destfile
 	 */
@@ -24,14 +26,17 @@ public class rarityMachine {
 		this.pieceset = new Hashtable<byte[], boolean[]>(capacity);
 		this.piececount = capacity;
 		this.expected = calcExpected(capacity);
+		this.requested = new boolean[capacity];
 	}
 	
 	/**Add peer to table with initial bitfield
 	 * @param peerid of peer
 	 * @param bitfield of peer
 	 */
-	public void addPeer(byte[] peerid, byte[] bitfield){
+	public synchronized void addPeer(byte[] peerid, byte[] bitfield){
 		
+		//System.out.println("ADDING BITFIELD FOR " + peerid);
+		//DestFile.printBitfield(bitfield, expected);
 		pieceset.put(peerid, boolfield(bitfield));
 	}
 
@@ -51,6 +56,7 @@ public class rarityMachine {
 	 */
 	public void updatePeer(byte[] peerid, int piece){
 		
+		//System.out.println("UPDATING PEER" + peerid);
 		if(pieceset.contains(peerid)){
 			pieceset.get(peerid)[piece] = true;
 		}
@@ -116,6 +122,9 @@ public class rarityMachine {
 			for(int i = 0; i < piececount; i++){
 				if(temp[i]){
 					count[i].increment();
+					//System.out.println("Piece " + i + " incremented to " + count[i].getCount());
+				}else{
+					//System.out.println("PIECE " + i + " NOT INCREMENTED");
 				}
 			}
 		}
@@ -125,18 +134,20 @@ public class rarityMachine {
 	/**
 	 * @return identifier number of the rarest piece
 	 */
-	public synchronized int rarestPiece(){
+	public synchronized int rarestPiece(byte[] bitfield){
 		
 		Counter[] values = enumerate();
 		Arrays.sort(values);
 		
-		Counter rarest = identifyRarest(values);
+		Counter rarest = identifyRarest(values, bitfield);
 		
 //		System.out.println("PRINTING RARITIES");
 //		System.out.println("--------------------");
 //		for(int i = 0; i<piececount; i++){
 //			System.out.println("Piece " + values[i].getIdentifier() + ": " + values[i].getCount());
 //		}
+//		
+//		System.out.println("RAREST PIECE IS: " + rarest.getIdentifier());
 		
 		return rarest.getIdentifier();
 	}
@@ -145,7 +156,7 @@ public class rarityMachine {
 	 * @param values, hopefully already sorted in ascending order of popularity
 	 * @return Smallest piece. TODO implement randomness
 	 */
-	private Counter identifyRarest(Counter[] values) {
+	private Counter identifyRarest(Counter[] values, byte[] bitfield) {
 		
 //		int benchmark = values[0].getCount();
 //		int cutoff = 0;
@@ -166,11 +177,15 @@ public class rarityMachine {
 //			select = generator.nextInt();
 //		}
 		
-		int i = 0;
+		boolean[] bools = boolfield(bitfield);
 		
-		while(mybitfield[i] == 2){
-			i++;
+		for(int i = 0; i<piececount; i++){
+			if(!(mybitfield[i] == 2 || !bools[i] || requested[i])){
+				requested[i] = true;
+				return values[i];
+			}
 		}
-		return values[i];
+		
+		return new Counter(-1);
 	}
 }

@@ -1,5 +1,6 @@
 package RUBTClient;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -29,7 +30,7 @@ public class DestFile {
 	
 	private boolean initialized;
 	public Piece[] pieces;
-	private int expectedbytes;
+	public int expectedbytes;
 	private RUBTClient client;
 	
 	public DestFile(TorrentInfo torrentinfo, String filename){
@@ -73,6 +74,12 @@ public class DestFile {
 	 * Set up RAF associated with this DestFile
 	 */
 	public void initializeRAF(){
+		
+	File deleet = new File(filename, "rw");
+	if(!deleet.delete()){
+		System.out.println("trouble deleeting");
+	}
+		
 		try {
 			dest = new RandomAccessFile(filename,"rw");
 			dest.setLength(torrentinfo.file_length);
@@ -339,6 +346,14 @@ public class DestFile {
 		System.out.print("Bitfield:");
 		for(int i = 0; i<expectedbytes; i++){
 			System.out.print(" " + String.format("%8s", Integer.toBinaryString(mybitfield[i] & 0xFF)).replace(' ', '0'));
+		}
+		System.out.print("\n");
+	}
+	
+	public static void printBitfield(byte[] bitfield, int exp){
+		System.out.print("Bitfield:");
+		for(int i = 0; i<exp; i++){
+			System.out.print(" " + String.format("%8s", Integer.toBinaryString(bitfield[i] & 0xFF)).replace(' ', '0'));
 		}
 		System.out.print("\n");
 	}
