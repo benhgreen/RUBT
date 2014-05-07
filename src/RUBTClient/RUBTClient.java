@@ -1,66 +1,66 @@
 package RUBTClient;
 
-import java.net.ServerSocket;
+import java.io.*;
+import java.util.*;
 import java.net.Socket;
 import java.nio.ByteBuffer;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Arrays;
-import java.util.Random;
-import java.util.Scanner;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.concurrent.ExecutorService;
+import java.net.ServerSocket;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.io.*;
-
 
 import edu.rutgers.cs.cs352.bt.TorrentInfo;
 import edu.rutgers.cs.cs352.bt.exceptions.BencodingException;
 
 /**
- * @author Manuel Lopez
  * @author Ben Green
+ * @author Manuel Lopez
  * @author Christopher Rios
- *
+ */
+
+
+/**
+ * RUBTClient class parses torrentinfo file, initializes Random Access File, and spawns
+ * main client thread to begin the torrent program
  */
 public class RUBTClient extends Thread{
 	
-	private int port = 0;					//Port that the client will be listening for connections
-	/**
-	 * @field uploaded number of bytes written to other peers
-	 */
-	public int uploaded;					
-	private int downloaded = 0;					//current sessions downloaded amount
-	
-	private int unchokeLimit = 3;
-	final TorrentInfo torrentinfo;		//torrent object extracted by destfile
-	public boolean keepRunning = true;			//event loop flag for main client thread
-	public Tracker tracker;					//tracker object that manages communication with tracker
-	public DestFile destfile;					//object in change of managing client bitfield and file I/O
-	private final int max_request = 16384;		//maximum number of bytes allowed to be requested of a peer
-	private volatile int   peers_unchoked = 0;
-	private final LinkedBlockingQueue<MessageTask> tasks = new LinkedBlockingQueue<MessageTask>();   //MessageTask queue that client reads form in event loop
-	final List<Peer> peers = Collections.synchronizedList(new LinkedList<Peer>());			 //List of peers currently connected to client
-	final List<Peer> blocking_peers = Collections.synchronizedList(new LinkedList<Peer>());
-	
-	
-	public ExecutorService workers = Executors.newCachedThreadPool();	//thread pool of worker threads that spawn to manage MessageTasks
-	private final Timer trackerTimer = new Timer("trackerTimer",true);						//timertask object that handles timed tracker announcements
-	private TrackerAnnounceTask trackerTask;
+	public Tracker 	tracker;					
+	public DestFile destfile;
+	public int 		uploaded;					
+	public boolean 	keepRunning = true;			
 
-	private final Timer optimisticTimer = new Timer("optimisticTimer",true);
-	private OptimisticChokeTask optimisticTask;
 	
-	protected ServerSocket serverSocket;
-	protected Socket incomingSocket;
-	protected DataInputStream listenInput;
-	protected DataOutputStream listenOutput;
+	public final TorrentInfo torrentinfo;		
+	
+	public final List<Peer> peers = Collections.synchronizedList(new LinkedList<Peer>());			 
+	public final List<Peer> blocking_peers = Collections.synchronizedList(new LinkedList<Peer>());
+	
+	public ExecutorService 	workers = Executors.newCachedThreadPool();	
+	
+	protected Socket 			 incomingSocket;
+	protected ServerSocket 		 serverSocket;
+	protected DataInputStream 	 listenInput;
+	protected DataOutputStream 	 listenOutput;
 	protected ConnectionListener listener;
 	
-	private static boolean seeding;
+	private int	 			port = 0;					
+	private int 			downloaded = 0;					
+	private final int 		max_request = 16384;		
+	private static boolean 	seeding;
+
+	private int				unchokeLimit = 3;
+	private volatile int   	unchokedPeers = 0;
+	
+
+	private final Timer 		trackerTimer = new Timer("trackerTimer",true);						
+	private TrackerAnnounceTask trackerTask;
+
+	private final Timer 		optimisticTimer = new Timer("optimisticTimer",true);
+	private OptimisticChokeTask optimisticTask;
+	
+	private final LinkedBlockingQueue<MessageTask> tasks = new LinkedBlockingQueue<MessageTask>();   
+
 	
 	/**
 	 * RUBTClient constructor
@@ -73,13 +73,15 @@ public class RUBTClient extends Thread{
 	}
 	
 	/**
-	 * @param args string array containing torrent file and name of the file we 
-	 * download.
+	 * main method parses torrent info file before spawning a RUBTClient thread to handle the bit torrent protocol
+	 * @param args 
+	 * arg1: name of torrent file with metadata of file to be downloaded
+	 * arg2: name of file that downloaded file will be saved if no such file exist
 	 */
 	public static void main(String[] args){
 		
 		//verifies command line arguments
-		if(args.length != 2){
+		if (args.length != 2){
 			System.err.println("Usage: java RUBT <torrent> <destination>");
 			return;
 		}
@@ -96,33 +98,34 @@ public class RUBTClient extends Thread{
 		
 		byte[] torrentbytes = new byte[(int)torrent.length()];
 		
-		try{
+		try {
 			fileInputStream = new FileInputStream(torrent);
 			fileInputStream.read(torrentbytes);
 			fileInputStream.close();
-		}catch(Exception e){
+		}catch (Exception e){
 			e.printStackTrace();
 		}
 		
-		try{
+		try {
 			torrentinfo = new TorrentInfo(torrentbytes);
-		}catch (BencodingException e) {
+		} catch (BencodingException e) {
 			System.err.println("Beencoding Exception!");
 			e.printStackTrace();
 		}
 		
 		DestFile destfile = new DestFile(torrentinfo, destination);
 		
-		File mp3 = new File(destination);
-		boolean file_complete=false;
-		if(mp3.exists()){
+		File mp4 = new File(destination);
+		boolean file_complete= false;
+		
+		if (mp4.exists()){
 			file_complete = destfile.checkExistingFile();
-		}else{
+		}else {
 			destfile.initializeRAF();
 		}
-		if(file_complete)
-		{
-			seeding=true;
+		
+		if (file_complete){
+			seeding = true;
 		}
 		//builds bitfield based off of local mp3 file
 		
@@ -138,16 +141,25 @@ public class RUBTClient extends Thread{
 	}
 	
 	/**
-	 * TimerTask that handles the periodic tracker announcements on set intervals
+	 * TimerTask that handles periodic tracker announcements and retrieves the trackers new
+	 * list of peers
 	 */
 	private static class TrackerAnnounceTask extends TimerTask {
 		
-		private final RUBTClient client; //client that the TimerTask belongs to which is used for access to tracker
+		private final RUBTClient client;
 		
+		/**
+		 * @param client RUBTClient object whose thread makes initial TrackerAnnounec Tasks
+		 * 		  and whose methods are use in TrackerAnnoucneTask run method
+		 */
 		public TrackerAnnounceTask(final RUBTClient client){
 			this.client = client;
 		}
 		
+		/**
+		 * At specified interval, TrackerAnnounceTask calls contactTracker from RUBTClient and adds the peers
+		 * returned from the tracker response. Ends with setting the new interval for the next TrackerAnnounceTask
+		 */
 		public void run(){
 			//get list of peers from periodic tracker announcement (null for no event)
 			Response peer_list = this.client.contactTracker(null);
@@ -168,14 +180,23 @@ public class RUBTClient extends Thread{
 		}
 	}
 	
+	
 	private static class OptimisticChokeTask extends TimerTask{
 		
 		private final RUBTClient client;
 		
+		/**
+		 * @param client RUBTClient object whose thread makes the initial OptimisticChokeTask
+		 * 		  and whose methods are called in the task's run
+		 */
 		public OptimisticChokeTask(final RUBTClient client){
 			this.client = client;
 		}
 		
+		/**
+		 * OptimisticChokeTask retrieves the peer with the lowest bytes per second sent to or received from depending on
+		 * clients not seeding/seeding status respectively. Lowest peer is choked 
+		 */
 		public void run(){
 			
 			List<Peer> choked_peers = new LinkedList<Peer>();
@@ -183,7 +204,7 @@ public class RUBTClient extends Thread{
 			double bytes_per_second = 0;
 			double lowest_bps = Integer.MAX_VALUE;
 			
-			if(client.peers.size() < 1) return;
+			if (client.peers.size() < 1) return;
 			
 			Peer dropped_peer = client.peers.get(0);
 			Peer picked_up_peer = null;
@@ -194,10 +215,10 @@ public class RUBTClient extends Thread{
 			System.out.println("seeding: " + seeding);
 			for (Peer peer: client.peers){
 				if (!peer.isChoking()){
-					if(seeding){
+					if (seeding){
 						bytes_per_second = peer.sent_bps;
-					}else{
-						bytes_per_second = peer.recieved_bps;
+					}else {
+						bytes_per_second = peer.received_bps;
 					}
 					
 					System.out.println(peer.getPeer_id() + " performance: " + bytes_per_second + "bps");
@@ -215,15 +236,17 @@ public class RUBTClient extends Thread{
 				}
 			}
 			
-			dropped_peer.sendMessage(message.getChoke());
-			dropped_peer.setChoking(true);
-			client.decrementUnchoked();
+			if(client.unchokedPeers > 1){
+				dropped_peer.sendMessage(message.getChoke());
+				dropped_peer.setChoking(true);
+				client.decrementUnchoked();
+			}
 			
 			System.out.println("Peer: " + dropped_peer.getPeer_id() + " has been choked");
 			
 			Random randomGenerator = new Random();
 			
-			if(choked_peers.size() > 0){ 
+			if (choked_peers.size() > 0){ 
 				picked_up_peer = choked_peers.get(randomGenerator.nextInt(choked_peers.size()));
 				picked_up_peer.sendMessage(message.getUnchoke());
 				picked_up_peer.setChoking(false);
@@ -235,6 +258,14 @@ public class RUBTClient extends Thread{
 		}
 	}
 	
+	
+	/** 
+	 *	Main client thread
+	 *	Initializes connection listener, shutdown hook, and tracker announcement timer. Gets lists of peers
+	 *	from tracker and enters event loop where it recieved MessageTasks from tasks queue and spawns
+	 *	worker threads from CachedThreadPool to handle each MessageTask. Runs until keepRunning flag is made 
+	 * 	false and calls graceful shutdown method
+	 */
 	public void run(){
 		
 		listener = new ConnectionListener(this);
@@ -304,7 +335,7 @@ public class RUBTClient extends Thread{
 							case Message.INTERESTED: //Peer is interested in our data. Unchoke them
 								System.out.println("Peer " + peer.getPeer_id() + " sent interested");
 								peer.setRemoteInterested(true);
-								if (peers_unchoked < 3){ //if we have less then 3 peers unchoked, we unchoke another peer
+								if (unchokedPeers < unchokeLimit){ //if we have less then 3 peers unchoked, we unchoke another peer
 									peer.sendMessage(message.getUnchoke());   
 									peer.setChoking(false);
 									incrementUnchoked();   //  increment the amount of peers we have unchoked
@@ -358,7 +389,7 @@ public class RUBTClient extends Thread{
 									removePeer(peer);
 								}else {
 									//increment recieved bytes
-									peer.recieved_bytes += msg.length;
+									peer.received_bytes += msg.length;
 									getNextBlock(msg,peer);
 								}
 								break;
@@ -378,17 +409,23 @@ public class RUBTClient extends Thread{
 	
 	/**
 	 * addPeers takes a list of new peers to be added to the list of currently connected peers
-	 * checks peers are already connected. If not, attempt to connect, verify handshake, and accept bitfield 
+	 * starts threads of all peer objects, which internally handle cases such as alreadyConnected
+	 * and verified handshakes. After adding peers
 	 * @param newPeers List of Peers to be connected to
 	 */
 	public void addPeers(List<Peer> newPeers){
 		
+		//iterate thru passed in peers and fire up each of their threads
 		for (Peer peer: newPeers){
 			peer.setClient(this);
 			peer.start();
 		}
-		optimisticTask = new OptimisticChokeTask(this);
-		optimisticTimer.scheduleAtFixedRate(optimisticTask, 30 * 1000, 30 * 1000);
+		
+		//ensure that the timerTask is only made the first time addPeers is called
+		if(optimisticTask == null){ 
+			optimisticTask = new OptimisticChokeTask(this);
+			optimisticTimer.scheduleAtFixedRate(optimisticTask, 30 * 1000, 30 * 1000);
+		}
 	}
 	
 	/**
@@ -406,41 +443,23 @@ public class RUBTClient extends Thread{
 		return false;
 	}
 	
-	/**
-	 * This method checks the handshake check against the information that we know about the peer and the infohash
-	 * @param peer_handshake the remote peers handshake
-	 * @return returns the peer_id of this handshake
-	 */
-	public byte[] handshakeCheck(byte[] peer_handshake){	
-		
-		byte[] peer_infohash = new byte [20];
-		System.arraycopy(peer_handshake, 28, peer_infohash, 0, 20); //copies the peer's infohash
-		byte[] peer_id = new byte[20];
-		System.arraycopy(peer_handshake,48,peer_id,0,20);//copies the peer id.
-		
-		if (Arrays.equals(peer_infohash, this.torrentinfo.info_hash.array())){  //returns true if the peer id matches and the info hash matches
-			return peer_id;
-		}else {
-			return null;
-		}
-	}
 	
 	/**
-	 * This method is called by the peer to give messages to the client's queue
-	 * @param task to be sent to the clients queue
+	 * 
+	 * Pushed MessageTask object into tasks queue for client to process in event loop
+	 * @param task MessageTask to be pushed into the client's queue
 	 */
 	public synchronized  void addMessageTask(MessageTask task){
 		tasks.add(task);
 	}
 	
 	/**
-	 * This method picks which piece to be requested from a remote peer
-	 * @param peer Peer who we are attempting to request a piece from
+	 * Picks which piece to be requested from a remote peer
+	 * @param peer Peer that the selected piece is being requested from
 	 */
 	public synchronized void chooseAndRequestPiece(final Peer peer){
 		int current_piece = 0;
 	   	int offset_counter = 0;
-	   	int pieces = torrentinfo.piece_length/max_request;
 	   	Message current_message = new Message();
 	   	byte[] request_message;
 		if (!peer.isChoked() && peer.isInterested()){ //if our peer is unchoked and we are interested
@@ -464,27 +483,17 @@ public class RUBTClient extends Thread{
 			}
 	   		request_message = current_message.request(current_piece, offset_counter, max_request);
 	   		
-	   		System.out.println("requesting piece "+current_piece);
+	   		System.out.println("requesting piece " + current_piece);
 			peer.sendMessage(request_message);
 	   	}
 	}
-	
-	/**
-	 * Takes a piece message from a peer, saves it to our file and figures out what piece to request next
-	 * @param block
-	 * @param peer
-	 */
 	
 	private synchronized void addChunk(int piece, int offset,byte[] data){
 		byte[] chunk = new byte[data.length-9];
 		System.arraycopy(data, 9, chunk, 0, data.length-9);
 		destfile.pieces[piece].assemble(chunk,offset);
 	}
-	/**
-	 * Gets the next block of a piece
-	 * @param block block of data received
-	 * @param peer peer received from 
-	 */
+	
 	private void getNextBlock(byte[] block,Peer peer){
 		Message message = new Message();
 		byte[] request;
@@ -521,7 +530,7 @@ public class RUBTClient extends Thread{
 			}else {
 				small_request = (torrentinfo.file_length%torrentinfo.piece_length) % max_request;
 				request = message.request(piece, offset + max_request, small_request);
-				if (peer.isChoked()){			//TODO i don't know how to handle starting up again if we get choked mid piece request
+				if (peer.isChoked()){			
 	   				System.out.println("got choked out");
 	   				return;
 	   			}else {
@@ -552,9 +561,9 @@ public class RUBTClient extends Thread{
 	}
 	
 	/**
-	 * This method sends contacts tracker and sends it events
-	 * @param event type of event to be sent to the tracker
-	 * @return Response to be sent
+	 * Contacts tracker with a specified 
+	 * @param event Name of event to be sent to the tracker
+	 * @return Response Object that a new list of peers can be parsed
 	 */
 	public Response contactTracker(String event){
 		this.tracker.updateProgress(this.torrentinfo.file_length - this.destfile.incomplete, this.uploaded);
@@ -587,23 +596,16 @@ public class RUBTClient extends Thread{
 	}
 	
 	/**
-	 * Adds a peer to the client's peer list.
-	 * @param peer peer to be added to our peer list
+	 * Adds a peer to the client's list of vetted peers whose handshakes have checked out
+	 * @param peer Peer object being added to the client's list
 	 */
-	
-	public void printPeers(){
-		System.out.println("Printing peers");
-		for(Peer peer: this.peers){
-			System.out.println("####  " + peer.getPeer_id() + " ###");
-		}
-	}
 	public synchronized void addPeerToList(Peer peer){
 		peers.add(peer);
 	}
 	          
 	/**
-	 * Remove peer takes in a peer and removes/disconnects it from the list of active peers
-	 * @param peer peer to be removed
+	 * Removes given peer from the client's list of active peers
+	 * @param peer Peer to be removed
 	 */
 	public void removePeer(Peer peer){
 		if (peers.contains(peer)){
@@ -616,7 +618,8 @@ public class RUBTClient extends Thread{
 	
 	/**
 	 * Check to see if we have been issued a valid request, if true composes and sends the piece data
-	 * @param message request message in question
+	 * @param message Request message in question
+	 * @return true if we have the piece request, false if otherwise
 	 */
 	private boolean isValidRequest(byte[] message,Peer peer){
 		Message piece_message = new Message();
@@ -636,29 +639,13 @@ public class RUBTClient extends Thread{
 		}
 		piece = piece_message.getPieceMessage(destfile, index_bytes, length, begin_bytes);  //gets a piece message
 		peer.sent_bytes += piece.length;
-		uploaded+=piece.length;
+		uploaded += piece.length;
 		peer.sendMessage(piece);  //sends it off to peer to be uploaded through the socket
 		return true;
 	}
 	
-	private void startInputListener(){
-		this.workers.execute(new Runnable(){
-			public void run(){
-				System.out.println("Input listener " +  Thread.currentThread().getName() + " " + Thread.currentThread().getId());
-				Scanner scanner = new Scanner(System.in);
-				while(true){
-					if(scanner.nextLine().equals("quit")){
-						quitClientLoop();
-						break;
-					}else{
-						System.out.println("incorrect input. try typing \"quit\"");
-					}
-				}
-			}
-		});
-	}
 	/**
-	 *Disconnects all currently connected peers and listener socket
+	 *Disconnects all currently connected peers and closes listener socket
 	 */
 	public void closeAllConnections(){
 		for(Peer peer: this.peers){
@@ -680,6 +667,9 @@ public class RUBTClient extends Thread{
 		System.out.println("All connections closed");
 	}
 	
+	/**
+	 * Sets keepRunning flag to false and inserts quit MessageTask in task queue for safe measure
+	 */
 	public void quitClientLoop(){
 		endEventLoop();
 		Message quit_message = new Message();
@@ -687,53 +677,91 @@ public class RUBTClient extends Thread{
 		addMessageTask(quit_task);
 	}
 	
+	
+	/**
+	 * Graceful shutdown closes all peer connections and listener sockets,
+	 * sends stopped event to tracker, ends all timerTasks, and shuts down 
+	 * all worker threads in CachedThreadPool
+	 */
 	public void cleanUp(){
-		//keepRunning = false;
 		closeAllConnections();
 		contactTracker("stopped");
 		
-		optimisticTimer.cancel();
-		optimisticTask.cancel();
-		trackerTimer.cancel();
 		trackerTask.cancel();
+		trackerTimer.cancel();
+		optimisticTask.cancel();
+		optimisticTimer.cancel();
 		
 		this.workers.shutdownNow();
 		System.out.println("Ending Client Program");
 	}
 	
+	private void startInputListener(){
+		this.workers.execute(new Runnable(){
+			/** 
+			 * Worker threads that listens in console for user input to quit program
+			 */
+			public void run(){
+				Scanner scanner = new Scanner(System.in);
+				while(true){
+					if(scanner.nextLine().equals("quit")){
+						quitClientLoop();
+						break;
+					}else{
+						System.out.println("incorrect input. try typing \"quit\"");
+					}
+				}
+			}
+		});
+	}
+	
+	
+	/**
+	 * @return Clients bitfield representation of verified pieces saved to disk
+	 */
 	public byte[] getbitfield(){
 		return this.destfile.getMybitfield();
 	}
 	
+	
+	/**
+	 * @return Port number client listens to for incoming connections
+	 */
 	public int getPort(){
 		return this.port;
 	}
 	
+	/**
+	 * @param port Port number client listens to for incoming connections
+	 */
 	public void setPort(int port){
 		this.port = port;
 	}
 	
+	/**
+	 * @return true when client has all pieces downloaded and verified
+	 */
 	public boolean getSeeding(){
-		return this.seeding;
+		return seeding;
 	}
 	
+	/**
+	 * Set clients seeding state to true when all pieces are obtained and verified
+	 */
 	public void setSeeding(){
 		seeding = true;
 	}
 	
-	/**
-	 *sets flag so client thread can exit event loop 
-	 */
 	private synchronized void endEventLoop(){
 		this.keepRunning = false;
 	}
 	
 	private synchronized void incrementUnchoked(){
-		peers_unchoked++;
+		unchokedPeers++;
 	}
 	
 	private synchronized void decrementUnchoked(){
-		peers_unchoked--;
+		unchokedPeers--;
 	}
 	
 	private void clearProgress(Peer peer){

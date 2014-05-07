@@ -1,20 +1,41 @@
 package RUBTClient;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
+import java.util.Arrays;
+import java.net.ServerSocket;
 import java.io.EOFException;
 import java.io.IOException;
-import java.net.ServerSocket;
-import java.nio.ByteBuffer;
-import java.util.Arrays;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 
+
+/**
+ * @author Ben Green
+ * @author Manuel Lopez
+ * @author Christopher Rios
+ */
+
+/**
+ *	Handles incoming connections from peers
+ */
+/**
+ * @author admin
+ *
+ */
 public class ConnectionListener extends Thread{
 	private final RUBTClient client;
 	
+	/**
+	 * @param client RUBTClient thread that initializes ConnectionListener
+	 */
 	public ConnectionListener(final RUBTClient client){
 		this.client = client;
 	}
 	
+	/** 
+	 * ConnectionListener picks a valid ports to listen on and on accepting an incoming connection
+	 * it makes a new peer object, verifies it with handshake, and adds in to the clients
+	 * list of connected peers
+	 */
 	public void run(){
 		boolean validPort = false;
 		client.setPort(6881);
@@ -56,7 +77,7 @@ public class ConnectionListener extends Thread{
 				if(handshake == null){
 					continue;
 				}
-				peer_id = client.handshakeCheck(handshake);
+				peer_id = handshakeCheck(handshake);
 				if(peer_id == null){
 					System.out.println("no peer id returned from handshake");
 					peer.closeConnections();
@@ -77,5 +98,19 @@ public class ConnectionListener extends Thread{
 		}
 		System.out.println("Ending connection listener thread");
 		return;
+	}
+	
+	private byte[] handshakeCheck(byte[] peer_handshake){	
+
+		byte[] peer_infohash = new byte [20];
+		System.arraycopy(peer_handshake, 28, peer_infohash, 0, 20); //copies the peer's infohash
+		byte[] peer_id = new byte[20];
+		System.arraycopy(peer_handshake,48,peer_id,0,20);//copies the peer id.
+
+		if (Arrays.equals(peer_infohash, this.client.torrentinfo.info_hash.array())){ //returns true if the peer id matches and the info hash matches
+			return peer_id;
+		}else {
+			return null;
+		}
 	}
 }	
