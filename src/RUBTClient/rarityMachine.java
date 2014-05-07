@@ -12,8 +12,7 @@ public class rarityMachine {
 	private final int piececount;
 	private final int expected;
 	private int[] mybitfield;
-	
-	private boolean[] requested;
+	private DestFile destfile;
 	
 	/**
 	 * @param mybitfield to update this bitfield with. Uses the same format as mypieces in Destfile
@@ -22,11 +21,11 @@ public class rarityMachine {
 		this.mybitfield = mybitfield;
 	}
 	
-	public rarityMachine(int capacity){
+	public rarityMachine(int capacity, DestFile destfile){
 		this.pieceset = new Hashtable<byte[], boolean[]>(capacity);
 		this.piececount = capacity;
 		this.expected = calcExpected(capacity);
-		this.requested = new boolean[capacity];
+		this.destfile = destfile;
 	}
 	
 	/**Add peer to table with initial bitfield
@@ -180,8 +179,8 @@ public class rarityMachine {
 		boolean[] bools = boolfield(bitfield);
 		
 		for(int i = 0; i<piececount; i++){
-			if(!(mybitfield[i] == 2 || !bools[i] || requested[i])){
-				requested[i] = true;
+			if(mybitfield[i] == 0 && bools[i]){
+				destfile.markInProgress(i);
 				return values[i];
 			}
 		}
