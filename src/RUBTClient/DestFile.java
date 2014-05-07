@@ -42,7 +42,7 @@ public class DestFile {
 		this.incomplete = torrentinfo.file_length;
 		this.filename = filename;
 		
-		this.myRarityMachine = new rarityMachine(torrentinfo.piece_hashes.length);
+		this.myRarityMachine = new rarityMachine(torrentinfo.piece_hashes.length, this);
 		
 		//calculate sizes of arrays representing pieces, bitfields, etc
 		mypieces = new int[torrentinfo.piece_hashes.length];
@@ -74,11 +74,6 @@ public class DestFile {
 	 * Set up RAF associated with this DestFile
 	 */
 	public void initializeRAF(){
-		
-	File deleet = new File(filename, "rw");
-	if(!deleet.delete()){
-		System.out.println("trouble deleeting");
-	}
 		
 		try {
 			dest = new RandomAccessFile(filename,"rw");
