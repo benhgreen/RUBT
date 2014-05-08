@@ -25,17 +25,41 @@ import edu.rutgers.cs.cs352.bt.exceptions.BencodingException;
  */
 public class RUBTClient extends Thread{
 	
+	/**
+	 * tracker of the client
+	 */
 	public Tracker 	tracker;					
+	/**
+	 * destination file that the client is downloading into
+	 */
 	public DestFile destfile;
+	/**
+	 * amount client has uploaded
+	 */
 	public int 		uploaded;					
+	/**
+	 * flag whether to keep our client running or not
+	 */
 	public boolean 	keepRunning = true;			
 
 	
+	/**
+	 *  info of the torrent
+	 */
 	public final TorrentInfo torrentinfo;		
 	
+	/**
+	 *  list of all the peers we are connected to
+	 */
 	public final List<Peer> peers = Collections.synchronizedList(new LinkedList<Peer>());			 
+	/**
+	 * list of peers who are currently choked
+	 */
 	public final List<Peer> blocking_peers = Collections.synchronizedList(new LinkedList<Peer>());
 	
+	/**
+	 *  thread pool workers who perform actions
+	 */
 	public ExecutorService 	workers = Executors.newCachedThreadPool();	
 	
 	protected Socket 			 incomingSocket;
@@ -548,12 +572,6 @@ public class RUBTClient extends Thread{
 		}else if (offset + max_request == torrentinfo.piece_length){ 	//checks if we got the last chunk of a piece
 			if (destfile.addPiece(piece)){
 				this.downloaded += destfile.pieces[piece].data.length;
-				
-				Peer[] array = peers.toArray(new Peer[peers.size()]);
-				
-				//for(int i = 0; i < array.length; i++){
-					//array[i].sendMessage(message.getHaveMessage(piece_bytes));
-				//}
 				
 				for (Peer all_peer: this.peers){
 					all_peer.sendMessage(message.getHaveMessage(piece_bytes));

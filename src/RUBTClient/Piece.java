@@ -9,9 +9,15 @@ package RUBTClient;
 
 public class Piece {
 	
+	/**
+	 * @field data data of the piece
+	 */
 	public byte[] data;
 	private int offset;
 	
+	/**
+	 * @param size size of the piece object
+	 */
 	public Piece(int size)
 	{
 		this.data = new byte[size];

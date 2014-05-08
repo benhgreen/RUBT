@@ -3,7 +3,6 @@ package RUBTClient;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.nio.ByteBuffer;
-import java.util.Arrays;
 /**
  * @author Manuel Lopez
  * @author Ben Green
