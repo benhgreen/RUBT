@@ -507,10 +507,17 @@ public class RUBTClient extends Thread{
 					System.out.println("Giving the last piece");
 					
 					System.out.println("Downloaded "+ downloaded);
-					for(Peer all_peer: this.peers){
+					
+					Peer[] array = peers.toArray(new Peer[peers.size()]);
+					
+					//for(Peer all_peer: this.peers){
 						//System.out.println("Sending a have");
-						all_peer.sendMessage(message.getHaveMessage(piece_bytes));
+						//all_peer.sendMessage(message.getHaveMessage(piece_bytes));
+					//}
+					for(int i = 0; i < array.length; i++){
+						array[i].sendMessage(message.getHaveMessage(piece_bytes));
 					}
+					
 					chooseAndRequestPiece(peer);
 				}
 				else{
