@@ -1,5 +1,6 @@
 package RUBTClient;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -29,7 +30,7 @@ public class DestFile {
 	
 	private boolean initialized;
 	public Piece[] pieces;
-	private int expectedbytes;
+	public int expectedbytes;
 	private RUBTClient client;
 	
 	public DestFile(TorrentInfo torrentinfo, String filename){
@@ -41,7 +42,7 @@ public class DestFile {
 		this.incomplete = torrentinfo.file_length;
 		this.filename = filename;
 		
-		this.myRarityMachine = new rarityMachine(torrentinfo.piece_hashes.length);
+		this.myRarityMachine = new rarityMachine(torrentinfo.piece_hashes.length, this);
 		
 		//calculate sizes of arrays representing pieces, bitfields, etc
 		mypieces = new int[torrentinfo.piece_hashes.length];
@@ -73,6 +74,7 @@ public class DestFile {
 	 * Set up RAF associated with this DestFile
 	 */
 	public void initializeRAF(){
+		
 		try {
 			dest = new RandomAccessFile(filename,"rw");
 			dest.setLength(torrentinfo.file_length);
@@ -339,6 +341,14 @@ public class DestFile {
 		System.out.print("Bitfield:");
 		for(int i = 0; i<expectedbytes; i++){
 			System.out.print(" " + String.format("%8s", Integer.toBinaryString(mybitfield[i] & 0xFF)).replace(' ', '0'));
+		}
+		System.out.print("\n");
+	}
+	
+	public static void printBitfield(byte[] bitfield, int exp){
+		System.out.print("Bitfield:");
+		for(int i = 0; i<exp; i++){
+			System.out.print(" " + String.format("%8s", Integer.toBinaryString(bitfield[i] & 0xFF)).replace(' ', '0'));
 		}
 		System.out.print("\n");
 	}

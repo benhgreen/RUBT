@@ -1,19 +1,17 @@
 package RUBTClient;
 
-
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.Random;
 import java.nio.ByteBuffer;
-import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
-import java.io.InputStreamReader;
+import java.io.ByteArrayOutputStream;
+
+
 /**
- * @author Manuel Lopez
  * @author Ben Green
+ * @author Manuel Lopez
  * @author Christopher Rios
- *
  */
 
 /**Tracker object that manages the connection  and all communication to tracker
@@ -31,6 +29,7 @@ public class Tracker {
 	
 	
 	/**Tracker constructor generates out client peer_id
+	 * @param file_length Length of file specified by torrentinfo in bytes
 	 */
 	public Tracker(int file_length){
 		this.downloaded = 0;
@@ -52,13 +51,11 @@ public class Tracker {
 	/** constructURL() builds the initial url to contact the tracker
 	 * @param announce_url based url extracted from torrentinfo
 	 * @param info_hash byte[] extracted from torrentinfo
-	 * @param port_num  port number extracted from torreninfo
-	 * @param file_length file length in bytes extracted from torrentinfo
+	 * @param port Port number that client is listening on for incoming connections
 	 */
 	public void constructURL(String announce_url, ByteBuffer info_hash, int port){   //construct url key/value pairs
 		
 		this.port = port;
-		this.file_length = file_length;
 		String info_hash_encoded = "?info_hash=" + encodeHash(info_hash);
 		String peer_id = "&peer_id=" + usrid;
 		String port_field = "&port=" + port;
@@ -107,6 +104,7 @@ public class Tracker {
 	}
 	
 	/**sendGetRequest() takes the contructed URL, makes a URL object, and connects to the tracker for a response
+	 * @param event name of event being passed to the tracker (start, stopped, completed, <blank>)
 	 * @return bencoded response of peer list
 	 * @throws Exception IOException when opening connection to tracker
 	 */
@@ -126,7 +124,7 @@ public class Tracker {
 		ByteArrayOutputStream encoded_response = new ByteArrayOutputStream();
 		int tracker_response = datastream.read();
 		//String bencoded_response = "";
-		while(tracker_response!=-1){
+		while(tracker_response != -1){
 			encoded_response.write(tracker_response);
 			tracker_response=datastream.read();
 		}
@@ -134,7 +132,7 @@ public class Tracker {
 		return encoded_response.toByteArray();
 	}
 	
-	/**RandomID generates random alphanumeric peer_id for client and assigns to peer_id field
+	/** Generates random alphanumeric peer_id  byte array for client and assigns to peer_id field
 	 */
 	public void randomID(){
 		byte[] idHeader = {'G','R','O', 'U','P','0','4'};
@@ -157,38 +155,37 @@ public class Tracker {
 		
 	}
 	
-	 /**@return GetRequest.userid
+	 /**@return user id of our client
 	 */
-	public byte[] getUser_id()
-	{
+	public byte[] getUser_id(){
 		return usrid;
 	}
 	
-	/** @return this.url
+	/** @return url used to contact tracker
 	 */
 	public String getUrl() {
 		return url;
 	}
 
-	/**@param url String to be set to this.url
+	/**@param url URL used to contact tracker
 	 */
 	public void setUrl(String url) {
 		this.url = url;
 	}
 
-	/**@return this.port_nuil
+	/**@return port number kept by tracker
 	 */
 	public int getPort() {
 		return this.port;
 	}
 
-	/**@param port int port number to be set to this.port_num
+	/**@param port Port number tracker will instruct peers to contact our client
 	 */
 	public void setPort_num(int port) {
 		this.port = port;
 	}
 
-	/**@return this.getEncodedHash
+	/**@return encoded hash of torrent info
 	 */
 	public String getEncodedInfoHash() {
 		return encodedInfoHash;
@@ -201,7 +198,7 @@ public class Tracker {
 		this.encodedInfoHash = encodedInfoHash;
 	}
 
-	/** @return this.getFile_length
+	/** @return length of file specified by torrent info
 	 */
 	public int getFile_length() {
 		return file_length;
@@ -225,22 +222,28 @@ public class Tracker {
 		this.downloaded = downloaded;
 	}
 
-	/** @return this.getUploaded
+	/** @return uploaded Amount of bytes uploaded in current session
 	 */
 	public int getUploaded() {
 		return uploaded;
 	}
 
-	/** @param uploaded int of uploaded bytes to be set to this.uploaded
+	/** @param uploaded Amount of bytes uploaded in current session
 	 */
 	public void setUploaded(int uploaded) {
 		this.uploaded = uploaded;
 	}
 	
+	/**
+	 * @return interval Time until next tracker contact
+	 */
 	public int getInterval() {
 		return this.interval;
 	}	
 	
+	/**
+	 * @param interval Time until next tracker contact
+	 */
 	public void setInterval(int interval) {
 		this.interval = interval;
 	}

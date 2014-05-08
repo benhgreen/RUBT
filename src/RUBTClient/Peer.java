@@ -8,49 +8,53 @@ import java.util.TimerTask;
 import java.util.Timer;
 
 /**
- * @author Manuel Lopez
  * @author Ben Green
+ * @author Manuel Lopez
  * @author Christopher Rios
- *
  */
 
-
-/** Peer object handles all communication between client and peer
+/**
+ *  Peer object handles all communication between client and peer
  */
 public class Peer extends Thread {
 	
-	private int 				port;				//port number to access the peer
-	private String  			ip;          		//ip address of peer
-	private byte[] 				peer_id;			//identifying name of peer
-	Socket 						peerSocket;			//socket connection to peer
-	private DataOutputStream	peerOutputStream;	//OuputStream to peer for sending messages
-	private DataInputStream 	peerInputStream;	//InputStream to peer for reading responses
-	private boolean 			choked; 			//checks if we are being choked
-	private boolean 			choking; 			//checks if we are choking the connected peer
-	private boolean			 	connected;			//checks if peer is disconnected
+	private String  			ip;
+	private int 				port;				
+	private byte[] 				peer_id;			
+	
+	private Socket 				peerSocket;			
+	private DataInputStream 	peerInputStream;	
+	private DataOutputStream	peerOutputStream;	
+	
+	private boolean 			choked; 			
+	private boolean 			choking; 	
+	private boolean 			incoming;
+	private boolean			 	connected;			
 	private boolean 			interested;
 	private boolean 			remote_interested;
-	private boolean 			incoming;
 	
 	private byte[] 				response;
 	private byte[] 				bitfield;
-	private Timer 				sendTimer; 		//timers for sends
-	private SendTimerTask		sendTask;
+	
+	
+	private Date 				last_sent;
+	private boolean				first_sent;  
 	private RUBTClient 			client;
 	private MessageTask 		message;
-	private boolean				first_sent;  //flag check that the first message after the handshake was sent. is used to make sure bitfield isnt sent in the wrong order. 
-	private Date 				last_sent;
-	
-	private Timer				performanceTimer;
-	private PerformanceTimerTask			performanceTask;
 	
 	private int 				last_requested_piece; 
-	protected double 			recieved_bytes;
-	protected double			recieved_bps;
 	
-	protected double			sent_bytes;
 	protected double			sent_bps;
+	protected double			sent_bytes;
+	protected double			received_bps;
+	protected double 			received_bytes;
 	
+	private Timer 				sendTimer; 		
+	private SendTimerTask		sendTask;
+	
+	private Timer					performanceTimer;
+	private PerformanceTimerTask	performanceTask;
+
 	/**
 	 * Usual constructor of Peer, when we create and connect to a peer first
 	 * @param ip ip of the peer
@@ -58,30 +62,32 @@ public class Peer extends Thread {
 	 * @param port port the peer is on
 	 */
 	public Peer(String ip, byte[] peer_id, Integer port) {//TODO take out timers
-		super();
+		//super();
 		this.ip = ip;
-		this.peer_id = peer_id;
 		this.port = port;
+		this.peer_id = peer_id;
+
+		sent_bytes = 0;
+		sent_bytes = 0;
+		received_bps = 0;
+		received_bytes = 0;
+		
 		this.peerSocket = null;
 		this.peerInputStream = null;
 		this.peerOutputStream = null;
-		this.first_sent = false;
+		
 		this.choked = true;
 		this.choking = true;
+		this.incoming = false;
 		this.connected = false;
 		this.interested = false;
+		this.first_sent = false;
+
 		
-		this.incoming = false;
-		
+		last_sent = new Date();
+
 		sendTimer = new Timer("SEND2",true);
 		performanceTimer = new Timer("PERF2",true);
-		last_sent = new Date();
-		
-		
-		recieved_bytes = 0;
-		recieved_bps = 0;
-		sent_bytes = 0;
-		sent_bytes = 0;
 	}
 	
 	/**
@@ -102,43 +108,38 @@ public class Peer extends Thread {
 
 		this.peerInputStream = peerInputStream;
 		this.peerOutputStream = peerOutputStream;
-		this.first_sent = false;
+		
 		this.choked = true;
 		this.choking = true;
+		this.incoming = true;
+
 		this.connected = false;
 		this.interested = false;
-		
-		this.incoming = true;
-		
+		this.first_sent = false;
+
+		last_sent = new Date();
 		sendTimer = new Timer("SEND TIMER",true);
 		performanceTimer = new Timer("PERF TIMER",true);
-		last_sent = new Date();
 		
-		recieved_bytes = 0;
-		recieved_bps = 0;
-		sent_bytes = 0;
 		sent_bps = 0;
+		sent_bytes = 0;
+		received_bps = 0;
+		received_bytes = 0;
 	}
 	
-	
 	/**
-	 * @author Manuel Lopez
-	 * @author Ben Green
-	 * @author Christopher Rios
 	 * Timer task for sending info through a socket. If the timer runs out, the Peer sends a keep alive.
 	 * 
 	 */
 	private static class SendTimerTask extends TimerTask{
 		private Peer peer;
-		public SendTimerTask(Peer peer)
-		{
+		public SendTimerTask(Peer peer){
 			this.peer = peer;
 		}
+		
 		public void run() {
-			// TODO Do something when the timer is up
-			//System.out.println("send timer is up");
-			if(peer.connected&&(System.currentTimeMillis()-peer.getLastSent()>=(150*1000)))
-			{
+			
+			if(peer.connected&&(System.currentTimeMillis()-peer.getLastSent()>=(150*1000))){
 				System.out.println("Sending a keep alive");
 				byte[] keep_alive = {0,0,0,0};
 				peer.sendMessage(keep_alive);
@@ -157,17 +158,15 @@ public class Peer extends Thread {
 		public void run(){
 			
 			if (!peer.choked){
-				peer.recieved_bps = ((0.65 * peer.recieved_bps) + (0.35 * peer.recieved_bytes))/2;
-				if(peer.recieved_bps < 100) peer.recieved_bps = 0; 
-				peer.recieved_bytes = 0;
+				peer.received_bps = ((0.65 * peer.received_bps) + (0.35 * peer.received_bytes))/2;
+				if(peer.received_bps < 100) peer.received_bps = 0; 
+				peer.received_bytes = 0;
 			}
 			if (!peer.choking){
 				peer.sent_bps = ((0.65 * peer.sent_bps) + (0.35 * peer.sent_bytes))/2;
 				if(peer.sent_bps < 100) peer.sent_bps = 0;
 				peer.sent_bytes = 0;
 			}
-			//System.out.println(peer.peer_id + " recieved bps: " + peer.recieved_bps);
-			//System.out.println(peer.peer_id + " sent bsp: " + peer.sent_bps);
 		}
 	}
 	
@@ -228,13 +227,10 @@ public class Peer extends Thread {
 				}
 				
 				int length_prefix = peerInputStream.readInt();
-				if(length_prefix==0){ //means this is a keep alive from the peer
+				if(length_prefix <=0){ //means this is a keep alive from the peer
 					continue;
 				}
 				
-				if(length_prefix<0){  //bad error, sometimes we would read a large negative number.
-					continue;     
-				}
 				//System.out.println("length prefix " + length_prefix);
 				response = new byte[length_prefix];
 				peerInputStream.readFully(response);
@@ -263,8 +259,7 @@ public class Peer extends Thread {
 		//open sockets and input/output streams
 		try {
 			this.peerSocket = new Socket(ip, port);
-			//this.peerSocket.setSoTimeout(125*1000); //set the socket timeout for 2 minutes and 10 seconds			
-			this.peerSocket.setSoTimeout(55*1000); //set the socket timeout for 2 minutes and 10 seconds
+			this.peerSocket.setSoTimeout(125*1000); //set the socket timeout for 2 minutes and 10 seconds
 			this.peerOutputStream = new DataOutputStream(peerSocket.getOutputStream());  
 			this.peerInputStream = new DataInputStream(peerSocket.getInputStream());
 			connected = true;
@@ -286,13 +281,11 @@ public class Peer extends Thread {
 	 * Sends a message to the peer
 	 * Source: Taken From Rob Moore's skeleton code in our Sakai Resources folder
 	 * @param Message message to be sent by the peer
-	 * @throws IOException 
 	 */
 	public synchronized void sendMessage(byte[] Message){
 		if (this.peerOutputStream == null){
 			System.out.println("stream is null");
 		}else {
-			//System.out.println("sending a message");
 			try {
 				peerOutputStream.write(Message);
 			} catch (IOException e) {
@@ -300,13 +293,12 @@ public class Peer extends Thread {
 				client.removePeer(this);
 			}
 		}
-		//TODO update out last sent field
+		//TODO update our last sent field
 		last_sent.setTime(System.currentTimeMillis());
-		
 	}
 	
 	/**
-	 * This method Gets and passes on a remote peers handshake
+	 * Gets and passes on a remote peers handshake
 	 * @return the remote peers handshake
 	 */
 	public byte[] handshake(){
@@ -326,6 +318,7 @@ public class Peer extends Thread {
 		return phandshake;
 	}
 	
+	
 	/**
 	 * handshake compares the remote peers handshake to our infohash  and peer_id that we expect
 	 * @param peer_handshake byte array of the peers handshake response
@@ -338,17 +331,12 @@ public class Peer extends Thread {
 		byte[] peer_id = new byte[20];
 		System.arraycopy(peer_handshake,48,peer_id,0,20);//copies the peer id.
 		
-//		if(!(Arrays.equals(peer.getPeer_id().getBytes(),peer_id))){  //fails if the id in the hash doenst match the expected id.
-//				System.err.println("Peer id didnt match");
-//				return false;
-//		}
 		if (Arrays.equals(peer_infohash, this.client.torrentinfo.info_hash.array())){  //returns true if the peer id matches and the info hash matches
 			return true;
 		}else {
 			return false;
 		}
 	}
-	
 	
 	/** closes input/outputstreams and socket connections 
 	 */
@@ -366,7 +354,6 @@ public class Peer extends Thread {
 			connected = false;
 			this.stop();
 			cleanUp();
-			//send_timer.cancel();  
 		}catch (IOException e){
 			System.out.println("Peer.java: failed to close connections");
 			e.printStackTrace();
@@ -374,11 +361,11 @@ public class Peer extends Thread {
 		}
 	}
 	private void cleanUp(){
-
+		
+		if(sendTask != null) sendTask.cancel();
+		if(sendTimer != null) sendTimer.cancel();
 		if(performanceTimer != null) performanceTimer.cancel();
 		if(performanceTask != null ) performanceTask.cancel();
-		if(sendTimer != null) sendTimer.cancel();
-		if(sendTask != null) sendTask.cancel();
 	}
 	
 	/**wait() uses Thread.sleep to allow time for peer to respond to requests
@@ -416,14 +403,12 @@ public class Peer extends Thread {
 		return port;
 	}
 
-
 	/**
 	 * @return returns if the peer is interested or not
 	 */
 	public boolean isInterested() {
 		return interested;
 	}
-	
 	
 	/**
 	 * @return if the peer is choked or not
@@ -448,22 +433,11 @@ public class Peer extends Thread {
 	}
 	
 	/**
-	 * This method sets if the remote peer is interested in the pieces that our client has or not
-	 * @param state if the remote peer is interested or not
-	 */
-	public void setRemoteInterested(boolean state){
-		this.remote_interested = state;
-	}
-	
-	
-	/**
 	 * @return the remote peers bitfield
 	 */
 	public byte[] getBitfield(){
 		return this.bitfield;
 	}
-	
-	
 	
 	/**
 	 * This method sets the peer's client, and also initializes its bitfield to the correct length
@@ -508,8 +482,8 @@ public class Peer extends Thread {
 	
 	/**
 	 * Compares one peer to another by IP and ID
-	 * @param peer peer to compare
-	 * @return true if they are equal, false otherwise
+	 * @param peer peer to compare to current peer
+	 * @return true if they have identical peer ids and IP addresses
 	 */
 	public boolean equals(Peer peer){
 		return(this.ip == peer.getIp() && this.peer_id.equals(peer.getPeer_id()));
@@ -523,19 +497,20 @@ public class Peer extends Thread {
 	public long getLastSent(){
 		return last_sent.getTime();
 	}
+	
 	/**
 	 * This method sets if we are choking the remote peer or not
 	 * @param b if we are choking the remote peer
 	 */
-	public void setChoking(boolean b) {
-		this.choking = b;
+	public void setChoking(boolean choking) {
+		this.choking = choking;
 	}
+	
 	/**
 	 * Records the last piece requested of the remote peer.
 	 * @return piece index of the last requested piece
 	 */
-	public int getLastRequestedPiece()
-	{
+	public int getLastRequestedPiece(){
 		return last_requested_piece;
 	}
 	
@@ -543,8 +518,11 @@ public class Peer extends Thread {
 	 * Sets the last requested piece to a provided index.
 	 * @param last last requested piece index
 	 */
-	public void setLastRequestedPiece(int last)
-	{
+	public void setLastRequestedPiece(int last){
 		this.last_requested_piece = last;
+	}
+
+	public void setRemoteInterested(boolean interested) {
+		this.remote_interested = interested;
 	}
 }
