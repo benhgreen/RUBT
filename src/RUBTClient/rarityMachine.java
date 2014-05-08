@@ -1,11 +1,13 @@
 package RUBTClient;
 
 import java.util.Arrays;
-import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
-import java.util.Random;
 
+/**
+ * @author rioscm
+ * rarityMachine encapsulates a hashtable of 'boolfields' representing bitfields for each peer, for easy enumeration to find the rarest piece
+ */
 public class rarityMachine {
 	
 	private Hashtable<byte[], boolean[]> pieceset;
@@ -21,6 +23,10 @@ public class rarityMachine {
 		this.mybitfield = mybitfield;
 	}
 	
+	/**
+	 * @param capacity Number of pieces
+	 * @param destfile	DestFile for some reference
+	 */
 	public rarityMachine(int capacity, DestFile destfile){
 		this.pieceset = new Hashtable<byte[], boolean[]>(capacity);
 		this.piececount = capacity;
@@ -131,6 +137,7 @@ public class rarityMachine {
 	}
 	
 	/**
+	 * @param bitfield of remote peer
 	 * @return identifier number of the rarest piece
 	 */
 	public synchronized int rarestPiece(byte[] bitfield){
@@ -152,7 +159,7 @@ public class rarityMachine {
 	}
 
 	/**
-	 * @param values, hopefully already sorted in ascending order of popularity
+	 * @param values hopefully already sorted in ascending order of popularity
 	 * @return Smallest piece. TODO implement randomness
 	 */
 	private Counter identifyRarest(Counter[] values, byte[] bitfield) {

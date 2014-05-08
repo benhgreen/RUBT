@@ -22,16 +22,30 @@ public class DestFile {
 	int incomplete;
 	private String filename;
 	private byte[] mybitfield;
+
+	/**
+	 * rarityMachine for use of boolfield() method elsewhere
+	 */
 	public rarityMachine myRarityMachine;
+	/**
+	 *  for external reference of piececount
+	 */
+	public Piece[] pieces;
+	/**
+	 * for external reference of expectedbytes
+	 */
+	public int expectedbytes;
 	
 	//int array for pieces - 0 = not downloaded, 1 = in progress, 2 = downloaded and verified
 	private int[] mypieces;
 	
 	private boolean initialized;
-	public Piece[] pieces;
-	public int expectedbytes;
 	private RUBTClient client;
 	
+	/**
+	 * @param torrentinfo object to read info from
+	 * @param filename to write file to
+	 */
 	public DestFile(TorrentInfo torrentinfo, String filename){
 		
 		//intialize some variables and setup torrent info
@@ -176,6 +190,7 @@ public class DestFile {
 	
 	/**
 	 *  Checks through a (presumed to exist) file for valid pieces and updates mypieces accordingly.
+	 * @return true if the file is already complete, false otherwise
 	 */
 	public boolean checkExistingFile(){
 		
@@ -344,6 +359,10 @@ public class DestFile {
 		System.out.print("\n");
 	}
 	
+	/**
+	 * @param bitfield to print
+	 * @param exp expected bytes(length of bitfield)
+	 */
 	public static void printBitfield(byte[] bitfield, int exp){
 		System.out.print("Bitfield:");
 		for(int i = 0; i<exp; i++){
