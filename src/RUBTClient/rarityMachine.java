@@ -186,7 +186,7 @@ public class rarityMachine {
 		boolean[] bools = boolfield(bitfield);
 		
 		for(int i = 0; i<piececount; i++){
-			if(mybitfield[i] == 0 && bools[i]){
+			if(mybitfield[values[i].getIdentifier()] == 0 && bools[values[i].getIdentifier()]){
 				destfile.markInProgress(i);
 				return values[i];
 			}
